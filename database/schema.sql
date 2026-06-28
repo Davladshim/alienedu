@@ -31,9 +31,54 @@ CREATE TABLE IF NOT EXISTS users (
 -- ============================================================================
 -- МОДУЛЬ: PLATFORM (платформа AlienEdu — квесты, календарь и т.д.)
 -- ============================================================================
--- Сюда будут добавляться таблицы по мере разработки модулей платформы
--- (квест-комнаты, расписание, ученики репетиторов, оплаты уроков и т.д.)
--- Пока пусто — заготовка.
+
+-- Квест-сессии (одна запись = один запущенный урок-квест)
+CREATE TABLE IF NOT EXISTS quest_sessions (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'waiting', -- 'waiting', 'active', 'finished'
+    created_at TIMESTAMP DEFAULT NOW(),
+    finished_at TIMESTAMP
+);
+
+-- Комнаты внутри квеста
+CREATE TABLE IF NOT EXISTS quest_rooms (
+    id SERIAL PRIMARY KEY,
+    session_id INTEGER NOT NULL REFERENCES quest_sessions(id),
+    room_number INTEGER NOT NULL,
+    max_players INTEGER NOT NULL DEFAULT 1, -- сколько учеников в комнате
+    hint TEXT, -- подсказка
+    key_task TEXT, -- задание-ключ
+    key_answer VARCHAR(255), -- правильный ответ
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Игроки в квесте (ученики, зашедшие по одноразовому коду)
+CREATE TABLE IF NOT EXISTS quest_players (
+    id SERIAL PRIMARY KEY,
+    session_id INTEGER NOT NULL REFERENCES quest_sessions(id),
+    access_code VARCHAR(64) UNIQUE NOT NULL, -- одноразовый код входа
+    player_name VARCHAR(255), -- имя, которое ввёл ученик
+    current_room_id INTEGER REFERENCES quest_rooms(id),
+    status VARCHAR(50) NOT NULL DEFAULT 'waiting', -- 'waiting', 'playing', 'finished'
+    joined_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Прогресс игрока по комнатам
+CREATE TABLE IF NOT EXISTS quest_progress (
+    id SERIAL PRIMARY KEY,
+    player_id INTEGER NOT NULL REFERENCES quest_players(id),
+    room_id INTEGER NOT NULL REFERENCES quest_rooms(id),
+    answer_given VARCHAR(255),
+    is_correct BOOLEAN DEFAULT false,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_quest_players_code ON quest_players(access_code);
+CREATE INDEX IF NOT EXISTS idx_quest_progress_player ON quest_progress(player_id);
 
 
 -- ============================================================================
