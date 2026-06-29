@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS quest_sessions (
     teacher_id INTEGER NOT NULL REFERENCES users(id),
     title VARCHAR(255) NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'waiting', -- 'waiting', 'active', 'finished'
+    player_count INTEGER NOT NULL DEFAULT 10,
+    settings JSONB DEFAULT '{}',
     created_at TIMESTAMP DEFAULT NOW(),
     finished_at TIMESTAMP
 );
@@ -47,21 +49,25 @@ CREATE TABLE IF NOT EXISTS quest_rooms (
     id SERIAL PRIMARY KEY,
     session_id INTEGER NOT NULL REFERENCES quest_sessions(id),
     room_number INTEGER NOT NULL,
-    max_players INTEGER NOT NULL DEFAULT 1, -- сколько учеников в комнате
-    hint TEXT, -- подсказка
-    key_task TEXT, -- задание-ключ
-    key_answer VARCHAR(255), -- правильный ответ
+    room_type VARCHAR(20) NOT NULL DEFAULT 'solo', -- 'solo', 'shared', 'final'
+    max_players INTEGER NOT NULL DEFAULT 1,
+    hint TEXT,
+    key_task TEXT,
+    key_answer VARCHAR(255),
+    bonus_tasks JSONB DEFAULT '[]', -- доп. задания для быстрых в совместных комнатах
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Игроки в квесте (ученики, зашедшие по одноразовому коду)
+-- Игроки в квесте
 CREATE TABLE IF NOT EXISTS quest_players (
     id SERIAL PRIMARY KEY,
     session_id INTEGER NOT NULL REFERENCES quest_sessions(id),
-    access_code VARCHAR(64) UNIQUE NOT NULL, -- одноразовый код входа
-    player_name VARCHAR(255), -- имя, которое ввёл ученик
+    access_code VARCHAR(64) UNIQUE NOT NULL,
+    player_name VARCHAR(255),
     current_room_id INTEGER REFERENCES quest_rooms(id),
     status VARCHAR(50) NOT NULL DEFAULT 'waiting', -- 'waiting', 'playing', 'finished'
+    is_excluded BOOLEAN DEFAULT false,
+    excluded_at TIMESTAMP,
     joined_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -73,6 +79,7 @@ CREATE TABLE IF NOT EXISTS quest_progress (
     room_id INTEGER NOT NULL REFERENCES quest_rooms(id),
     answer_given VARCHAR(255),
     is_correct BOOLEAN DEFAULT false,
+    bonus_completed JSONB DEFAULT '[]', -- выполненные бонусные задания
     completed_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW()
 );
