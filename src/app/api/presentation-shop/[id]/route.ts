@@ -1,18 +1,198 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { query } from "@/lib/db";
 
-function verifyToken(token: string, presentationId: string): boolean {
-  try {
-    const payload = Buffer.from(token, "base64").toString("utf-8");
-    const parts = payload.split(":");
-    if (parts.length < 3) return false;
-    if (parts[1] !== presentationId) return false;
-    const ONE_DAY = 24 * 60 * 60 * 1000;
-    if (Date.now() - Number(parts[2]) > ONE_DAY) return false;
-    return true;
-  } catch {
-    return false;
-  }
+const FREE_SLIDES = 3;
+
+function checkAdminCookie(req: NextRequest): boolean {
+  const session = req.cookies.get("admin_session_shop");
+  return session?.value === process.env.ADMIN_SECRET;
+}
+
+function verifyAccessCookie(req: NextRequest, presentationId: string): boolean {
+  const cookie = req.cookies.get(`access_shop_${presentationId}`);
+  return cookie?.value === "granted";
+}
+
+function injectPaywall(html: string, presentationId: string): string {
+  const paywallScript = `
+<script>
+(function() {
+  const FREE_SLIDES = ${FREE_SLIDES};
+  const PRESENTATION_ID = "${presentationId}";
+  
+  // Ждём загрузки страницы
+  window.addEventListener('DOMContentLoaded', function() {
+    
+    // Создаём paywall overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'shop-paywall';
+    overlay.innerHTML = \`
+      <div style="
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 16, 0.97);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+      ">
+        <div style="
+          background: #1e2029;
+          border: 1px solid #2a2d3a;
+          border-radius: 20px;
+          padding: 48px;
+          max-width: 400px;
+          width: 90%;
+          text-align: center;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        ">
+          <div style="
+            width: 56px; height: 56px;
+            background: #12131a;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px;
+          ">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 8px;">Доступ закрыт</h2>
+          <p style="color: #6b7280; font-size: 0.95rem; margin-bottom: 32px; line-height: 1.6;">
+            Первые ${FREE_SLIDES} слайда доступны бесплатно.<br>Введи код чтобы открыть всю презентацию.
+          </p>
+          <input
+            id="shop-code-input"
+            type="text"
+            placeholder="XXXX-XXXX"
+            maxlength="20"
+            style="
+              width: 100%;
+              background: #0b0f19;
+              border: 1px solid #3f3f46;
+              border-radius: 10px;
+              padding: 14px;
+              color: #fff;
+              font-size: 1.1rem;
+              text-align: center;
+              letter-spacing: 0.15em;
+              font-family: monospace;
+              margin-bottom: 12px;
+              outline: none;
+              box-sizing: border-box;
+            "
+          />
+          <div id="shop-error-msg" style="color: #f87171; font-size: 0.85rem; margin-bottom: 12px; min-height: 20px;"></div>
+          <button
+            id="shop-submit-btn"
+            style="
+              width: 100%;
+              background: linear-gradient(135deg, #3b82f6, #6366f1);
+              color: #fff;
+              border: none;
+              border-radius: 10px;
+              padding: 14px;
+              font-size: 1rem;
+              font-weight: 600;
+              cursor: pointer;
+              margin-bottom: 16px;
+            "
+          >Открыть презентацию</button>
+          <div style="font-size: 0.8rem; color: #4b5563;">
+            Нет кода?
+            <a href="https://t.me/darya_shim" target="_blank" style="color: #6b7280; text-decoration: underline;">Telegram</a>
+            ·
+            <a href="https://vk.com/darya_shim" target="_blank" style="color: #6b7280; text-decoration: underline;">ВКонтакте</a>
+          </div>
+        </div>
+      </div>
+    \`;
+    document.body.appendChild(overlay);
+    overlay.style.display = 'none';
+
+    // Форматирование кода при вводе
+    const codeInput = document.getElementById('shop-code-input');
+    codeInput.addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+    });
+
+    // Отправка кода
+    document.getElementById('shop-submit-btn').addEventListener('click', async function() {
+      const code = codeInput.value.trim();
+      if (!code) return;
+
+      const btn = document.getElementById('shop-submit-btn');
+      const errorMsg = document.getElementById('shop-error-msg');
+      btn.textContent = 'Проверяем...';
+      btn.disabled = true;
+      errorMsg.textContent = '';
+
+      try {
+        const res = await fetch('/api/verify-code-shop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, presentationId: PRESENTATION_ID }),
+        });
+        const json = await res.json();
+
+        if (res.ok && json.token) {
+          // Сохраняем доступ в куки через сервер
+          await fetch('/api/grant-access-shop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: json.token, presentationId: PRESENTATION_ID }),
+          });
+          overlay.style.display = 'none';
+        } else {
+          errorMsg.textContent = json.error || 'Неверный код';
+          btn.textContent = 'Открыть презентацию';
+          btn.disabled = false;
+        }
+      } catch {
+        errorMsg.textContent = 'Ошибка соединения';
+        btn.textContent = 'Открыть презентацию';
+        btn.disabled = false;
+      }
+    });
+
+    // Перехватываем навигацию по слайдам
+    let slideCount = 0;
+
+    // Ищем кнопку "следующий слайд"
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn) {
+      const originalClick = nextBtn.onclick;
+      nextBtn.addEventListener('click', function(e) {
+        slideCount++;
+        if (slideCount >= FREE_SLIDES) {
+          e.stopImmediatePropagation();
+          overlay.style.display = 'flex';
+        }
+      }, true);
+    }
+
+    // Перехватываем клавиатуру
+    document.addEventListener('keydown', function(e) {
+      if (overlay.style.display === 'flex') return;
+      if ((e.key === 'ArrowRight' || e.key === ' ') && slideCount >= FREE_SLIDES) {
+        e.stopImmediatePropagation();
+        overlay.style.display = 'flex';
+      }
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        slideCount++;
+      }
+    }, true);
+
+  });
+})();
+</script>
+`;
+
+  // Вставляем скрипт перед закрывающим </body>
+  return html.replace('</body>', paywallScript + '</body>');
 }
 
 export async function GET(
@@ -20,20 +200,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const token = req.nextUrl.searchParams.get("token");
-  const adminSecret = req.nextUrl.searchParams.get("admin");
-  const isAdmin = adminSecret === process.env.ADMIN_SECRET;
-
-  if (!isAdmin && !token) {
-    return new NextResponse("Доступ запрещён", { status: 403 });
-  }
-
-  if (!isAdmin && !verifyToken(token!, id)) {
-    return new NextResponse("Токен недействителен или истёк", { status: 403 });
-  }
+  const isAdmin = checkAdminCookie(req);
+  const hasAccess = verifyAccessCookie(req, id);
 
   try {
-    const { query } = await import("@/lib/db");
     const result = await query(
       `SELECT content_path FROM presentations WHERE id = $1 AND is_active = true`,
       [id]
@@ -61,11 +231,15 @@ export async function GET(
       .download(contentPath);
 
     if (error || !data) {
-      console.error("Storage error:", error);
       return new NextResponse("Файл не найден", { status: 404 });
     }
 
-    const html = await data.text();
+    let html = await data.text();
+
+    // Если не админ и нет доступа — добавляем paywall
+    if (!isAdmin && !hasAccess) {
+      html = injectPaywall(html, id);
+    }
 
     return new NextResponse(html, {
       status: 200,

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 
 // Страницы доступные без авторизации
-const publicPaths = ['/login', '/register', '/recover']
+const publicPaths = ['/login', '/register', '/recover', '/shop']
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -10,6 +10,10 @@ export function proxy(request: NextRequest) {
 
   // Пропускаем публичные страницы и API
   if (publicPaths.some(path => pathname.startsWith(path))) {
+    // Для магазина — всегда пропускаем, даже если залогинен
+    if (pathname.startsWith('/shop')) {
+      return NextResponse.next()
+    }
     // Если уже залогинен — перенаправляем на дашборд
     if (token) {
       try {
