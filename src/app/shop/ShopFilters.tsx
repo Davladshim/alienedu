@@ -125,9 +125,13 @@ function PresentationCard({ presentation }: { presentation: Presentation }) {
           (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
         }}
       >
-        <div style={{ height: 160, background: "#12131a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div style={{ height: 160, background: "#12131a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
           {preview_image ? (
-            <img src={preview_image} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img
+              src={`/previews/${preview_image}`}
+              alt={title}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           ) : (
             <div style={{ textAlign: "center", color: "#374151" }}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

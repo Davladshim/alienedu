@@ -9,6 +9,7 @@ type Presentation = {
   grade: number;
   price: number;
   content_path: string;
+  preview_image: string | null;
   is_active: boolean;
   created_at: string;
 };
@@ -27,7 +28,7 @@ export default function ShopAdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [tab, setTab] = useState<"presentations" | "add" | "codes">("presentations");
+  const [tab, setTab] = useState<"presentations" | "add" | "codes" | "edit">("presentations");
   const [presentations, setPresentations] = useState<Presentation[]>([]);
   const [codes, setCodes] = useState<Code[]>([]);
   const [selectedPresId, setSelectedPresId] = useState<number | null>(null);
@@ -40,6 +41,7 @@ export default function ShopAdminPage() {
 
   const [codeForm, setCodeForm] = useState({ presentationId: "", count: "1", validDays: "10" });
   const [newCodes, setNewCodes] = useState<string[]>([]);
+  const [editingPresentation, setEditingPresentation] = useState<Presentation | null>(null);
 
   useEffect(() => {
     fetch("/api/admin-presentations-shop")
@@ -229,6 +231,9 @@ export default function ShopAdminPage() {
                     <a href={`/shop/${p.id}`} target="_blank" rel="noopener noreferrer" style={{ ...s.btnGhost, textDecoration: "none", fontSize: "0.82rem" }}>
                       Открыть →
                     </a>
+                    <button style={s.btnGhost} onClick={() => { setEditingPresentation(p); setTab("edit"); }}>
+                      Редактировать
+                    </button>
                     <button style={s.btnGhost} onClick={() => { setCodeForm({ ...codeForm, presentationId: String(p.id) }); setSelectedPresId(p.id); setTab("codes"); loadCodes(p.id); }}>
                       Коды
                     </button>
@@ -352,7 +357,102 @@ export default function ShopAdminPage() {
             ))}
           </div>
         )}
+        {tab === "edit" && editingPresentation && (
+          <EditPresentation
+            presentation={editingPresentation}
+            onSave={async (updated) => {
+              const res = await fetch("/api/admin-presentations-shop", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updated),
+              });
+              if (res.ok) {
+                loadPresentations();
+                setTab("presentations");
+              }
+            }}
+            onCancel={() => setTab("presentations")}
+            s={s}
+          />
+        )}
       </main>
+    </div>
+  );
+}
+
+function EditPresentation({ presentation, onSave, onCancel, s }: {
+  presentation: Presentation;
+  onSave: (updated: any) => void;
+  onCancel: () => void;
+  s: any;
+}) {
+  const [form, setForm] = useState({
+    id: presentation.id,
+    title: presentation.title,
+    description: "",
+    subject: presentation.subject,
+    grade: String(presentation.grade),
+    price: String(presentation.price),
+    is_active: presentation.is_active,
+    preview_image: presentation.preview_image ?? "",
+  });
+
+  return (
+    <div>
+      <h2 style={{ fontSize: "1.2rem", fontWeight: 600, marginBottom: 20 }}>Редактировать презентацию</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div>
+          <label style={s.label}>Название</label>
+          <input style={s.input} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+        </div>
+        <div>
+          <label style={s.label}>Описание</label>
+          <input style={s.input} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        </div>
+        <div>
+          <label style={s.label}>Имя файла превью (например: preview-1.jpg)</label>
+          <input style={s.input} value={form.preview_image ?? ""} onChange={(e) => setForm({ ...form, preview_image: e.target.value })} placeholder="preview-1.jpg" />
+          <div style={{ color: "#4b5563", fontSize: "0.75rem", marginTop: 4 }}>Загрузи файл в Supabase Storage → бакет previews, потом укажи имя здесь</div>
+        </div>
+        <div style={s.row}>
+          <div style={s.field}>
+            <label style={s.label}>Предмет</label>
+            <select style={s.input} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}>
+              <option>Математика</option>
+              <option>Физика</option>
+              <option>Химия</option>
+              <option>Информатика</option>
+            </select>
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Класс</label>
+            <select style={s.input} value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })}>
+              {[5,6,7,8,9,10,11].map((g) => <option key={g}>{g}</option>)}
+            </select>
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Цена (₽)</label>
+            <input style={s.input} type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <input
+            type="checkbox"
+            id="is_active"
+            checked={form.is_active}
+            onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+          />
+          <label htmlFor="is_active" style={{ color: "#6b7280", fontSize: "0.9rem" }}>Показывать в магазине</label>
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button style={s.btn} onClick={() => onSave({ ...form, grade: Number(form.grade), price: Number(form.price) })}>
+            Сохранить
+          </button>
+          <button style={s.btnGhost} onClick={onCancel}>
+            Отмена
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

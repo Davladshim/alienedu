@@ -69,3 +69,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  if (!checkAdmin(req)) {
+    return NextResponse.json({ error: "Нет доступа" }, { status: 401 });
+  }
+
+  try {
+    const { id, title, description, subject, grade, price, is_active, preview_image } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "Укажи id презентации" }, { status: 400 });
+    }
+
+    await query(
+      `UPDATE presentations 
+      SET title = $1, description = $2, subject = $3, grade = $4, price = $5, is_active = $6, preview_image = $7, updated_at = NOW()
+      WHERE id = $8`,
+      [title, description, subject, grade, price, is_active, preview_image || null, id]
+    );
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
