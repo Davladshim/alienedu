@@ -98,9 +98,13 @@ CREATE TABLE IF NOT EXISTS presentations (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
-    content_path VARCHAR(500) NOT NULL, -- путь/ссылка на саму презентацию
-    preview_image VARCHAR(500), -- превью для карточки на лендинге
-    is_active BOOLEAN DEFAULT true, -- можно скрыть из продажи, не удаляя
+    content_path VARCHAR(500) NOT NULL, -- путь к HTML файлу в Supabase Storage
+    preview_image VARCHAR(500),         -- превью для карточки в магазине
+    subject VARCHAR(100),               -- предмет (Математика, Физика и т.д.)
+    grade INTEGER,                      -- класс (5-11)
+    topic VARCHAR(255),                 -- тема презентации
+    slides_data JSONB,                  -- данные слайдов для превью (опционально)
+    is_active BOOLEAN DEFAULT true,     -- показывать в магазине
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
