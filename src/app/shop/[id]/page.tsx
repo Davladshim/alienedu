@@ -70,13 +70,13 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
     const nextBtn = document.getElementById("nextBtn");
     if (nextBtn) {
       nextBtn.addEventListener("click", (e) => {
+        slideCountRef.current++;
         if (slideCountRef.current >= FREE_SLIDES) {
           e.stopImmediatePropagation();
           e.preventDefault();
           setShowPaywall(true);
           return;
         }
-        slideCountRef.current++;
       }, true);
     }
 
@@ -91,6 +91,11 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
       }
       if (e.key === "ArrowRight" || e.key === " ") {
         slideCountRef.current++;
+        if (slideCountRef.current >= FREE_SLIDES) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          setShowPaywall(true);
+        }
       }
     }, true);
   }
