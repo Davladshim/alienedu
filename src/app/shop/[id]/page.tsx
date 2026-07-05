@@ -11,7 +11,7 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
         src={`/api/presentation-shop/${id}`}
         style={{ width: "100%", height: "100%", border: "none" }}
         title="Презентация"
-        sandbox="allow-scripts allow-same-origin allow-forms"
+        sandbox="allow-scripts allow-forms allow-popups"
       />
     </div>
   );
