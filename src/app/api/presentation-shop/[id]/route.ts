@@ -159,32 +159,45 @@ function injectPaywall(html: string, presentationId: string): string {
     });
 
     // Перехватываем навигацию по слайдам
-    let slideCount = 0;
+        let slideCount = 0;
 
-    // Ищем кнопку "следующий слайд"
-    const nextBtn = document.getElementById('nextBtn');
-    if (nextBtn) {
-      const originalClick = nextBtn.onclick;
-      nextBtn.addEventListener('click', function(e) {
-        slideCount++;
-        if (slideCount >= FREE_SLIDES) {
-          e.stopImmediatePropagation();
-          overlay.style.display = 'flex';
+        function setupPaywall() {
+          const nextBtn = document.getElementById('nextBtn');
+          if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+              if (slideCount >= FREE_SLIDES) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                overlay.style.display = 'flex';
+                return;
+              }
+              slideCount++;
+            }, true);
+          } else {
+            // Если кнопка ещё не найдена — попробуем позже
+            setTimeout(setupPaywall, 100);
+          }
         }
-      }, true);
-    }
 
-    // Перехватываем клавиатуру
-    document.addEventListener('keydown', function(e) {
-      if (overlay.style.display === 'flex') return;
-      if ((e.key === 'ArrowRight' || e.key === ' ') && slideCount >= FREE_SLIDES) {
-        e.stopImmediatePropagation();
-        overlay.style.display = 'flex';
-      }
-      if (e.key === 'ArrowRight' || e.key === ' ') {
-        slideCount++;
-      }
-    }, true);
+        // Перехватываем клавиатуру
+        document.addEventListener('keydown', function(e) {
+          if (overlay.style.display === 'flex') {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return;
+          }
+          if ((e.key === 'ArrowRight' || e.key === ' ') && slideCount >= FREE_SLIDES) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            overlay.style.display = 'flex';
+            return;
+          }
+          if (e.key === 'ArrowRight' || e.key === ' ') {
+            slideCount++;
+          }
+        }, true);
+
+        setupPaywall();
 
   });
 })();
