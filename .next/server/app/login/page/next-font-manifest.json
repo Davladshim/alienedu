@@ -1,0 +1,13 @@
+{
+  "pages": {},
+  "app": {
+    "[project]/src/app/login/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pagesUsingSizeAdjust": false
+}

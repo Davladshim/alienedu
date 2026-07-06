@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/quest/layout,_N_T_/quest/room/layout,_N_T_/quest/room/page,_N_T_/quest/room"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/quest/room/__PAGE__",
+    "/quest/room",
+    "/quest",
+    "/_index",
+    "/_head"
+  ]
+}

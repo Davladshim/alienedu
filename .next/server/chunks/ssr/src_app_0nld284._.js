@@ -1,0 +1,3 @@
+module.exports=[51616,a=>{a.v({className:"manrope_56f2d93a-module__NoBdEa__className",variable:"manrope_56f2d93a-module__NoBdEa__variable"})},27572,a=>{"use strict";var b=a.i(7997),c=a.i(51616);let d={className:c.default.className,style:{fontFamily:"'manrope', 'manrope Fallback'"}};null!=c.default.variable&&(d.variable=c.default.variable),a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"ru",className:`${d.variable} h-full antialiased`,children:(0,b.jsx)("body",{className:"min-h-full flex flex-col",style:{fontFamily:"var(--font-manrope), system-ui, sans-serif"},children:a})})},"metadata",0,{title:"AlienEdu",description:"Образовательная платформа"}],27572)},50645,a=>{a.n(a.i(27572))}];
+
+//# sourceMappingURL=src_app_0nld284._.js.map

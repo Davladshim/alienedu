@@ -1,0 +1,97 @@
+{
+  "app": {
+    "[project]/src/app/_not-found/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/admin/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/login/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/quest/join/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/quest/room/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/recover/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/register/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/shop/[id]/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/shop/admin/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/shop/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/student/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/teacher/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/teacher/quest/[id]/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ],
+    "[project]/src/app/teacher/quest/new/page": [
+      "static/media/Manrope_Regular-s.p.31alg029nfd8z.ttf",
+      "static/media/Manrope_Medium-s.p.2tpt1d29ne1yn.ttf",
+      "static/media/Manrope_SemiBold-s.p.3-s7ubdnokkrs.ttf",
+      "static/media/Manrope_Bold-s.p.2v07l99ilyjt4.ttf"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

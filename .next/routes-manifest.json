@@ -1,0 +1,318 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "onMatchHeaders": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/presentation-meta-shop/[id]",
+      "regex": "^/api/presentation\\-meta\\-shop/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/presentation\\-meta\\-shop/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/presentation-shop/[id]",
+      "regex": "^/api/presentation\\-shop/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/presentation\\-shop/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/quest/session/[id]",
+      "regex": "^/api/quest/session/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/quest/session/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/shop/api/shop/presentation/[id]",
+      "regex": "^/shop/api/shop/presentation/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/shop/api/shop/presentation/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/shop/api/shop/presentation-meta/[id]",
+      "regex": "^/shop/api/shop/presentation\\-meta/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/shop/api/shop/presentation\\-meta/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/shop/[id]",
+      "regex": "^/shop/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/shop/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/teacher/quest/[id]",
+      "regex": "^/teacher/quest/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/teacher/quest/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin",
+      "regex": "^/admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin(?:/)?$"
+    },
+    {
+      "page": "/api/admin-codes-shop",
+      "regex": "^/api/admin\\-codes\\-shop(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin\\-codes\\-shop(?:/)?$"
+    },
+    {
+      "page": "/api/admin-login-shop",
+      "regex": "^/api/admin\\-login\\-shop(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin\\-login\\-shop(?:/)?$"
+    },
+    {
+      "page": "/api/admin-presentations-shop",
+      "regex": "^/api/admin\\-presentations\\-shop(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin\\-presentations\\-shop(?:/)?$"
+    },
+    {
+      "page": "/api/auth/get-question",
+      "regex": "^/api/auth/get\\-question(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/get\\-question(?:/)?$"
+    },
+    {
+      "page": "/api/auth/login",
+      "regex": "^/api/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/login(?:/)?$"
+    },
+    {
+      "page": "/api/auth/recover",
+      "regex": "^/api/auth/recover(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/recover(?:/)?$"
+    },
+    {
+      "page": "/api/auth/register",
+      "regex": "^/api/auth/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/register(?:/)?$"
+    },
+    {
+      "page": "/api/grant-access-shop",
+      "regex": "^/api/grant\\-access\\-shop(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/grant\\-access\\-shop(?:/)?$"
+    },
+    {
+      "page": "/api/quest/answer",
+      "regex": "^/api/quest/answer(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/quest/answer(?:/)?$"
+    },
+    {
+      "page": "/api/quest/bonus-answer",
+      "regex": "^/api/quest/bonus\\-answer(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/quest/bonus\\-answer(?:/)?$"
+    },
+    {
+      "page": "/api/quest/create",
+      "regex": "^/api/quest/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/quest/create(?:/)?$"
+    },
+    {
+      "page": "/api/quest/exclude-player",
+      "regex": "^/api/quest/exclude\\-player(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/quest/exclude\\-player(?:/)?$"
+    },
+    {
+      "page": "/api/quest/join",
+      "regex": "^/api/quest/join(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/quest/join(?:/)?$"
+    },
+    {
+      "page": "/api/quest/open-door",
+      "regex": "^/api/quest/open\\-door(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/quest/open\\-door(?:/)?$"
+    },
+    {
+      "page": "/api/quest/room",
+      "regex": "^/api/quest/room(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/quest/room(?:/)?$"
+    },
+    {
+      "page": "/api/quest/start",
+      "regex": "^/api/quest/start(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/quest/start(?:/)?$"
+    },
+    {
+      "page": "/api/verify-code-shop",
+      "regex": "^/api/verify\\-code\\-shop(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/verify\\-code\\-shop(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/quest/join",
+      "regex": "^/quest/join(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/quest/join(?:/)?$"
+    },
+    {
+      "page": "/quest/room",
+      "regex": "^/quest/room(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/quest/room(?:/)?$"
+    },
+    {
+      "page": "/recover",
+      "regex": "^/recover(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/recover(?:/)?$"
+    },
+    {
+      "page": "/register",
+      "regex": "^/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/register(?:/)?$"
+    },
+    {
+      "page": "/shop",
+      "regex": "^/shop(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/shop(?:/)?$"
+    },
+    {
+      "page": "/shop/admin",
+      "regex": "^/shop/admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/shop/admin(?:/)?$"
+    },
+    {
+      "page": "/shop/api/admin/codes",
+      "regex": "^/shop/api/admin/codes(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/shop/api/admin/codes(?:/)?$"
+    },
+    {
+      "page": "/shop/api/admin/login",
+      "regex": "^/shop/api/admin/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/shop/api/admin/login(?:/)?$"
+    },
+    {
+      "page": "/shop/api/admin/presentations",
+      "regex": "^/shop/api/admin/presentations(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/shop/api/admin/presentations(?:/)?$"
+    },
+    {
+      "page": "/shop/api/shop/verify-code",
+      "regex": "^/shop/api/shop/verify\\-code(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/shop/api/shop/verify\\-code(?:/)?$"
+    },
+    {
+      "page": "/student",
+      "regex": "^/student(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/student(?:/)?$"
+    },
+    {
+      "page": "/teacher",
+      "regex": "^/teacher(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/teacher(?:/)?$"
+    },
+    {
+      "page": "/teacher/quest/new",
+      "regex": "^/teacher/quest/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/teacher/quest/new(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}
