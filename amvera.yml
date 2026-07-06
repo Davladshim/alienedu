@@ -5,7 +5,6 @@ meta:
     version: "20"
 
 build:
-  scriptName: build
   additionalCommands: npm run build
 
 run:
