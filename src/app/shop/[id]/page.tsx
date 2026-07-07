@@ -14,56 +14,56 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
   const slideCountRef = useRef(0);
 
   useEffect(() => {
-    async function loadPresentation() {
-      try {
-        const res = await fetch(`/api/presentation-shop/${id}`);
-        if (!res.ok) return;
-        const html = await res.text();
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-
-        // Копируем стили
-        doc.querySelectorAll("style").forEach(el => {
-          document.head.appendChild(document.adoptNode(el));
-        });
-
-        doc.querySelectorAll("link[rel='stylesheet']").forEach(el => {
-          const link = document.createElement("link");
-          link.rel = "stylesheet";
-          link.href = (el as HTMLLinkElement).href;
-          document.head.appendChild(link);
-        });
-
-        // Вставляем контент
-        if (containerRef.current) {
-          containerRef.current.innerHTML = doc.body.innerHTML;
-        }
-
-        // Запускаем скрипты
-        doc.querySelectorAll("script").forEach(oldScript => {
-          const newScript = document.createElement("script");
-          if (oldScript.src) {
-            newScript.src = oldScript.src;
-            newScript.async = false;
-          } else {
-            newScript.textContent = oldScript.textContent;
+      async function loadPresentation() {
+        try {
+          const res = await fetch(`/api/presentation-shop/${id}`);
+          if (!res.ok) return;
+          const html = await res.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, "text/html");
+          doc.querySelectorAll("style").forEach(el => {
+            document.head.appendChild(document.adoptNode(el));
+          });
+          doc.querySelectorAll("link[rel='stylesheet']").forEach(el => {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = (el as HTMLLinkElement).href;
+            document.head.appendChild(link);
+          });
+          if (containerRef.current) {
+            containerRef.current.innerHTML = doc.body.innerHTML;
           }
-          document.body.appendChild(newScript);
-        });
-
-        // Ждём немного чтобы скрипты успели выполниться
-        setTimeout(() => {
-          setupPaywallInterceptor();
-        }, 500);
-
-      } catch (err) {
-        console.error("Ошибка загрузки:", err);
+          doc.querySelectorAll("script").forEach(oldScript => {
+            const newScript = document.createElement("script");
+            if (oldScript.src) {
+              newScript.src = oldScript.src;
+              newScript.async = false;
+            } else {
+              newScript.textContent = oldScript.textContent;
+            }
+            document.body.appendChild(newScript);
+          });
+          setTimeout(() => {
+            setupPaywallInterceptor();
+          }, 500);
+        } catch (err) {
+          console.error("Ошибка загрузки:", err);
+        }
       }
-    }
 
-    loadPresentation();
-  }, [id]);
+      async function checkAccess() {
+        const res = await fetch(`/api/check-access-shop?presentationId=${id}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.hasAccess) {
+            slideCountRef.current = -999;
+          }
+        }
+      }
+
+      loadPresentation();
+      checkAccess();
+    }, [id]);
 
   function setupPaywallInterceptor() {
     // Перехватываем кнопку nextBtn
