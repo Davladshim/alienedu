@@ -121,7 +121,7 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
           body: JSON.stringify({ token: json.token, presentationId: id }),
         });
         setShowPaywall(false);
-        slideCountRef.current = 0;
+        slideCountRef.current = -999;
       } else {
         setStatus("error");
         setErrorMsg(json.error || "Неверный код");
