@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 type Presentation = {
   id: number;
   title: string;
+  description: string | null;
   subject: string;
   grade: number;
   price: number;
