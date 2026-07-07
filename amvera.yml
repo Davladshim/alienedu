@@ -1,13 +1,6 @@
 meta:
-  environment: nodejs
-  toolchain:
-    name: npm
-    version: "20"
-
-build:
-  additionalCommands: npm ci && npm run build
+  environment: docker
 
 run:
-  command: npm run start
   containerPort: 3000
   persistenceMount: /data
