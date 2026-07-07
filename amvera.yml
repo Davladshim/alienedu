@@ -5,7 +5,7 @@ meta:
     version: "20"
 
 build:
-  skip: true
+  additionalCommands: npm ci && npm run build
 
 run:
   command: npm run start
