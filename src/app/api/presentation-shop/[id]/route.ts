@@ -213,6 +213,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  console.log("ENV CHECK:", {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20),
+    key: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 10),
+  });
   const isAdmin = checkAdminCookie(req);
   const hasAccess = verifyAccessCookie(req, id);
 
