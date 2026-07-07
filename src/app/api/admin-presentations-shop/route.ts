@@ -57,10 +57,9 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await query(
-      `INSERT INTO presentations (title, description, subject, grade, price, content_path, slides_data)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id`,
-      [title, description || "", subject, grade, price, fileName, slidesData ? JSON.stringify(slidesData) : null]
+      `SELECT id, title, description, subject, grade, price, content_path, preview_image, is_active, created_at
+      FROM presentations
+      ORDER BY created_at DESC`
     );
 
     return NextResponse.json({ id: result.rows[0].id, ok: true });

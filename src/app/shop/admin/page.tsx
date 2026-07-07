@@ -389,7 +389,7 @@ function EditPresentation({ presentation, onSave, onCancel, s }: {
   const [form, setForm] = useState({
     id: presentation.id,
     title: presentation.title,
-    description: "",
+    description: presentation.description ?? "",
     subject: presentation.subject,
     grade: String(presentation.grade),
     price: String(presentation.price),
