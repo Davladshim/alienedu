@@ -412,7 +412,7 @@ function EditPresentation({ presentation, onSave, onCancel, s }: {
         </div>
         <div>
           <label style={s.label}>Имя файла превью (например: preview-1.jpg)</label>
-          <input style={s.input} value={form.preview_image ?? ""} onChange={(e) => setForm({ ...form, preview_image: e.target.value })} placeholder="preview-1.jpg" />
+          <input style={s.input} value={form.preview_image ?? ""} onChange={(e) => setForm({ ...form, preview_image: e.target.value })} placeholder="preview_image" />
           <div style={{ color: "#4b5563", fontSize: "0.75rem", marginTop: 4 }}>Загрузи файл в Supabase Storage → бакет previews, потом укажи имя здесь</div>
         </div>
         <div style={s.row}>
