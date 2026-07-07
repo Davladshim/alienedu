@@ -214,10 +214,6 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  console.log("ENV CHECK:", {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20),
-    key: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 10),
-  });
   const isAdmin = checkAdminCookie(req);
   const hasAccess = verifyAccessCookie(req, id);
 
@@ -242,7 +238,6 @@ export async function GET(
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://abmwzgzgqybmwrxedxla.supabase.co";
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !supabaseKey) {
-      console.error("Missing Supabase env vars:", { supabaseUrl: !!supabaseUrl, supabaseKey: !!supabaseKey });
       return new NextResponse("Ошибка конфигурации сервера", { status: 500 });
     }
     const supabase = createClient(supabaseUrl, supabaseKey);
