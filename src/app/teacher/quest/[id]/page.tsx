@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+
 
 export default function QuestDashboardPage() {
   const { id } = useParams()
@@ -26,19 +26,13 @@ export default function QuestDashboardPage() {
     return () => clearInterval(interval)
   }, [timerActive])
 
-  // Реальное время
+  // Polling вместо realtime
   useEffect(() => {
     if (!id) return
-    const channel = supabase
-      .channel(`teacher_quest_${id}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'quest_progress'
-      }, () => loadData())
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'quest_players'
-      }, () => loadData())
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    const interval = setInterval(() => {
+      loadData()
+    }, 3000)
+    return () => clearInterval(interval)
   }, [id])
 
   async function loadData() {
