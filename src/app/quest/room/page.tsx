@@ -36,7 +36,6 @@ export default function QuestRoomPage() {
   }, [])
 
   async function loadRoom(pid: string) {
-    // setLoading только при первой загрузке
     if (!room) setLoading(true)
     const res = await fetch(`/api/quest/room?player_id=${pid}`)
     const data = await res.json()
@@ -47,11 +46,21 @@ export default function QuestRoomPage() {
       return
     }
 
-    setRoom(data.room)
-    setProgress(data.progress || [])
-    setKeyPieces(data.pieces_collected)
-    setTotalPieces(data.total_pieces)
-    setWaitingFor(data.waiting_for || [])
+    // Обновляем только если данные изменились
+    setRoom(prev => {
+      if (JSON.stringify(prev) === JSON.stringify(data.room)) return prev
+      return data.room
+    })
+    setProgress(prev => {
+      if (JSON.stringify(prev) === JSON.stringify(data.progress || [])) return prev
+      return data.progress || []
+    })
+    setKeyPieces(prev => prev === data.pieces_collected ? prev : data.pieces_collected)
+    setTotalPieces(prev => prev === data.total_pieces ? prev : data.total_pieces)
+    setWaitingFor(prev => {
+      if (JSON.stringify(prev) === JSON.stringify(data.waiting_for || [])) return prev
+      return data.waiting_for || []
+    })
     setLoading(false)
   }
 
