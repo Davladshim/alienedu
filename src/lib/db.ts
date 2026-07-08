@@ -4,9 +4,16 @@ import { Pool } from 'pg'
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-  connectionTimeoutMillis: 30000,
-  idleTimeoutMillis: 60000,
-  max: 1 // только одно соединение — лимит Supabase Session pooler
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 600000,
+  max: 3,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+})
+
+// Поддерживаем соединение живым
+pool.on('error', (err) => {
+  console.error('Pool error:', err.message)
 })
 
 export async function query(text: string, params?: any[]) {
@@ -21,7 +28,7 @@ export async function query(text: string, params?: any[]) {
       retries--
       if (retries === 0) throw error
       console.log(`Переподключение... попыток осталось: ${retries}`)
-      await new Promise(r => setTimeout(r, 2000))
+      await new Promise(r => setTimeout(r, 1000))
     } finally {
       if (client) client.release()
     }

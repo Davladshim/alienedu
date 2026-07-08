@@ -19,10 +19,12 @@
 -- Магазин может ссылаться на эту таблицу, если покупатель залогинен на платформе
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(255),
-    role VARCHAR(50) NOT NULL DEFAULT 'student', -- 'student', 'teacher', 'admin'
+    login VARCHAR(255) UNIQUE NOT NULL,
+    code_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'student',
+    secret_question VARCHAR(255),
+    secret_answer_hash VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
