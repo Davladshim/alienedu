@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+
 
 export default function QuestRoomPage() {
   const router = useRouter()
@@ -54,23 +54,14 @@ export default function QuestRoomPage() {
     setLoading(false)
   }
 
-  // Подписка на обновления в реальном времени
+  // Polling вместо realtime подписки
   useEffect(() => {
-    if (!sessionId || !playerId) return
-
-    const channel = supabase
-      .channel(`quest_${sessionId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'quest_progress',
-      }, () => {
-        loadRoom(playerId!)
-      })
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
-  }, [sessionId, playerId])
+    if (!playerId) return
+    const interval = setInterval(() => {
+      loadRoom(playerId)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [playerId])
 
   async function handleAnswer(e: React.FormEvent) {
     e.preventDefault()
