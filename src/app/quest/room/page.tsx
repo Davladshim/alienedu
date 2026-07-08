@@ -36,7 +36,8 @@ export default function QuestRoomPage() {
   }, [])
 
   async function loadRoom(pid: string) {
-    setLoading(true)
+    // setLoading только при первой загрузке
+    if (!room) setLoading(true)
     const res = await fetch(`/api/quest/room?player_id=${pid}`)
     const data = await res.json()
 
