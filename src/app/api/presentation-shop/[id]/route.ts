@@ -205,7 +205,22 @@ function injectPaywall(html: string, presentationId: string): string {
 `;
 
   // Вставляем скрипт перед закрывающим </body>
-  return html.replace('</body>', paywallScript + '</body>');
+  const watermark = `
+  <div style="
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 99998;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.05em;
+    pointer-events: none;
+    user-select: none;
+  ">AlienEdu · AlienTutor</div>
+  `;
+  return html.replace('</body>', watermark + paywallScript + '</body>');
 }
 
 export async function GET(
