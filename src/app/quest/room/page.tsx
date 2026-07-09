@@ -226,25 +226,22 @@ export default function QuestRoomPage() {
 
         {/* Название комнаты */}
         <div style={{ textAlign: 'center', marginTop: '12px', color: '#6b7280', fontSize: '13px' }}>
-          {room.title} · {room.room_type === 'shared' ? '👥 Общая' : '👤 Одиночная'}
+          {room.room_type === 'solo' && (
+            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '8px auto 0', textAlign: 'center', maxWidth: '500px' }}>
+              👤 Ты в комнате один! Реши все задания, найди все кусочки ключа и открывай дверь!
+            </p>
+          )}
+          {room.room_type === 'shared' && (
+            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '8px auto 0', textAlign: 'center', maxWidth: '500px' }}>
+              👥 Ты в этой комнате с {waitingFor.length > 0 ? waitingFor.join(' и ') : 'другими учениками'}. Найди все свои кусочки ключа и дождись остальных — вместе вы сможете открыть дверь!
+            </p>
+          )}
+          {room.room_type === 'final' && (
+            <p style={{ color: '#f59e0b', fontSize: '13px', margin: '8px auto 0', textAlign: 'center', maxWidth: '500px' }}>
+              ⚡️ Это босс-комната! Только совместными усилиями из неё можно выйти. Собери свои кусочки ключа, дождись всех остальных и победи босса!
+            </p>
+          )}
         </div>
-
-        {/* Кнопка открыть дверь */}
-        {canOpenDoor && (
-          <div style={{ textAlign: 'center', marginTop: '12px' }}>
-            <button
-              onClick={handleOpenDoor}
-              style={{
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                color: '#fff', border: 'none', borderRadius: '10px',
-                padding: '12px 32px', fontSize: '15px', fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              🚪 Открыть дверь!
-            </button>
-          </div>
-        )}
 
         {/* Ждём других */}
         {waitingFor.length > 0 && (
@@ -291,14 +288,18 @@ export default function QuestRoomPage() {
           ))}
         </div>
         <div style={{ color: '#6b7280', fontSize: '11px' }}>{keyPieces}/{totalPieces}</div>
-        <button
-          onClick={() => setShowTask(true)}
-          style={{
-            width: '100%', background: '#4f8ef7', color: '#fff',
-            border: 'none', borderRadius: '8px', padding: '8px',
-            fontSize: '12px', cursor: 'pointer', marginTop: '4px'
-          }}
-        >📋 Задание</button>
+        {canOpenDoor && (
+          <button
+            onClick={handleOpenDoor}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: '#fff', border: 'none', borderRadius: '8px',
+              padding: '8px', fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', marginTop: '4px'
+            }}
+          >🚪 Открыть!</button>
+        )}
       </div>
 
       {/* Всплывающее окно задания */}
