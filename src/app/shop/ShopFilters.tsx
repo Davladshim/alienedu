@@ -11,6 +11,7 @@ type Presentation = {
   preview_image: string | null;
   subject: string;
   grade: number;
+  content_description: string | null;
 };
 
 const GRADES = [5, 6, 7, 8, 9, 10, 11];
@@ -19,6 +20,7 @@ const SUBJECTS = ["Математика", "Физика", "Химия", "Инф�
 export default function ShopFilters({ presentations }: { presentations: Presentation[] }) {
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [popupPresentation, setPopupPresentation] = useState<Presentation | null>(null);
 
   const filtered = presentations.filter((p) => {
     if (selectedGrade && p.grade !== selectedGrade) return false;
@@ -71,8 +73,28 @@ export default function ShopFilters({ presentations }: { presentations: Presenta
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
           {filtered.map((p) => (
-            <PresentationCard key={p.id} presentation={p} />
+            <PresentationCard key={p.id} presentation={p} onShowContent={setPopupPresentation} />
           ))}
+        </div>
+      )}
+      {popupPresentation && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+          onClick={() => setPopupPresentation(null)}
+        >
+          <div
+            style={{ background: "#1e2029", border: "1px solid #2a2d3a", borderRadius: 16, padding: 32, maxWidth: 480, width: "90%", maxHeight: "80vh", overflowY: "auto" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#fff" }}>{popupPresentation.title}</h2>
+              <button onClick={() => setPopupPresentation(null)} style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 20 }}>✕</button>
+            </div>
+            <p style={{ color: "#6b7280", fontSize: "0.85rem", marginBottom: 16 }}>📋 Содержание презентации:</p>
+            <div style={{ color: "#e5e7eb", fontSize: "0.9rem", lineHeight: 1.8, whiteSpace: "pre-line" }}>
+              {popupPresentation.content_description}
+            </div>
+          </div>
         </div>
       )}
     </>
@@ -99,7 +121,7 @@ function FilterButton({ label, active, onClick }: { label: string; active: boole
   );
 }
 
-function PresentationCard({ presentation }: { presentation: Presentation }) {
+function PresentationCard({ presentation, onShowContent }: { presentation: Presentation; onShowContent: (p: Presentation) => void }) {
   const { id, title, description, price, preview_image, subject, grade } = presentation;
 
   return (
@@ -173,9 +195,21 @@ function PresentationCard({ presentation }: { presentation: Presentation }) {
             <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>
               {price} ₽
             </span>
-            <span style={{ fontSize: "0.72rem", color: "#4b5563", background: "#12131a", padding: "3px 8px", borderRadius: 6 }}>
-              10 дней доступа
-            </span>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              {presentation.content_description && (
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onShowContent(presentation); }}
+                  style={{
+                    background: "rgba(59,130,246,0.15)", border: "1px solid #3b82f6",
+                    color: "#60a5fa", borderRadius: 6, padding: "3px 8px",
+                    fontSize: "0.72rem", cursor: "pointer"
+                  }}
+                >📋 Содержание</button>
+              )}
+              <span style={{ fontSize: "0.72rem", color: "#4b5563", background: "#12131a", padding: "3px 8px", borderRadius: 6 }}>
+                10 дней доступа
+              </span>
+            </div>
           </div>
         </div>
       </div>
