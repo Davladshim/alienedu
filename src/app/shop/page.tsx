@@ -11,6 +11,7 @@ type Presentation = {
   preview_image: string | null;
   subject: string;
   grade: number;
+  content_description: string | null;
 };
 
 async function getPresentations(): Promise<Presentation[]> {
