@@ -203,7 +203,7 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
               Нет кода?{" "}
               <a href="https://t.me/darya_shim" target="_blank" rel="noopener noreferrer" style={{ color: "#6b7280", textDecoration: "underline" }}>Telegram</a>
               {" · "}
-              <a href="https://vk.com/darya_shim" target="_blank" rel="noopener noreferrer" style={{ color: "#6b7280", textDecoration: "underline" }}>ВКонтакте</a>
+              <a href="https://vk.com/alientutor_for_tutors" target="_blank" rel="noopener noreferrer" style={{ color: "#6b7280", textDecoration: "underline" }}>ВКонтакте</a>
             </div>
           </div>
         </div>
