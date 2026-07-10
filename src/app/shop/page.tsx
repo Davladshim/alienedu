@@ -16,7 +16,7 @@ type Presentation = {
 
 async function getPresentations(): Promise<Presentation[]> {
   const result = await query(
-    `SELECT id, title, description, price, preview_image, subject, grade
+    `SELECT id, title, description, price, preview_image, subject, grade, content_description
      FROM presentations
      WHERE is_active = true
      ORDER BY created_at DESC`
