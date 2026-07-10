@@ -13,6 +13,7 @@ type Presentation = {
   preview_image: string | null;
   is_active: boolean;
   created_at: string;
+  content_description: string | null;
 };
 
 type Code = {
@@ -396,6 +397,7 @@ function EditPresentation({ presentation, onSave, onCancel, s }: {
     price: String(presentation.price),
     is_active: presentation.is_active,
     preview_image: presentation.preview_image ?? "",
+    content_description: presentation.content_description ?? "",
   });
 
   return (
@@ -409,6 +411,15 @@ function EditPresentation({ presentation, onSave, onCancel, s }: {
         <div>
           <label style={s.label}>Описание</label>
           <input style={s.input} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        </div>
+        <div>
+          <label style={s.label}>Содержание (каждый пункт с новой строки)</label>
+          <textarea
+            style={{ ...s.input, height: 120, fontFamily: 'system-ui', fontSize: '0.85rem', resize: 'vertical' } as React.CSSProperties}
+            value={form.content_description ?? ""}
+            onChange={(e) => setForm({ ...form, content_description: e.target.value })}
+            placeholder={"1. Понятие дроби\n2. Основное свойство дроби\n3. Сокращение дробей"}
+          />
         </div>
         <div>
           <label style={s.label}>Имя файла превью (например: preview-1.jpg)</label>

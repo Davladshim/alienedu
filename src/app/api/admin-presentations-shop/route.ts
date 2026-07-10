@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await query(
-      `SELECT id, title, description, subject, grade, price, content_path, preview_image, is_active, created_at
+      `SELECT id, title, description, subject, grade, price, content_path, preview_image, is_active, created_at, content_description
       FROM presentations
       ORDER BY created_at DESC`
     );
@@ -75,7 +75,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const { id, title, description, subject, grade, price, is_active, preview_image } = await req.json();
+    const { id, title, description, subject, grade, price, is_active, preview_image, content_description } = await req.json();
 
     if (!id) {
       return NextResponse.json({ error: "Укажи id презентации" }, { status: 400 });
@@ -83,9 +83,9 @@ export async function PATCH(req: NextRequest) {
 
     await query(
       `UPDATE presentations 
-      SET title = $1, description = $2, subject = $3, grade = $4, price = $5, is_active = $6, preview_image = $7, updated_at = NOW()
-      WHERE id = $8`,
-      [title, description, subject, grade, price, is_active, preview_image || null, id]
+      SET title = $1, description = $2, subject = $3, grade = $4, price = $5, is_active = $6, preview_image = $7, content_description = $8, updated_at = NOW()
+      WHERE id = $9`,
+      [title, description, subject, grade, price, is_active, preview_image || null, content_description || null, id]
     );
 
     return NextResponse.json({ ok: true });

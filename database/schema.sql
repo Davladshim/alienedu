@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS presentations (
     grade INTEGER,                      -- класс (5-11)
     topic VARCHAR(255),                 -- тема презентации
     slides_data JSONB,                  -- данные слайдов для превью (опционально)
+    content_description TEXT,           -- содержание презентации для карточки в магазине
     is_active BOOLEAN DEFAULT true,     -- показывать в магазине
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
