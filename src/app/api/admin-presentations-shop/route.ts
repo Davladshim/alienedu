@@ -14,9 +14,9 @@ export async function GET(req: NextRequest) {
 
   try {
     const result = await query(
-      `SELECT id, title, subject, grade, price, content_path, is_active, created_at
-       FROM presentations
-       ORDER BY created_at DESC`
+      `SELECT id, title, description, subject, grade, price, content_path, preview_image, is_active, created_at, content_description
+      FROM presentations
+      ORDER BY created_at DESC`
     );
     return NextResponse.json(result.rows);
   } catch (error) {
