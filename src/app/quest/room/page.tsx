@@ -130,17 +130,17 @@ export default function QuestRoomPage() {
   const imgSrc = `/rooms/room-${roomNumber}/${view}.jpg`
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#0a0a0f',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'system-ui, sans-serif',
-      padding: '20px',
-      gap: '20px'
-    }}>
-
+      <div style={{
+        minHeight: '100vh',
+        background: '#0a0a0f',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'system-ui, sans-serif',
+        padding: '20px',
+        gap: '20px'
+      }}>
+        
       {/* Основная картинка комнаты */}
       <div style={{ flex: 1, maxWidth: '900px', position: 'relative' }}>
 
@@ -158,7 +158,7 @@ export default function QuestRoomPage() {
             src={imgSrc}
             alt="комната"
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            
           />
 
           {/* Кнопка задания поверх картинки */}
@@ -173,28 +173,26 @@ export default function QuestRoomPage() {
           >📋 Открыть задание</button>
 
           {/* Кнопки поворота */}
-          <button onClick={() => setView('left')} style={{
+          <button onClick={() => {
+            if (view === 'right') setView('center')
+            else if (view === 'center') setView('left')
+          }} style={{
             position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
             background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
             borderRadius: '50%', width: '44px', height: '44px',
             color: '#fff', fontSize: '18px', cursor: 'pointer',
-            opacity: view === 'left' ? 0.4 : 1
+            opacity: view === 'left' ? 0.3 : 1
           }}>◀</button>
 
-          <button onClick={() => setView('center')} style={{
-            position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: '8px', padding: '6px 14px',
-            color: '#fff', fontSize: '12px', cursor: 'pointer',
-            opacity: view === 'center' ? 0.4 : 1
-          }}>🚪 К двери</button>
-
-          <button onClick={() => setView('right')} style={{
+          <button onClick={() => {
+            if (view === 'left') setView('center')
+            else if (view === 'center') setView('right')
+          }} style={{
             position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
             background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
             borderRadius: '50%', width: '44px', height: '44px',
             color: '#fff', fontSize: '18px', cursor: 'pointer',
-            opacity: view === 'right' ? 0.4 : 1
+            opacity: view === 'right' ? 0.3 : 1
           }}>▶</button>
         </div>
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 
 // Страницы доступные без авторизации
-const publicPaths = ['/login', '/register', '/recover', '/shop', '/_next', '/previews', '/quest/join', '/quest/room']
+const publicPaths = ['/login', '/register', '/recover', '/shop', '/_next', '/previews', '/quest/join', '/quest/room', '/rooms']
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
