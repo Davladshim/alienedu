@@ -53,8 +53,6 @@ export default function QuestRoomPage() {
       setLoading(false)
       return
     }
-
-    // Обновляем только если изменилось
     if (JSON.stringify(roomRef.current) !== JSON.stringify(data.room)) {
       roomRef.current = data.room
       setRoom(data.room)
@@ -128,13 +126,8 @@ export default function QuestRoomPage() {
 
   const isCompleted = progress.some(p => p.is_correct)
   const canOpenDoor = keyPieces >= totalPieces && totalPieces > 0
-
-  // Картинки комнаты — потом заменишь на реальные
-  const roomImages: Record<string, string> = {
-    center: room.image_center || '',
-    left: room.image_left || '',
-    right: room.image_right || '',
-  }
+  const roomNumber = room.room_number || 1
+  const imgSrc = `/rooms/room-${roomNumber}/${view}.jpg`
 
   return (
     <div style={{
@@ -161,83 +154,64 @@ export default function QuestRoomPage() {
           position: 'relative',
           border: '1px solid #2a2d3d'
         }}>
-          {roomImages[view] ? (
-            <img src={roomImages[view]} alt="комната" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <div style={{
-              width: '100%', height: '100%',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              gap: '12px'
-            }}>
-              <div style={{ fontSize: '48px' }}>🚪</div>
-              <div style={{ color: '#6b7280', fontSize: '14px' }}>{room.title || 'Комната'}</div>
-              {/* Кнопка задания — временно пока нет картинок */}
-              <button
-                onClick={() => setShowTask(true)}
-                style={{
-                  marginTop: '8px',
-                  background: '#4f8ef7',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '10px 20px',
-                  fontSize: '14px',
-                  cursor: 'pointer'
-                }}
-              >
-                📋 Открыть задание
-              </button>
-            </div>
-          )}
+          <img
+            src={imgSrc}
+            alt="комната"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+
+          {/* Кнопка задания поверх картинки */}
+          <button
+            onClick={() => setShowTask(true)}
+            style={{
+              position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)',
+              background: 'rgba(79,142,247,0.9)', color: '#fff',
+              border: 'none', borderRadius: '8px', padding: '10px 20px',
+              fontSize: '14px', cursor: 'pointer', fontWeight: 600
+            }}
+          >📋 Открыть задание</button>
 
           {/* Кнопки поворота */}
-          <button
-            onClick={() => setView('left')}
-            style={{
-              position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
-              background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '50%', width: '44px', height: '44px',
-              color: '#fff', fontSize: '18px', cursor: 'pointer',
-              opacity: view === 'left' ? 0.4 : 1
-            }}
-          >◀</button>
-          <button
-            onClick={() => setView('center')}
-            style={{
-              position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)',
-              background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '8px', padding: '6px 14px',
-              color: '#fff', fontSize: '12px', cursor: 'pointer',
-              opacity: view === 'center' ? 0.4 : 1
-            }}
-          >🚪 К двери</button>
-          <button
-            onClick={() => setView('right')}
-            style={{
-              position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-              background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '50%', width: '44px', height: '44px',
-              color: '#fff', fontSize: '18px', cursor: 'pointer',
-              opacity: view === 'right' ? 0.4 : 1
-            }}
-          >▶</button>
+          <button onClick={() => setView('left')} style={{
+            position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: '50%', width: '44px', height: '44px',
+            color: '#fff', fontSize: '18px', cursor: 'pointer',
+            opacity: view === 'left' ? 0.4 : 1
+          }}>◀</button>
+
+          <button onClick={() => setView('center')} style={{
+            position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: '8px', padding: '6px 14px',
+            color: '#fff', fontSize: '12px', cursor: 'pointer',
+            opacity: view === 'center' ? 0.4 : 1
+          }}>🚪 К двери</button>
+
+          <button onClick={() => setView('right')} style={{
+            position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: '50%', width: '44px', height: '44px',
+            color: '#fff', fontSize: '18px', cursor: 'pointer',
+            opacity: view === 'right' ? 0.4 : 1
+          }}>▶</button>
         </div>
 
-        {/* Название комнаты */}
-        <div style={{ textAlign: 'center', marginTop: '12px', color: '#6b7280', fontSize: '13px' }}>
+        {/* Пояснение */}
+        <div style={{ textAlign: 'center', marginTop: '12px' }}>
           {room.room_type === 'solo' && (
-            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '8px auto 0', textAlign: 'center', maxWidth: '500px' }}>
+            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
               👤 Ты в комнате один! Реши все задания, найди все кусочки ключа и открывай дверь!
             </p>
           )}
           {room.room_type === 'shared' && (
-            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '8px auto 0', textAlign: 'center', maxWidth: '500px' }}>
+            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
               👥 Ты в этой комнате с {waitingFor.length > 0 ? waitingFor.join(' и ') : 'другими учениками'}. Найди все свои кусочки ключа и дождись остальных — вместе вы сможете открыть дверь!
             </p>
           )}
           {room.room_type === 'final' && (
-            <p style={{ color: '#f59e0b', fontSize: '13px', margin: '8px auto 0', textAlign: 'center', maxWidth: '500px' }}>
+            <p style={{ color: '#f59e0b', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
               ⚡️ Это босс-комната! Только совместными усилиями из неё можно выйти. Собери свои кусочки ключа, дождись всех остальных и победи босса!
             </p>
           )}
@@ -254,14 +228,11 @@ export default function QuestRoomPage() {
               ⏳ Ждём: {waitingFor.join(', ')}
             </p>
             {room.bonus_tasks && room.bonus_tasks.length > 0 && (
-              <button
-                onClick={() => setBonusVisible(true)}
-                style={{
-                  marginTop: '8px', background: 'transparent',
-                  border: '0.5px solid #f59e0b', borderRadius: '8px',
-                  padding: '6px 14px', color: '#f59e0b', fontSize: '13px', cursor: 'pointer'
-                }}
-              >✨ Украсить ключ</button>
+              <button onClick={() => setBonusVisible(true)} style={{
+                marginTop: '8px', background: 'transparent',
+                border: '0.5px solid #f59e0b', borderRadius: '8px',
+                padding: '6px 14px', color: '#f59e0b', fontSize: '13px', cursor: 'pointer'
+              }}>✨ Украсить ключ</button>
             )}
           </div>
         )}
@@ -289,16 +260,13 @@ export default function QuestRoomPage() {
         </div>
         <div style={{ color: '#6b7280', fontSize: '11px' }}>{keyPieces}/{totalPieces}</div>
         {canOpenDoor && (
-          <button
-            onClick={handleOpenDoor}
-            style={{
-              width: '100%',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              color: '#fff', border: 'none', borderRadius: '8px',
-              padding: '8px', fontSize: '12px', fontWeight: 600,
-              cursor: 'pointer', marginTop: '4px'
-            }}
-          >🚪 Открыть!</button>
+          <button onClick={handleOpenDoor} style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: '#fff', border: 'none', borderRadius: '8px',
+            padding: '8px', fontSize: '12px', fontWeight: 600,
+            cursor: 'pointer', marginTop: '4px'
+          }}>🚪 Открыть!</button>
         )}
       </div>
 
