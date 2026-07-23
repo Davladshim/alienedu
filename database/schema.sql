@@ -132,7 +132,57 @@ CREATE TABLE IF NOT EXISTS access_codes (
 -- Индекс для быстрого поиска кода при проверке доступа
 CREATE INDEX IF NOT EXISTS idx_access_codes_code ON access_codes(code);
 
+-- Зоны взаимодействия в комнатах квеста
+CREATE TABLE IF NOT EXISTS quest_room_zones (
+    id SERIAL PRIMARY KEY,
+    room_id INTEGER NOT NULL REFERENCES quest_rooms(id) ON DELETE CASCADE,
+    view VARCHAR(10) NOT NULL DEFAULT 'center',
+    x DECIMAL NOT NULL,
+    y DECIMAL NOT NULL,
+    width DECIMAL NOT NULL DEFAULT 8,
+    height DECIMAL NOT NULL DEFAULT 12,
+    item_image VARCHAR(100) NOT NULL DEFAULT 'envelope.png',
+    zone_type VARCHAR(20) NOT NULL DEFAULT 'task',
+    created_at TIMESTAMP DEFAULT NOW()
+);
 
+-- ============================================================================
+-- МОДУЛЬ: STEREO (StereoSpace — банк задач по стереометрии)
+-- ============================================================================
+-- Обновлено модулем: stereo (20.07.2026)
+
+-- Задачи по стереометрии
+CREATE TABLE IF NOT EXISTS stereo_tasks (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    condition TEXT NOT NULL,              -- условие задачи
+    solution TEXT NOT NULL,               -- решение (скрыто до нажатия)
+    answer VARCHAR(255),                  -- краткий ответ
+    model_url VARCHAR(500) NOT NULL,      -- путь к .glb файлу в Supabase Storage
+    topic VARCHAR(255),                   -- тема (призма, пирамида, сечения и т.д.)
+    grade INTEGER,
+    difficulty INTEGER DEFAULT 1,
+    is_free BOOLEAN DEFAULT false,        -- бесплатная задача, доступна без кода
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Коды доступа к StereoSpace — один код открывает весь банк задач (подписка)
+CREATE TABLE IF NOT EXISTS stereo_access_codes (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(64) UNIQUE NOT NULL,
+    user_id INTEGER REFERENCES users(id),
+
+    first_used_at TIMESTAMP,
+    valid_days INTEGER NOT NULL DEFAULT 30,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_stereo_access_codes_code ON stereo_access_codes(code);
+CREATE INDEX IF NOT EXISTS idx_stereo_tasks_topic ON stereo_tasks(topic);
 -- ============================================================================
 -- ЗАМЕТКИ НА БУДУЩЕЕ (не таблицы, просто план)
 -- ============================================================================
