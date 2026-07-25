@@ -11,7 +11,21 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const result = await query(
-      `SELECT l.id, l.title, l.subject, l.grade, u.full_name as teacher_name, la.assigned_at
+      `SELECT
+         l.id, l.title, l.subject, l.grade, u.full_name as teacher_name, la.assigned_at,
+         (SELECT COUNT(*) FROM lesson_blocks lb WHERE lb.lesson_id = l.id) AS total_blocks,
+         (SELECT COUNT(DISTINCT block_id) FROM lesson_attempts att
+           WHERE att.lesson_id = l.id AND att.student_id = $1) AS answered_blocks,
+         (SELECT COUNT(*) FILTER (WHERE t.is_correct = true) FROM (
+            SELECT DISTINCT ON (block_id) block_id, is_correct FROM lesson_attempts att2
+            WHERE att2.lesson_id = l.id AND att2.student_id = $1
+            ORDER BY block_id, completed_at DESC
+          ) t) AS correct_count,
+         (SELECT COUNT(*) FILTER (WHERE t.is_correct IS NOT NULL) FROM (
+            SELECT DISTINCT ON (block_id) block_id, is_correct FROM lesson_attempts att3
+            WHERE att3.lesson_id = l.id AND att3.student_id = $1
+            ORDER BY block_id, completed_at DESC
+          ) t) AS gradable_count
        FROM lesson_assignments la
        JOIN lessons l ON l.id = la.lesson_id
        JOIN users u ON u.id = l.teacher_id

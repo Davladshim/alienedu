@@ -1,12 +1,12 @@
 import type { ComponentType } from 'react'
 import { TheoryEditor, TheoryPlayer, theoryDefault } from './TheoryBlock'
-import { SingleChoiceEditor, SingleChoicePlayer, singleChoiceDefault, checkSingleChoice } from './SingleChoiceBlock'
-import { MultiChoiceEditor, MultiChoicePlayer, multiChoiceDefault, checkMultiChoice } from './MultiChoiceBlock'
-import { ShortTextEditor, ShortTextPlayer, shortTextDefault, checkShortText } from './ShortTextBlock'
-import { NumericEditor, NumericPlayer, numericDefault, checkNumeric } from './NumericBlock'
-import { MatchingEditor, MatchingPlayer, matchingDefault, checkMatching } from './MatchingBlock'
-import { OrderingEditor, OrderingPlayer, orderingDefault, checkOrdering } from './OrderingBlock'
-import { FillBlankEditor, FillBlankPlayer, fillBlankDefault, checkFillBlank } from './FillBlankBlock'
+import { SingleChoiceEditor, SingleChoicePlayer, singleChoiceDefault, checkSingleChoice, describeSingleChoiceAnswer } from './SingleChoiceBlock'
+import { MultiChoiceEditor, MultiChoicePlayer, multiChoiceDefault, checkMultiChoice, describeMultiChoiceAnswer } from './MultiChoiceBlock'
+import { ShortTextEditor, ShortTextPlayer, shortTextDefault, checkShortText, describeShortTextAnswer } from './ShortTextBlock'
+import { NumericEditor, NumericPlayer, numericDefault, checkNumeric, describeNumericAnswer } from './NumericBlock'
+import { MatchingEditor, MatchingPlayer, matchingDefault, checkMatching, describeMatchingAnswer } from './MatchingBlock'
+import { OrderingEditor, OrderingPlayer, orderingDefault, checkOrdering, describeOrderingAnswer } from './OrderingBlock'
+import { FillBlankEditor, FillBlankPlayer, fillBlankDefault, checkFillBlank, describeFillBlankAnswer } from './FillBlankBlock'
 
 export type BlockType =
   | 'theory' | 'single-choice' | 'multi-choice' | 'short-text' | 'numeric'
@@ -27,6 +27,8 @@ export interface BlockDefinition {
   Player: ComponentType<any>
   // null — блок без автопроверки (теория), проходится по кнопке "Далее"
   checkAnswer: ((content: any, answer: any) => boolean) | null
+  // человекочитаемое описание правильного ответа — для экрана разбора ответов
+  describeAnswer?: (content: any) => string
 }
 
 export const blockRegistry: Record<BlockType, BlockDefinition> = {
@@ -38,37 +40,37 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
   'single-choice': {
     type: 'single-choice', label: 'Один правильный ответ', icon: '☑️',
     defaultContent: singleChoiceDefault, Editor: SingleChoiceEditor, Player: SingleChoicePlayer,
-    checkAnswer: checkSingleChoice,
+    checkAnswer: checkSingleChoice, describeAnswer: describeSingleChoiceAnswer,
   },
   'multi-choice': {
     type: 'multi-choice', label: 'Несколько правильных ответов', icon: '✅',
     defaultContent: multiChoiceDefault, Editor: MultiChoiceEditor, Player: MultiChoicePlayer,
-    checkAnswer: checkMultiChoice,
+    checkAnswer: checkMultiChoice, describeAnswer: describeMultiChoiceAnswer,
   },
   'short-text': {
     type: 'short-text', label: 'Короткий текстовый ответ', icon: '✏️',
     defaultContent: shortTextDefault, Editor: ShortTextEditor, Player: ShortTextPlayer,
-    checkAnswer: checkShortText,
+    checkAnswer: checkShortText, describeAnswer: describeShortTextAnswer,
   },
   numeric: {
     type: 'numeric', label: 'Числовой ответ (формулы через $...$)', icon: '🔢',
     defaultContent: numericDefault, Editor: NumericEditor, Player: NumericPlayer,
-    checkAnswer: checkNumeric,
+    checkAnswer: checkNumeric, describeAnswer: describeNumericAnswer,
   },
   matching: {
     type: 'matching', label: 'Сопоставление пар', icon: '🔗',
     defaultContent: matchingDefault, Editor: MatchingEditor, Player: MatchingPlayer,
-    checkAnswer: checkMatching,
+    checkAnswer: checkMatching, describeAnswer: describeMatchingAnswer,
   },
   ordering: {
     type: 'ordering', label: 'Порядок шагов', icon: '🔀',
     defaultContent: orderingDefault, Editor: OrderingEditor, Player: OrderingPlayer,
-    checkAnswer: checkOrdering,
+    checkAnswer: checkOrdering, describeAnswer: describeOrderingAnswer,
   },
   'fill-blank': {
     type: 'fill-blank', label: 'Заполнение пропусков', icon: '📝',
     defaultContent: fillBlankDefault, Editor: FillBlankEditor, Player: FillBlankPlayer,
-    checkAnswer: checkFillBlank,
+    checkAnswer: checkFillBlank, describeAnswer: describeFillBlankAnswer,
   },
 }
 

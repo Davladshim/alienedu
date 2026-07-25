@@ -19,6 +19,10 @@ export function checkMultiChoice(content: MultiChoiceContent, answer: number[]):
   return correct.length === given.length && correct.every((v, i) => v === given[i])
 }
 
+export function describeMultiChoiceAnswer(content: MultiChoiceContent): string {
+  return content.correctIndexes.map(i => content.options[i]).filter(Boolean).join(', ')
+}
+
 export function MultiChoiceEditor({ content, onChange }: {
   content: MultiChoiceContent
   onChange: (content: MultiChoiceContent) => void

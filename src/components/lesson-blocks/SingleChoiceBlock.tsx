@@ -17,6 +17,10 @@ export function checkSingleChoice(content: SingleChoiceContent, answer: number):
   return answer === content.correctIndex
 }
 
+export function describeSingleChoiceAnswer(content: SingleChoiceContent): string {
+  return content.options[content.correctIndex] ?? ''
+}
+
 export function SingleChoiceEditor({ content, onChange }: {
   content: SingleChoiceContent
   onChange: (content: SingleChoiceContent) => void

@@ -18,6 +18,10 @@ export function checkOrdering(content: OrderingContent, answer: number[]): boole
   return answer.every((originalIndex, position) => originalIndex === position)
 }
 
+export function describeOrderingAnswer(content: OrderingContent): string {
+  return content.steps.map((s, i) => `${i + 1}. ${s}`).join('  ')
+}
+
 export function OrderingEditor({ content, onChange }: {
   content: OrderingContent
   onChange: (content: OrderingContent) => void

@@ -17,6 +17,12 @@ export function checkNumeric(content: NumericContent, answer: number): boolean {
   return Math.abs(answer - content.correctValue) <= content.tolerance
 }
 
+export function describeNumericAnswer(content: NumericContent): string {
+  const tolerance = content.tolerance ? ` ± ${content.tolerance}` : ''
+  const unit = content.unit ? ` ${content.unit}` : ''
+  return `${content.correctValue}${tolerance}${unit}`
+}
+
 export function NumericEditor({ content, onChange }: {
   content: NumericContent
   onChange: (content: NumericContent) => void
