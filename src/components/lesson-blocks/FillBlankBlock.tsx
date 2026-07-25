@@ -23,6 +23,10 @@ export function checkFillBlank(content: FillBlankContent, answer: string[]): boo
   return content.blanks.every((correct, i) => normalize(correct) === normalize(answer[i] || ''))
 }
 
+export function describeFillBlankAnswer(content: FillBlankContent): string {
+  return content.blanks.filter(Boolean).join(', ')
+}
+
 export function FillBlankEditor({ content, onChange }: {
   content: FillBlankContent
   onChange: (content: FillBlankContent) => void

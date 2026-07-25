@@ -22,6 +22,10 @@ export function checkMatching(content: MatchingContent, answer: number[]): boole
   return answer.every((defIndex, i) => defIndex === i)
 }
 
+export function describeMatchingAnswer(content: MatchingContent): string {
+  return content.pairs.map(p => `${p.term} — ${p.definition}`).join('; ')
+}
+
 export function MatchingEditor({ content, onChange }: {
   content: MatchingContent
   onChange: (content: MatchingContent) => void

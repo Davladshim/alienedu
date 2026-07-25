@@ -19,6 +19,10 @@ export function checkShortText(content: ShortTextContent, answer: string): boole
   return content.correctAnswers.some(a => normalize(a) === given)
 }
 
+export function describeShortTextAnswer(content: ShortTextContent): string {
+  return content.correctAnswers.filter(Boolean).join(' / ')
+}
+
 export function ShortTextEditor({ content, onChange }: {
   content: ShortTextContent
   onChange: (content: ShortTextContent) => void
