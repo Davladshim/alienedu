@@ -18,6 +18,7 @@ export default function StereoSpacePage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [codeLoading, setCodeLoading] = useState(false);
@@ -33,10 +34,15 @@ export default function StereoSpacePage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    fetch("/api/stereo-admin-check")
+      .then((res) => res.json())
+      .then((data) => setIsAdmin(!!data.isAdmin))
+      .catch(() => setIsAdmin(false));
   }, []);
 
   function handleTaskClick(task: Task) {
-    if (task.is_free) {
+    if (task.is_free || isAdmin) {
       window.location.href = `/stereo/${task.id}`;
       return;
     }
@@ -70,6 +76,7 @@ export default function StereoSpacePage() {
 
       localStorage.setItem("stereo_token", data.token);
       localStorage.setItem("stereo_unlocked", "true");
+      localStorage.setItem("stereo_code", code.trim().toUpperCase());
       setModalOpen(false);
       setCodeLoading(false);
     } catch {
@@ -79,8 +86,9 @@ export default function StereoSpacePage() {
   }
 
   return (
-    <div style={{ maxWidth: 1300, margin: "0 auto", padding: "48px 24px" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
+    <div style={{ minHeight: "100vh", background: "#0f1117" }}>
+      <div style={{ maxWidth: 1300, margin: "0 auto", padding: "48px 24px" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: "#f1f5f9"  }}>
         💎 StereoSpace
       </h1>
       <p style={{ color: "#9ca3af", marginBottom: 32 }}>
@@ -106,7 +114,7 @@ export default function StereoSpacePage() {
               background: "#1e293b",
               border: "1px solid #334155",
               cursor: "pointer",
-              opacity: task.is_free ? 1 : 0.5,
+              opacity: task.is_free || isAdmin ? 1 : 0.5,
               position: "relative",
               overflow: "hidden",
               height: 120,
@@ -127,7 +135,7 @@ export default function StereoSpacePage() {
               📐
             </div>
 
-            {!task.is_free && (
+            {!task.is_free && !isAdmin && (
               <div style={{ position: "absolute", top: 10, right: 10, fontSize: 18 }}>
                 🔒
               </div>
@@ -199,7 +207,7 @@ export default function StereoSpacePage() {
               width: "90%",
             }}
           >
-            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#f1f5f9"  }}>
               🔒 Задача заблокирована
             </h2>
             <p style={{ color: "#9ca3af", marginBottom: 20, fontSize: 14 }}>
@@ -311,6 +319,7 @@ export default function StereoSpacePage() {
           gap: 20px;
         }
       `}</style>
+      </div>
     </div>
   );
 }

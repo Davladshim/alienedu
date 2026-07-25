@@ -17,6 +17,7 @@ export default function StereoAdminPage() {
   const [solution, setSolution] = useState("");
   const [answer, setAnswer] = useState("");
   const [modelId, setModelId] = useState("");
+  const [modelSearch, setModelSearch] = useState("");
   const [topic, setTopic] = useState("");
   const [grade, setGrade] = useState("");
   const [difficulty, setDifficulty] = useState("1");
@@ -201,11 +202,19 @@ export default function StereoAdminPage() {
         <input style={inputStyle} value={answer} onChange={(e) => setAnswer(e.target.value)} />
 
         <label style={labelStyle}>3D модель *</label>
-        <select style={inputStyle} value={modelId} onChange={(e) => setModelId(e.target.value)}>
+        <input
+          style={inputStyle}
+          placeholder="Поиск модели по названию..."
+          value={modelSearch}
+          onChange={(e) => setModelSearch(e.target.value)}
+        />
+        <select style={inputStyle} value={modelId} onChange={(e) => setModelId(e.target.value)} size={6}>
           <option value="">— выберите модель —</option>
-          {models.map((m) => (
-            <option key={m.id} value={m.id}>{m.label}</option>
-          ))}
+          {models
+            .filter((m) => m.label.toLowerCase().includes(modelSearch.toLowerCase()))
+            .map((m) => (
+              <option key={m.id} value={m.id}>{m.label}</option>
+            ))}
         </select>
 
         <div style={{ display: "flex", gap: 12 }}>
