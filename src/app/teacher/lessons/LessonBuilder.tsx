@@ -4,11 +4,13 @@ import { useRouter } from 'next/navigation'
 import { blockRegistry, blockTypes, type BlockType, type LessonBlockData } from '@/components/lesson-blocks'
 import { inputStyle, labelStyle, submitButtonStyle, submitButtonDisabledStyle } from '@/components/lesson-blocks/styles'
 import { LessonPreview } from './LessonPreview'
+import { LessonAssignment } from './LessonAssignment'
 
 export interface LessonMeta {
   title: string
   subject: string
   grade: number | ''
+  status: 'draft' | 'published'
 }
 
 function iconBtnStyle(disabled: boolean, danger?: boolean): CSSProperties {
@@ -22,20 +24,26 @@ function iconBtnStyle(disabled: boolean, danger?: boolean): CSSProperties {
 
 export function LessonBuilder({
   backHref,
+  lessonId,
   initialTitle = '',
   initialSubject = '',
   initialGrade = '',
+  initialStatus = 'draft',
   initialBlocks = [],
+  initialAssignedStudentIds = [],
   saving,
   error,
   onSave,
   onDelete,
 }: {
   backHref: string
+  lessonId?: string
   initialTitle?: string
   initialSubject?: string
   initialGrade?: number | ''
+  initialStatus?: 'draft' | 'published'
   initialBlocks?: LessonBlockData[]
+  initialAssignedStudentIds?: number[]
   saving: boolean
   error: string
   onSave: (meta: LessonMeta, blocks: LessonBlockData[]) => void
@@ -45,6 +53,7 @@ export function LessonBuilder({
   const [title, setTitle] = useState(initialTitle)
   const [subject, setSubject] = useState(initialSubject)
   const [grade, setGrade] = useState<number | ''>(initialGrade)
+  const [status, setStatus] = useState<'draft' | 'published'>(initialStatus)
   const [blocks, setBlocks] = useState<LessonBlockData[]>(initialBlocks)
   const [previewing, setPreviewing] = useState(false)
 
@@ -108,7 +117,20 @@ export function LessonBuilder({
               />
             </div>
           </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px', cursor: 'pointer', fontSize: '14px', color: '#9ca3af' }}>
+            <input
+              type="checkbox"
+              checked={status === 'published'}
+              onChange={e => setStatus(e.target.checked ? 'published' : 'draft')}
+            />
+            Опубликован (виден назначенным ученикам)
+          </label>
         </div>
+
+        {lessonId && (
+          <LessonAssignment lessonId={lessonId} initialAssignedIds={initialAssignedStudentIds} />
+        )}
 
         {/* Блоки */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '1.5rem' }}>
@@ -183,7 +205,7 @@ export function LessonBuilder({
               👁 Предпросмотр
             </button>
             <button
-              onClick={() => onSave({ title, subject, grade }, blocks)}
+              onClick={() => onSave({ title, subject, grade, status }, blocks)}
               disabled={!canSave}
               style={canSave ? submitButtonStyle : submitButtonDisabledStyle}
             >
