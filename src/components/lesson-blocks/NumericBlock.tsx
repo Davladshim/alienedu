@@ -1,0 +1,102 @@
+'use client'
+import { useState } from 'react'
+import { Formula } from './Formula'
+import { labelStyle, inputStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+
+export interface NumericContent {
+  question: string
+  correctValue: number
+  tolerance: number
+  unit?: string
+}
+
+export const numericDefault: NumericContent = { question: '', correctValue: 0, tolerance: 0, unit: '' }
+
+export function checkNumeric(content: NumericContent, answer: number): boolean {
+  if (Number.isNaN(answer)) return false
+  return Math.abs(answer - content.correctValue) <= content.tolerance
+}
+
+export function NumericEditor({ content, onChange }: {
+  content: NumericContent
+  onChange: (content: NumericContent) => void
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <label style={labelStyle}>Вопрос (можно использовать формулы через $...$)</label>
+      <textarea
+        value={content.question}
+        onChange={e => onChange({ ...content, question: e.target.value })}
+        rows={2}
+        style={textareaStyle}
+        placeholder="Например: Чему равно ускорение свободного падения на Земле, м/с²?"
+      />
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '140px' }}>
+          <label style={labelStyle}>Правильный ответ</label>
+          <input
+            type="number"
+            value={content.correctValue}
+            onChange={e => onChange({ ...content, correctValue: Number(e.target.value) })}
+            style={inputStyle}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: '140px' }}>
+          <label style={labelStyle}>Допустимая погрешность (±)</label>
+          <input
+            type="number"
+            value={content.tolerance}
+            onChange={e => onChange({ ...content, tolerance: Number(e.target.value) })}
+            style={inputStyle}
+            min={0}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: '140px' }}>
+          <label style={labelStyle}>Единица измерения</label>
+          <input
+            value={content.unit || ''}
+            onChange={e => onChange({ ...content, unit: e.target.value })}
+            style={inputStyle}
+            placeholder="м/с²"
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function NumericPlayer({ content, onSubmit, disabled }: {
+  content: NumericContent
+  onSubmit: (answer: number) => void
+  disabled?: boolean
+}) {
+  const [value, setValue] = useState('')
+  const parsed = Number(value.replace(',', '.'))
+  const isValid = value.trim() !== '' && !Number.isNaN(parsed)
+
+  return (
+    <div>
+      <div style={{ marginBottom: '14px', lineHeight: 1.6, fontSize: '15px' }}>
+        <Formula text={content.question} />
+      </div>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <input
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          disabled={disabled}
+          style={{ ...inputStyle, maxWidth: '200px' }}
+          placeholder="Число"
+          inputMode="decimal"
+        />
+        {content.unit && <span style={{ color: '#6b7280', fontSize: '14px' }}>{content.unit}</span>}
+      </div>
+      <button
+        disabled={!isValid || disabled}
+        onClick={() => onSubmit(parsed)}
+        style={{ ...(!isValid || disabled ? submitButtonDisabledStyle : submitButtonStyle), marginTop: '14px' }}
+      >
+        Ответить
+      </button>
+    </div>
+  )
+}
