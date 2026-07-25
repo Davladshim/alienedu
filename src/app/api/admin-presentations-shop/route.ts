@@ -94,3 +94,18 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  if (!checkAdmin(req)) {
+    return NextResponse.json({ error: 'Нет доступа' }, { status: 401 })
+  }
+  try {
+    const { id } = await req.json()
+    await query(`DELETE FROM access_codes WHERE presentation_id = $1`, [id])
+    await query(`DELETE FROM presentations WHERE id = $1`, [id])
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
+  }
+}

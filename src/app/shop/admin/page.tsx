@@ -143,6 +143,16 @@ export default function ShopAdminPage() {
     loadCodes(selectedPresId ?? undefined);
   }
 
+  async function handleDeletePresentation(id: number) {
+    if (!confirm('Удалить презентацию? Все коды доступа к ней тоже будут удалены.')) return
+    const res = await fetch('/api/admin-presentations-shop', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+    if (res.ok) loadPresentations()
+  } 
+
   const s = {
     page: { minHeight: "100vh", background: "#0f1117", color: "#fff", fontFamily: "'Segoe UI', Roboto, sans-serif" } as React.CSSProperties,
     header: { borderBottom: "1px solid #1e2029", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" } as React.CSSProperties,
@@ -238,6 +248,9 @@ export default function ShopAdminPage() {
                     </button>
                     <button style={s.btnGhost} onClick={() => { setCodeForm({ ...codeForm, presentationId: String(p.id) }); setSelectedPresId(p.id); setTab("codes"); loadCodes(p.id); }}>
                       Коды
+                    </button>
+                    <button style={s.btnDanger} onClick={() => handleDeletePresentation(p.id)}>
+                      Удалить
                     </button>
                   </div>
                 </div>
