@@ -7,7 +7,7 @@
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
 -- Последнее обновление: 25.07.2026
--- Обновлено модулем: platform (добавлены teacher_students/lesson_assignments)
+-- Обновлено модулем: platform (добавлена schedule_lessons — расписание)
 -- ============================================================================
 
 
@@ -147,6 +147,28 @@ CREATE TABLE IF NOT EXISTS lesson_assignments (
 CREATE INDEX IF NOT EXISTS idx_teacher_students_teacher ON teacher_students(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_assignments_lesson ON lesson_assignments(lesson_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_assignments_student ON lesson_assignments(student_id);
+
+-- Расписание — запланированные занятия репетитора с учениками
+-- (не путать с lessons/lesson_blocks — это интерактивный контент-урок,
+--  а schedule_lessons — просто время+ученик в календаре преподавателя)
+CREATE TABLE IF NOT EXISTS schedule_lessons (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    student_id INTEGER NOT NULL REFERENCES users(id),
+    date DATE NOT NULL,
+    time VARCHAR(5) NOT NULL, -- 'HH:MM'
+    duration_minutes INTEGER NOT NULL DEFAULT 60,
+    subject VARCHAR(100),
+    status VARCHAR(20) NOT NULL DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled'
+    notes TEXT,
+    original_date DATE, -- заполняется при первом переносе — откуда перенесли
+    original_time VARCHAR(5),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_schedule_lessons_teacher_date ON schedule_lessons(teacher_id, date);
+CREATE INDEX IF NOT EXISTS idx_schedule_lessons_student ON schedule_lessons(student_id);
 
 
 -- ============================================================================
