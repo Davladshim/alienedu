@@ -64,14 +64,6 @@ export default function QuestsPage() {
           ← Кабинет
         </Link>
         <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>🎮 Мои квесты</h1>
-        <Link href="/teacher/quest/new" style={{
-          marginLeft: 'auto',
-          background: '#4f8ef7', color: '#fff',
-          textDecoration: 'none', borderRadius: '8px',
-          padding: '8px 16px', fontSize: '14px', fontWeight: 600
-        }}>
-          + Новый квест
-        </Link>
       </div>
 
       {/* Блок: Квест "Комнаты" */}
@@ -121,9 +113,20 @@ function QuestBlock({ title, quests, loading, formatDate, getStatusLabel, placeh
       background: '#1a1d27', border: '1px solid #2a2d3d',
       borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem'
     }}>
-      <h2 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 1rem', color: '#fff' }}>
-        {title}
-      </h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0, color: '#fff' }}>
+          {title}
+        </h2>
+        {title === 'Квест "Комнаты"' && (
+          <Link href="/teacher/quest/new" style={{
+            background: '#4f8ef7', color: '#fff',
+            textDecoration: 'none', borderRadius: '8px',
+            padding: '6px 14px', fontSize: '13px', fontWeight: 600
+          }}>
+            + Новый квест
+          </Link>
+        )}
+      </div>
 
       {/* Вкладки */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', borderBottom: '1px solid #2a2d3d', paddingBottom: '1rem' }}>
