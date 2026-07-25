@@ -7,7 +7,7 @@
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
 -- Последнее обновление: 25.07.2026
--- Обновлено модулем: platform (добавлены lessons/lesson_blocks/lesson_attempts)
+-- Обновлено модулем: platform (добавлены teacher_students/lesson_assignments)
 -- ============================================================================
 
 
@@ -125,6 +125,28 @@ CREATE TABLE IF NOT EXISTS lesson_attempts (
 
 CREATE INDEX IF NOT EXISTS idx_lesson_blocks_lesson ON lesson_blocks(lesson_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_attempts_lesson_student ON lesson_attempts(lesson_id, student_id);
+
+-- Постоянная связь преподаватель-ученик (ростер)
+CREATE TABLE IF NOT EXISTS teacher_students (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    student_id INTEGER NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE (teacher_id, student_id)
+);
+
+-- Каким ученикам назначен урок (шэринг урока конкретным ученикам)
+CREATE TABLE IF NOT EXISTS lesson_assignments (
+    id SERIAL PRIMARY KEY,
+    lesson_id INTEGER NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    student_id INTEGER NOT NULL REFERENCES users(id),
+    assigned_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE (lesson_id, student_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_teacher_students_teacher ON teacher_students(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_assignments_lesson ON lesson_assignments(lesson_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_assignments_student ON lesson_assignments(student_id);
 
 
 -- ============================================================================

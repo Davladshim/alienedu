@@ -4,8 +4,13 @@ import { SingleChoiceEditor, SingleChoicePlayer, singleChoiceDefault, checkSingl
 import { MultiChoiceEditor, MultiChoicePlayer, multiChoiceDefault, checkMultiChoice } from './MultiChoiceBlock'
 import { ShortTextEditor, ShortTextPlayer, shortTextDefault, checkShortText } from './ShortTextBlock'
 import { NumericEditor, NumericPlayer, numericDefault, checkNumeric } from './NumericBlock'
+import { MatchingEditor, MatchingPlayer, matchingDefault, checkMatching } from './MatchingBlock'
+import { OrderingEditor, OrderingPlayer, orderingDefault, checkOrdering } from './OrderingBlock'
+import { FillBlankEditor, FillBlankPlayer, fillBlankDefault, checkFillBlank } from './FillBlankBlock'
 
-export type BlockType = 'theory' | 'single-choice' | 'multi-choice' | 'short-text' | 'numeric'
+export type BlockType =
+  | 'theory' | 'single-choice' | 'multi-choice' | 'short-text' | 'numeric'
+  | 'matching' | 'ordering' | 'fill-blank'
 
 export interface LessonBlockData {
   id: string
@@ -50,6 +55,24 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
     defaultContent: numericDefault, Editor: NumericEditor, Player: NumericPlayer,
     checkAnswer: checkNumeric,
   },
+  matching: {
+    type: 'matching', label: 'Сопоставление пар', icon: '🔗',
+    defaultContent: matchingDefault, Editor: MatchingEditor, Player: MatchingPlayer,
+    checkAnswer: checkMatching,
+  },
+  ordering: {
+    type: 'ordering', label: 'Порядок шагов', icon: '🔀',
+    defaultContent: orderingDefault, Editor: OrderingEditor, Player: OrderingPlayer,
+    checkAnswer: checkOrdering,
+  },
+  'fill-blank': {
+    type: 'fill-blank', label: 'Заполнение пропусков', icon: '📝',
+    defaultContent: fillBlankDefault, Editor: FillBlankEditor, Player: FillBlankPlayer,
+    checkAnswer: checkFillBlank,
+  },
 }
 
-export const blockTypes: BlockType[] = ['theory', 'single-choice', 'multi-choice', 'short-text', 'numeric']
+export const blockTypes: BlockType[] = [
+  'theory', 'single-choice', 'multi-choice', 'short-text', 'numeric',
+  'matching', 'ordering', 'fill-blank',
+]

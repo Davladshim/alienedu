@@ -14,6 +14,7 @@ export default function EditLessonPage() {
   const [error, setError] = useState('')
   const [lesson, setLesson] = useState<any>(null)
   const [blocks, setBlocks] = useState<LessonBlockData[]>([])
+  const [assignedStudentIds, setAssignedStudentIds] = useState<number[]>([])
 
   useEffect(() => {
     fetch(`/api/lessons/${id}`)
@@ -22,6 +23,7 @@ export default function EditLessonPage() {
         if (data.lesson) {
           setLesson(data.lesson)
           setBlocks((data.blocks || []).map((b: any) => ({ id: String(b.id), type: b.type, content: b.content })))
+          setAssignedStudentIds(data.assigned_student_ids || [])
         }
         setLoading(false)
       })
@@ -35,7 +37,7 @@ export default function EditLessonPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title: meta.title, subject: meta.subject, grade: meta.grade || null,
-        status: lesson?.status || 'draft', blocks: newBlocks,
+        status: meta.status, blocks: newBlocks,
       }),
     })
     const data = await res.json()
@@ -73,10 +75,13 @@ export default function EditLessonPage() {
   return (
     <LessonBuilder
       backHref="/teacher/lessons"
+      lessonId={id}
       initialTitle={lesson.title}
       initialSubject={lesson.subject || ''}
       initialGrade={lesson.grade || ''}
+      initialStatus={lesson.status === 'published' ? 'published' : 'draft'}
       initialBlocks={blocks}
+      initialAssignedStudentIds={assignedStudentIds}
       saving={saving}
       error={error}
       onSave={handleSave}

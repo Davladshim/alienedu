@@ -7,11 +7,28 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     const { id: lessonId } = await params
 
     const lessonResult = await query(`SELECT * FROM lessons WHERE id = $1`, [lessonId])
     if (lessonResult.rows.length === 0) {
       return NextResponse.json({ error: 'Урок не найден' }, { status: 404 })
+    }
+    const lesson = lessonResult.rows[0]
+
+    const isOwner = lesson.teacher_id === decoded.id
+    if (!isOwner) {
+      const assigned = await query(
+        `SELECT 1 FROM lesson_assignments WHERE lesson_id = $1 AND student_id = $2`,
+        [lessonId, decoded.id]
+      )
+      if (assigned.rows.length === 0 || lesson.status !== 'published') {
+        return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
+      }
     }
 
     const blocksResult = await query(
@@ -20,7 +37,16 @@ export async function GET(
       [lessonId]
     )
 
-    return NextResponse.json({ lesson: lessonResult.rows[0], blocks: blocksResult.rows })
+    const assignmentsResult = await query(
+      `SELECT student_id FROM lesson_assignments WHERE lesson_id = $1`,
+      [lessonId]
+    )
+
+    return NextResponse.json({
+      lesson,
+      blocks: blocksResult.rows,
+      assigned_student_ids: assignmentsResult.rows.map(r => r.student_id),
+    })
   } catch (error) {
     console.error('Ошибка получения урока:', error)
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })

@@ -15,7 +15,7 @@ export default function NewLessonPage() {
     const res = await fetch('/api/lessons', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: meta.title, subject: meta.subject, grade: meta.grade || null, blocks }),
+      body: JSON.stringify({ title: meta.title, subject: meta.subject, grade: meta.grade || null, status: meta.status, blocks }),
     })
     const data = await res.json()
     setSaving(false)
