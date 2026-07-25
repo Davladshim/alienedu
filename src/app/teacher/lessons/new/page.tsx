@@ -1,0 +1,37 @@
+'use client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { LessonBuilder, type LessonMeta } from '../LessonBuilder'
+import type { LessonBlockData } from '@/components/lesson-blocks'
+
+export default function NewLessonPage() {
+  const router = useRouter()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleSave(meta: LessonMeta, blocks: LessonBlockData[]) {
+    setError('')
+    setSaving(true)
+    const res = await fetch('/api/lessons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: meta.title, subject: meta.subject, grade: meta.grade || null, blocks }),
+    })
+    const data = await res.json()
+    setSaving(false)
+    if (res.ok) {
+      router.push(`/teacher/lessons/${data.lesson_id}`)
+    } else {
+      setError(data.error || 'Ошибка')
+    }
+  }
+
+  return (
+    <LessonBuilder
+      backHref="/teacher/lessons"
+      saving={saving}
+      error={error}
+      onSave={handleSave}
+    />
+  )
+}

@@ -1,0 +1,86 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { LessonBuilder, type LessonMeta } from '../LessonBuilder'
+import type { LessonBlockData } from '@/components/lesson-blocks'
+
+export default function EditLessonPage() {
+  const router = useRouter()
+  const params = useParams()
+  const id = params.id as string
+
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [lesson, setLesson] = useState<any>(null)
+  const [blocks, setBlocks] = useState<LessonBlockData[]>([])
+
+  useEffect(() => {
+    fetch(`/api/lessons/${id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.lesson) {
+          setLesson(data.lesson)
+          setBlocks((data.blocks || []).map((b: any) => ({ id: String(b.id), type: b.type, content: b.content })))
+        }
+        setLoading(false)
+      })
+  }, [id])
+
+  async function handleSave(meta: LessonMeta, newBlocks: LessonBlockData[]) {
+    setError('')
+    setSaving(true)
+    const res = await fetch(`/api/lessons/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: meta.title, subject: meta.subject, grade: meta.grade || null,
+        status: lesson?.status || 'draft', blocks: newBlocks,
+      }),
+    })
+    const data = await res.json()
+    setSaving(false)
+    if (res.ok) {
+      router.push('/teacher/lessons')
+    } else {
+      setError(data.error || 'Ошибка')
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm('Удалить урок?')) return
+    const res = await fetch(`/api/lessons/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      router.push('/teacher/lessons')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0f1117', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        Загрузка...
+      </div>
+    )
+  }
+  if (!lesson) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0f1117', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        Урок не найден
+      </div>
+    )
+  }
+
+  return (
+    <LessonBuilder
+      backHref="/teacher/lessons"
+      initialTitle={lesson.title}
+      initialSubject={lesson.subject || ''}
+      initialGrade={lesson.grade || ''}
+      initialBlocks={blocks}
+      saving={saving}
+      error={error}
+      onSave={handleSave}
+      onDelete={handleDelete}
+    />
+  )
+}

@@ -6,8 +6,8 @@
 -- Перед началом работы в любом из двух чатов — сверяйтесь с этим файлом
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
--- Последнее обновление: 20.06.2026
--- Обновлено модулем: platform (первичная заготовка)
+-- Последнее обновление: 25.07.2026
+-- Обновлено модулем: platform (добавлены lessons/lesson_blocks/lesson_attempts)
 -- ============================================================================
 
 
@@ -88,6 +88,43 @@ CREATE TABLE IF NOT EXISTS quest_progress (
 
 CREATE INDEX IF NOT EXISTS idx_quest_players_code ON quest_players(access_code);
 CREATE INDEX IF NOT EXISTS idx_quest_progress_player ON quest_progress(player_id);
+
+-- Интерактивные уроки (конструктор блоков — аналог ProgressMe)
+CREATE TABLE IF NOT EXISTS lessons (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    title VARCHAR(255) NOT NULL,
+    subject VARCHAR(100),
+    grade INTEGER,
+    status VARCHAR(20) NOT NULL DEFAULT 'draft', -- 'draft', 'published'
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Блоки контента внутри урока — универсальные компоненты,
+-- те же типы блоков переиспользует квест-модуль (src/components/lesson-blocks/)
+CREATE TABLE IF NOT EXISTS lesson_blocks (
+    id SERIAL PRIMARY KEY,
+    lesson_id INTEGER NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    order_index INTEGER NOT NULL DEFAULT 0,
+    type VARCHAR(50) NOT NULL, -- 'theory', 'single-choice', 'multi-choice', 'short-text', 'numeric'
+    content JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Ответы учеников на блоки урока
+CREATE TABLE IF NOT EXISTS lesson_attempts (
+    id SERIAL PRIMARY KEY,
+    lesson_id INTEGER NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    block_id INTEGER NOT NULL REFERENCES lesson_blocks(id) ON DELETE CASCADE,
+    student_id INTEGER NOT NULL REFERENCES users(id),
+    answer JSONB,
+    is_correct BOOLEAN,
+    completed_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_lesson_blocks_lesson ON lesson_blocks(lesson_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_attempts_lesson_student ON lesson_attempts(lesson_id, student_id);
 
 
 -- ============================================================================
