@@ -3,10 +3,21 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }> = {
+  not_started: { label: 'Не начат', color: '#9ca3af', bg: 'rgba(107,114,128,0.15)' },
+  in_progress: { label: 'В процессе', color: '#fbbf24', bg: 'rgba(251,191,36,0.15)' },
+  completed: { label: 'Пройден', color: '#34d399', bg: 'rgba(16,185,129,0.15)' },
+}
+
 export default function LessonsPage() {
   const router = useRouter()
   const [lessons, setLessons] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [matrixStudents, setMatrixStudents] = useState<any[]>([])
+  const [matrixLessons, setMatrixLessons] = useState<any[]>([])
+  const [matrixCells, setMatrixCells] = useState<any[]>([])
+  const [matrixLoading, setMatrixLoading] = useState(true)
 
   useEffect(() => {
     fetch('/api/lessons')
@@ -15,7 +26,20 @@ export default function LessonsPage() {
         setLessons(data.lessons || [])
         setLoading(false)
       })
+    fetch('/api/lessons/assignment-matrix')
+      .then(r => r.json())
+      .then(data => {
+        setMatrixStudents(data.students || [])
+        setMatrixLessons(data.lessons || [])
+        setMatrixCells(data.cells || [])
+        setMatrixLoading(false)
+      })
   }, [])
+
+  function cellStatus(studentId: number, lessonId: number): string | null {
+    const cell = matrixCells.find(c => c.student_id === studentId && c.lesson_id === lessonId)
+    return cell ? cell.status : null
+  }
 
   return (
     <div style={{
@@ -30,6 +54,55 @@ export default function LessonsPage() {
           </Link>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📚 Мои уроки</h1>
         </div>
+
+        {!matrixLoading && matrixStudents.length > 0 && matrixLessons.length > 0 && (
+          <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem' }}>
+            <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>Кто что прошёл</div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ borderCollapse: 'collapse', fontSize: '13px', minWidth: '100%' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '6px 10px', color: '#9ca3af', position: 'sticky', left: 0, background: '#1a1d27' }}>Ученик</th>
+                    {matrixLessons.map(l => (
+                      <th key={l.id} title={l.title} style={{ padding: '6px 10px', color: '#9ca3af', fontWeight: 600, maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {l.title}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {matrixStudents.map(s => (
+                    <tr key={s.id}>
+                      <td style={{ padding: '6px 10px', whiteSpace: 'nowrap', position: 'sticky', left: 0, background: '#1a1d27' }}>{s.full_name}</td>
+                      {matrixLessons.map(l => {
+                        const status = cellStatus(s.id, l.id)
+                        const st = status ? STATUS_LABEL[status] : null
+                        return (
+                          <td key={l.id} style={{ padding: '6px 10px', textAlign: 'center' }}>
+                            {st ? (
+                              <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: st.color }} title={st.label} />
+                            ) : (
+                              <span style={{ color: '#374151' }}>—</span>
+                            )}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '12px', fontSize: '12px', color: '#9ca3af', flexWrap: 'wrap' }}>
+              {Object.values(STATUS_LABEL).map(st => (
+                <span key={st.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: st.color, display: 'inline-block' }} />
+                  {st.label}
+                </span>
+              ))}
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>— не назначен</span>
+            </div>
+          </div>
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
           <button
