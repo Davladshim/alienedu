@@ -62,7 +62,7 @@ export default function StudentLessonPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#0f1117', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
         <div>Урок недоступен</div>
-        <Link href="/student" style={{ color: '#4f8ef7', fontSize: '14px' }}>← Мои уроки</Link>
+        <Link href="/student/lessons" style={{ color: '#4f8ef7', fontSize: '14px' }}>← Мои уроки</Link>
       </div>
     )
   }
@@ -101,7 +101,7 @@ export default function StudentLessonPage() {
                 </div>
               </div>
             )}
-            <button onClick={() => router.push('/student')} style={submitButtonStyle}>
+            <button onClick={() => router.push('/student/lessons')} style={submitButtonStyle}>
               ← Мои уроки
             </button>
           </div>
@@ -181,7 +181,7 @@ export default function StudentLessonPage() {
     <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <Link href="/student" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
+          <Link href="/student/lessons" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
             ← Мои уроки
           </Link>
           <div style={{ color: '#6b7280', fontSize: '13px' }}>{index + 1} / {blocks.length}</div>
