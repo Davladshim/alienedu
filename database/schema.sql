@@ -6,8 +6,8 @@
 -- Перед началом работы в любом из двух чатов — сверяйтесь с этим файлом
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
--- Последнее обновление: 25.07.2026
--- Обновлено модулем: platform (добавлена schedule_lessons — расписание)
+-- Последнее обновление: 26.07.2026
+-- Обновлено модулем: platform (добавлены families/payments, оплата в teacher_students/schedule_lessons)
 -- ============================================================================
 
 
@@ -126,14 +126,40 @@ CREATE TABLE IF NOT EXISTS lesson_attempts (
 CREATE INDEX IF NOT EXISTS idx_lesson_blocks_lesson ON lesson_blocks(lesson_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_attempts_lesson_student ON lesson_attempts(lesson_id, student_id);
 
+-- Семьи — группировка учеников с общим балансом (например, братья/сёстры)
+CREATE TABLE IF NOT EXISTS families (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    name VARCHAR(255) NOT NULL,
+    balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
 -- Постоянная связь преподаватель-ученик (ростер)
 CREATE TABLE IF NOT EXISTS teacher_students (
     id SERIAL PRIMARY KEY,
     teacher_id INTEGER NOT NULL REFERENCES users(id),
     student_id INTEGER NOT NULL REFERENCES users(id),
+    lesson_price DECIMAL(10, 2), -- стоимость одного занятия для этого ученика
+    balance DECIMAL(10, 2) NOT NULL DEFAULT 0, -- личный баланс (не используется, если есть family_id)
+    family_id INTEGER REFERENCES families(id),
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (teacher_id, student_id)
 );
+
+-- Пополнения баланса (истории платежей — привязаны к ученику,
+-- но фактически увеличивают семейный баланс, если ученик состоит в семье)
+CREATE TABLE IF NOT EXISTS payments (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    teacher_student_id INTEGER NOT NULL REFERENCES teacher_students(id),
+    amount DECIMAL(10, 2) NOT NULL,
+    description VARCHAR(255),
+    payment_date TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_payments_teacher_student ON payments(teacher_student_id);
 
 -- Каким ученикам назначен урок (шэринг урока конкретным ученикам)
 CREATE TABLE IF NOT EXISTS lesson_assignments (
@@ -160,6 +186,8 @@ CREATE TABLE IF NOT EXISTS schedule_lessons (
     duration_minutes INTEGER NOT NULL DEFAULT 60,
     subject VARCHAR(100),
     status VARCHAR(20) NOT NULL DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled'
+    price DECIMAL(10, 2), -- копия lesson_price ученика на момент создания занятия (можно менять точечно)
+    is_paid BOOLEAN NOT NULL DEFAULT false, -- списано ли price с баланса ученика/семьи
     notes TEXT,
     original_date DATE, -- заполняется при первом переносе — откуда перенесли
     original_time VARCHAR(5),

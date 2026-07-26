@@ -41,9 +41,10 @@ interface LessonForm {
   duration_minutes: number
   subject: string
   notes: string
+  price: string
 }
 
-const emptyForm: LessonForm = { student_id: '', time: '15:00', duration_minutes: 60, subject: '', notes: '' }
+const emptyForm: LessonForm = { student_id: '', time: '15:00', duration_minutes: 60, subject: '', notes: '', price: '' }
 
 export default function CalendarPage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
@@ -92,7 +93,12 @@ export default function CalendarPage() {
     const res = await fetch('/api/schedule', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...addForm, student_id: Number(addForm.student_id), date: dateStr }),
+      body: JSON.stringify({
+        ...addForm,
+        student_id: Number(addForm.student_id),
+        date: dateStr,
+        price: addForm.price === '' ? undefined : Number(addForm.price),
+      }),
     })
     const data = await res.json()
     setSaving(false)
@@ -113,6 +119,8 @@ export default function CalendarPage() {
       subject: lesson.subject || '',
       status: lesson.status,
       notes: lesson.notes || '',
+      price: lesson.price ?? '',
+      is_paid: lesson.is_paid,
     })
     setAddingForDate(null)
   }
@@ -123,7 +131,7 @@ export default function CalendarPage() {
     const res = await fetch(`/api/schedule/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editForm),
+      body: JSON.stringify({ ...editForm, price: editForm.price === '' ? null : Number(editForm.price) }),
     })
     const data = await res.json()
     setSaving(false)
@@ -142,6 +150,16 @@ export default function CalendarPage() {
       setEditingId(null)
       loadLessons()
     }
+  }
+
+  async function togglePaid(lesson: any, e: React.MouseEvent) {
+    e.stopPropagation()
+    await fetch(`/api/schedule/${lesson.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_paid: !lesson.is_paid }),
+    })
+    loadLessons()
   }
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
@@ -210,14 +228,28 @@ export default function CalendarPage() {
                             <div>
                               <div style={{ fontSize: '14px' }}>{lesson.student_name}</div>
                               <div style={{ color: '#6b7280', fontSize: '12px' }}>
-                                {[lesson.subject, `${lesson.duration_minutes} мин`].filter(Boolean).join(' · ')}
+                                {[lesson.subject, `${lesson.duration_minutes} мин`, lesson.price ? `${lesson.price} ₽` : null].filter(Boolean).join(' · ')}
                                 {lesson.original_date && ' · перенесён'}
                               </div>
                             </div>
                           </div>
-                          <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', background: status.bg, color: status.color }}>
-                            {status.label}
-                          </span>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            {lesson.price && (
+                              <span
+                                onClick={e => togglePaid(lesson, e)}
+                                style={{
+                                  fontSize: '11px', padding: '3px 10px', borderRadius: '20px', cursor: 'pointer',
+                                  background: lesson.is_paid ? 'rgba(16,185,129,0.15)' : 'rgba(107,114,128,0.15)',
+                                  color: lesson.is_paid ? '#34d399' : '#9ca3af',
+                                }}
+                              >
+                                {lesson.is_paid ? '💰 Оплачено' : 'Не оплачено'}
+                              </span>
+                            )}
+                            <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', background: status.bg, color: status.color }}>
+                              {status.label}
+                            </span>
+                          </div>
                         </div>
 
                         {isEditing && editForm && (
@@ -239,7 +271,15 @@ export default function CalendarPage() {
                                 <label style={labelStyle}>Предмет</label>
                                 <input value={editForm.subject} onChange={e => setEditForm({ ...editForm, subject: e.target.value })} style={inputStyle} />
                               </div>
+                              <div>
+                                <label style={labelStyle}>Цена, ₽</label>
+                                <input type="number" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: e.target.value })} style={{ ...inputStyle, width: '100px' }} />
+                              </div>
                             </div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', cursor: 'pointer', fontSize: '13px', color: '#9ca3af' }}>
+                              <input type="checkbox" checked={!!editForm.is_paid} onChange={e => setEditForm({ ...editForm, is_paid: e.target.checked })} />
+                              Оплачено (спишет/вернёт сумму с баланса ученика)
+                            </label>
                             <div style={{ marginBottom: '10px' }}>
                               <label style={labelStyle}>Статус</label>
                               <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} style={inputStyle}>
@@ -289,6 +329,10 @@ export default function CalendarPage() {
                       <div style={{ flex: 1, minWidth: '140px' }}>
                         <label style={labelStyle}>Предмет</label>
                         <input value={addForm.subject} onChange={e => setAddForm({ ...addForm, subject: e.target.value })} style={inputStyle} placeholder="Математика" />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Цена, ₽</label>
+                        <input type="number" value={addForm.price} onChange={e => setAddForm({ ...addForm, price: e.target.value })} style={{ ...inputStyle, width: '100px' }} placeholder="по умолчанию" />
                       </div>
                     </div>
                     {roster.length === 0 && (
