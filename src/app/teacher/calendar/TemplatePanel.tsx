@@ -150,11 +150,11 @@ export function TemplatePanel({ roster, onGenerated }: { roster: any[]; onGenera
           {error && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '10px' }}>{error}</p>}
 
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', borderTop: '1px solid #2a2d3d', paddingTop: '14px' }}>
-            <label style={labelStyle}>Сгенерировать занятия на</label>
+            <label style={labelStyle}>Добавить в расписание на</label>
             <input type="number" value={weeks} onChange={e => setWeeks(Number(e.target.value))} style={{ ...inputStyle, width: '70px' }} min={1} max={12} />
             <span style={{ color: '#9ca3af', fontSize: '13px' }}>недель вперёд</span>
             <button onClick={handleGenerate} disabled={generating || templates.length === 0} style={generating || templates.length === 0 ? submitButtonDisabledStyle : submitButtonStyle}>
-              {generating ? 'Генерируем...' : '⚡ Сгенерировать'}
+              {generating ? 'Добавляем...' : '⚡ Добавить в расписание'}
             </button>
           </div>
           {resultMsg && <p style={{ color: '#9ca3af', fontSize: '13px', marginTop: '8px' }}>{resultMsg}</p>}

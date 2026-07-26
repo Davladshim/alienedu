@@ -69,15 +69,36 @@ export default function StudentLessonPage() {
 
   if (finished) {
     const gradableResults = results.filter(r => r.isCorrect !== null)
+    const skippedCount = 0 // пропуск заданий появится отдельной доработкой
+    const percent = gradableCount > 0 ? Math.round((correctCount / gradableCount) * 100) : 0
     return (
       <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
         <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
           <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎉</div>
-            <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Урок пройден!</div>
+            <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Урок пройден!</div>
+
             {gradableCount > 0 && (
-              <div style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '20px' }}>
-                Правильных ответов: {correctCount} из {gradableCount}
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px',
+                marginBottom: '20px', textAlign: 'center',
+              }}>
+                <div>
+                  <div style={{ fontSize: '20px', fontWeight: 700 }}>{gradableCount}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>всего</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#34d399' }}>{correctCount}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>верно</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#9ca3af' }}>{skippedCount}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>пропущено</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '20px', fontWeight: 700 }}>{percent}%</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>верных</div>
+                </div>
               </div>
             )}
             <button onClick={() => router.push('/student')} style={submitButtonStyle}>
@@ -140,6 +161,16 @@ export default function StudentLessonPage() {
   }
 
   function next() {
+    if (def.checkAnswer === null) {
+      // Блоки без проверки (теория) тоже логируем как пройденные,
+      // иначе answered_blocks никогда не сравняется с total_blocks
+      // и урок будет вечно висеть в статусе "в процессе"
+      fetch(`/api/lessons/${id}/attempt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ block_id: Number(block.id), answer: null, is_correct: null }),
+      }).catch(() => {})
+    }
     if (isLast) { setFinished(true); return }
     setIndex(i => i + 1)
     setAnswered(false)
