@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
-function verifyToken(token: string, presentationId: string): boolean {
+interface TokenPayload {
+  marker: string;
+  timestamp: number;
+  validDays: number;
+}
+
+function decodeToken(token: string): TokenPayload | null {
   try {
     const payload = Buffer.from(token, "base64").toString("utf-8");
     const parts = payload.split(":");
-    if (parts.length < 3) return false;
-    if (parts[1] !== presentationId) return false;
-    const ONE_DAY = 24 * 60 * 60 * 1000;
-    if (Date.now() - Number(parts[2]) > ONE_DAY) return false;
-    return true;
+    if (parts.length < 3) return null;
+    const validDays = parts.length >= 4 ? Number(parts[3]) : 10;
+    return { marker: parts[1], timestamp: Number(parts[2]), validDays: validDays || 10 };
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -22,18 +26,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Неверный запрос" }, { status: 400 });
     }
 
-    if (!verifyToken(token, String(presentationId))) {
+    const decoded = decodeToken(token);
+    if (!decoded) {
       return NextResponse.json({ error: "Неверный токен" }, { status: 403 });
     }
 
-    const response = NextResponse.json({ ok: true });
+    const isSubscription = decoded.marker === "ALL";
+    if (!isSubscription && decoded.marker !== String(presentationId)) {
+      return NextResponse.json({ error: "Неверный токен" }, { status: 403 });
+    }
 
-    // Сохраняем доступ в куки на 10 дней
-    response.cookies.set(`access_shop_${presentationId}`, "granted", {
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    if (Date.now() - decoded.timestamp > ONE_DAY) {
+      return NextResponse.json({ error: "Неверный токен" }, { status: 403 });
+    }
+
+    const response = NextResponse.json({ ok: true, isSubscription });
+
+    const maxAge = 60 * 60 * 24 * decoded.validDays;
+    const cookieName = isSubscription ? "access_shop_all" : `access_shop_${presentationId}`;
+    response.cookies.set(cookieName, "granted", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 10,
+      maxAge,
       path: "/",
     });
 

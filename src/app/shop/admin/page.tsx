@@ -23,7 +23,7 @@ type Code = {
   first_used_at: string | null;
   valid_days: number;
   created_at: string;
-  presentation_title: string;
+  presentation_title: string | null;
 };
 
 export default function ShopAdminPage() {
@@ -43,6 +43,9 @@ export default function ShopAdminPage() {
 
   const [codeForm, setCodeForm] = useState({ presentationId: "", count: "1", validDays: "10" });
   const [newCodes, setNewCodes] = useState<string[]>([]);
+  const [subForm, setSubForm] = useState({ count: "1", validDays: "30" });
+  const [newSubCodes, setNewSubCodes] = useState<string[]>([]);
+  const [subLoading, setSubLoading] = useState(false);
   const [editingPresentation, setEditingPresentation] = useState<Presentation | null>(null);
 
   useEffect(() => {
@@ -132,6 +135,27 @@ export default function ShopAdminPage() {
       loadCodes(Number(codeForm.presentationId));
     }
     setLoading(false);
+  }
+
+  async function handleGenerateSubCodes(e: React.FormEvent) {
+    e.preventDefault();
+    setSubLoading(true);
+    setNewSubCodes([]);
+    const res = await fetch("/api/admin-codes-shop", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        presentationId: null,
+        count: Number(subForm.count),
+        validDays: Number(subForm.validDays),
+      }),
+    });
+    const json = await res.json();
+    if (res.ok) {
+      setNewSubCodes(json.codes);
+      loadCodes(selectedPresId ?? undefined);
+    }
+    setSubLoading(false);
   }
 
   async function handleRevokeCode(codeId: number) {
@@ -348,6 +372,41 @@ export default function ShopAdminPage() {
                 </div>
               )}
             </div>
+
+            <div style={{ ...s.card, marginBottom: 24, background: "#241a12", border: "1px solid #a16207" }}>
+              <div style={{ fontWeight: 600, marginBottom: 4, color: "#fbbf24" }}>⭐ Подписка на весь магазин</div>
+              <p style={{ color: "#d1a656", fontSize: "0.8rem", marginBottom: 16 }}>
+                Один такой код открывает сразу все презентации магазина на указанный срок.
+              </p>
+              <form onSubmit={handleGenerateSubCodes} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={s.row}>
+                  <div style={s.field}>
+                    <label style={s.label}>Количество кодов</label>
+                    <input style={s.input} type="number" min="1" max="50" value={subForm.count} onChange={(e) => setSubForm({ ...subForm, count: e.target.value })} />
+                  </div>
+                  <div style={s.field}>
+                    <label style={s.label}>Срок действия (дней)</label>
+                    <input style={s.input} type="number" min="1" value={subForm.validDays} onChange={(e) => setSubForm({ ...subForm, validDays: e.target.value })} />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={subLoading}
+                  style={{ ...s.btn, alignSelf: "flex-start", background: "linear-gradient(135deg, #d97706, #b45309)" }}
+                >
+                  {subLoading ? "Генерируем..." : "Сгенерировать подписку"}
+                </button>
+              </form>
+              {newSubCodes.length > 0 && (
+                <div style={{ marginTop: 16, background: "#12131a", borderRadius: 8, padding: 16 }}>
+                  <div style={{ color: "#fbbf24", fontSize: "0.85rem", marginBottom: 8 }}>⭐ Новые коды подписки:</div>
+                  {newSubCodes.map((c) => (
+                    <div key={c} style={{ fontFamily: "monospace", fontSize: "1rem", color: "#fff", marginBottom: 4 }}>{c}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div style={{ marginBottom: 16 }}>
               <select style={{ ...s.input, width: "auto", minWidth: 280 }} value={selectedPresId ?? ""} onChange={(e) => { const val = e.target.value ? Number(e.target.value) : null; setSelectedPresId(val); loadCodes(val ?? undefined); }}>
                 <option value="">Все презентации</option>
@@ -355,21 +414,31 @@ export default function ShopAdminPage() {
               </select>
             </div>
             {codes.length === 0 && <p style={{ color: "#6b7280" }}>Кодов пока нет</p>}
-            {codes.map((c) => (
-              <div key={c.id} style={{ ...s.card, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <span style={{ fontFamily: "monospace", fontSize: "1rem", color: "#fff", marginRight: 12 }}>{c.code}</span>
-                  <span style={s.badge(c.status)}>{c.status}</span>
-                  <div style={{ color: "#6b7280", fontSize: "0.78rem", marginTop: 4 }}>
-                    {c.presentation_title} · {c.valid_days} дн.
-                    {c.first_used_at && ` · использован ${new Date(c.first_used_at).toLocaleDateString("ru")}`}
+            {codes.map((c) => {
+              const isSub = c.presentation_title === null;
+              return (
+                <div
+                  key={c.id}
+                  style={{
+                    ...s.card, display: "flex", alignItems: "center", justifyContent: "space-between",
+                    ...(isSub ? { background: "#241a12", border: "1px solid #a16207" } : {}),
+                  }}
+                >
+                  <div>
+                    <span style={{ fontFamily: "monospace", fontSize: "1rem", color: "#fff", marginRight: 12 }}>{c.code}</span>
+                    {isSub && <span style={{ ...s.badge("active"), background: "rgba(251,191,36,0.15)", color: "#fbbf24", marginRight: 6 }}>⭐ подписка</span>}
+                    <span style={s.badge(c.status)}>{c.status}</span>
+                    <div style={{ color: "#6b7280", fontSize: "0.78rem", marginTop: 4 }}>
+                      {isSub ? "Весь магазин" : c.presentation_title} · {c.valid_days} дн.
+                      {c.first_used_at && ` · использован ${new Date(c.first_used_at).toLocaleDateString("ru")}`}
+                    </div>
                   </div>
+                  {c.status === "active" && (
+                    <button style={s.btnDanger} onClick={() => handleRevokeCode(c.id)}>Отозвать</button>
+                  )}
                 </div>
-                {c.status === "active" && (
-                  <button style={s.btnDanger} onClick={() => handleRevokeCode(c.id)}>Отозвать</button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {tab === "edit" && editingPresentation && (

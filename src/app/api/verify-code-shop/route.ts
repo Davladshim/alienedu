@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 
-function generateToken(code: string, presentationId: string): string {
-  const payload = `${code}:${presentationId}:${Date.now()}`;
+function generateToken(code: string, marker: string, validDays: number): string {
+  const payload = `${code}:${marker}:${Date.now()}:${validDays}`;
   return Buffer.from(payload).toString("base64");
 }
 
@@ -22,11 +22,10 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await query(
-      `SELECT ac.*, p.id as pid
+      `SELECT ac.*
        FROM access_codes ac
-       JOIN presentations p ON p.id = ac.presentation_id
        WHERE ac.code = $1
-         AND ac.presentation_id = $2
+         AND (ac.presentation_id = $2 OR ac.presentation_id IS NULL)
          AND ac.status = 'active'`,
       [cleanCode, presentationId]
     );
@@ -51,8 +50,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const token = generateToken(cleanCode, String(presentationId));
-    return NextResponse.json({ token });
+    const marker = accessCode.presentation_id === null ? "ALL" : String(presentationId);
+    const token = generateToken(cleanCode, marker, accessCode.valid_days);
+    return NextResponse.json({ token, isSubscription: marker === "ALL" });
 
   } catch (error) {
     console.error("verify-code-shop error:", error);

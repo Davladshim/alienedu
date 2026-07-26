@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
 
   const isAdmin = req.cookies.get("admin_session_shop")?.value === process.env.ADMIN_SECRET;
   const hasAccess = req.cookies.get(`access_shop_${presentationId}`)?.value === "granted";
+  const hasSubscription = req.cookies.get("access_shop_all")?.value === "granted";
 
-  return NextResponse.json({ hasAccess: isAdmin || hasAccess });
+  return NextResponse.json({ hasAccess: isAdmin || hasAccess || hasSubscription });
 }
