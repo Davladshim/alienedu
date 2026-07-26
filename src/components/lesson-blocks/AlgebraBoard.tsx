@@ -2,30 +2,29 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useJSXBoard } from './useJSXBoard'
 
-type Tool = 'select' | 'pencil' | 'eraser' | 'segment' | 'circle' | 'polygon' | 'text'
+type Tool = 'select' | 'point' | 'pencil' | 'eraser'
 
-export interface GeometryBoardHandle {
+export interface AlgebraBoardHandle {
   exportSnapshot: () => Promise<string | null>
   clear: () => void
 }
 
 const tools: { id: Tool; label: string; icon: string }[] = [
   { id: 'select', label: 'Выделение / перемещение', icon: '↖️' },
+  { id: 'point', label: 'Точка графика', icon: '📍' },
   { id: 'pencil', label: 'Карандаш', icon: '✏️' },
-  { id: 'segment', label: 'Отрезок', icon: '📏' },
-  { id: 'circle', label: 'Окружность', icon: '⭕' },
-  { id: 'polygon', label: 'Многоугольник', icon: '⬠' },
-  { id: 'text', label: 'Текст', icon: '🔤' },
   { id: 'eraser', label: 'Ластик', icon: '🧹' },
 ]
 
-export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolean }>(
-  function GeometryBoard({ disabled }, ref) {
-    const { containerId, containerRef, boardRef, ready, setHandlers, eraseUnderMouse, pointUnderMouse, clearBoard, exportSnapshot } = useJSXBoard([-6, 6, 6, -6])
-    const [tool, setTool] = useState<Tool>('select')
+export const AlgebraBoard = forwardRef<AlgebraBoardHandle, { disabled?: boolean }>(
+  function AlgebraBoard({ disabled }, ref) {
+    const { containerId, containerRef, boardRef, ready, setHandlers, eraseUnderMouse, pointUnderMouse, clearBoard, exportSnapshot } = useJSXBoard([-8, 8, 8, -8])
+    const [tool, setTool] = useState<Tool>('point')
 
-    // Состояние, накопленное в процессе построения текущей фигуры
-    const pendingPointsRef = useRef<JXG.Point[]>([])
+    // Точки графика: соединяются кривой по возрастанию x — как таблица
+    // значений функции. Кривая пересобирается при добавлении/переносе/удалении точки
+    const graphPointsRef = useRef<JXG.Point[]>([])
+    const curveRef = useRef<JXG.Curve | null>(null)
     const strokeRef = useRef<{ curve: JXG.Curve; xs: number[]; ys: number[] } | null>(null)
     const drawingRef = useRef(false)
 
@@ -34,21 +33,36 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
       exportSnapshot,
     }))
 
-    function resetPending() {
-      pendingPointsRef.current = []
-      strokeRef.current = null
-      drawingRef.current = false
+    function syncCurve() {
+      const board = boardRef.current
+      if (!board) return
+      const points = [...graphPointsRef.current].sort((a, b) => a.X() - b.X())
+      const xs = points.map(p => p.X())
+      const ys = points.map(p => p.Y())
+      if (points.length < 2) {
+        if (curveRef.current) {
+          board.removeObject(curveRef.current)
+          curveRef.current = null
+        }
+        board.update()
+        return
+      }
+      if (curveRef.current) {
+        curveRef.current.dataX = xs
+        curveRef.current.dataY = ys
+      } else {
+        curveRef.current = board.create('curve', [xs, ys], { strokeColor: '#4f8ef7', strokeWidth: 2 })
+      }
+      board.update()
     }
 
-    function selectTool(t: Tool) {
-      resetPending()
-      setTool(t)
-    }
-
-    // Клик по уже существующей точке подхватывает её как вершину фигуры
-    // (например, общую вершину двух отрезков), а не создаёт дубликат поверх
-    function pointOrCreate(board: JXG.Board, evt: Event, bx: number, by: number): JXG.Point {
-      return pointUnderMouse(evt) ?? board.create('point', [bx, by], { size: 2, name: '', withLabel: false, fixed: false })
+    function addGraphPoint(bx: number, by: number) {
+      const board = boardRef.current
+      if (!board) return
+      const point = board.create('point', [bx, by], { size: 3, name: '', withLabel: false, strokeColor: '#34d399', fillColor: '#34d399' })
+      point.on('drag', syncCurve)
+      graphPointsRef.current.push(point)
+      syncCurve()
     }
 
     function handleDown(evt: Event) {
@@ -57,48 +71,28 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
       if (!board) return
       const [bx, by] = board.getUsrCoordsOfMouse(evt)
 
+      if (tool === 'point') {
+        // Клик по уже существующей точке — это попытка её перетащить,
+        // а не поставить новую точку поверх
+        if (!pointUnderMouse(evt)) addGraphPoint(bx, by)
+        return
+      }
+
       if (tool === 'pencil') {
         drawingRef.current = true
         const xs = [bx]
         const ys = [by]
-        const curve = board.create('curve', [xs, ys], { strokeColor: '#4f8ef7', strokeWidth: 2 })
+        const curve = board.create('curve', [xs, ys], { strokeColor: '#f472b6', strokeWidth: 2 })
         strokeRef.current = { curve, xs, ys }
         return
       }
 
       if (tool === 'eraser') {
-        eraseUnderMouse(evt)
-        return
-      }
-
-      if (tool === 'segment') {
-        pendingPointsRef.current.push(pointOrCreate(board, evt, bx, by))
-        if (pendingPointsRef.current.length === 2) {
-          const [a, b] = pendingPointsRef.current
-          board.create('segment', [a, b], { strokeColor: '#34d399' })
-          resetPending()
+        const removed = eraseUnderMouse(evt)
+        if (removed && removed.elType === 'point') {
+          graphPointsRef.current = graphPointsRef.current.filter(p => p.id !== removed.id)
+          syncCurve()
         }
-        return
-      }
-
-      if (tool === 'circle') {
-        pendingPointsRef.current.push(pointOrCreate(board, evt, bx, by))
-        if (pendingPointsRef.current.length === 2) {
-          const [center, edge] = pendingPointsRef.current
-          board.create('circle', [center, edge], { strokeColor: '#f472b6' })
-          resetPending()
-        }
-        return
-      }
-
-      if (tool === 'polygon') {
-        pendingPointsRef.current.push(pointOrCreate(board, evt, bx, by))
-        return
-      }
-
-      if (tool === 'text') {
-        const value = window.prompt('Текст на доске:')
-        if (value) board.create('text', [bx, by, value], { fontSize: 14, color: '#1a1d27', display: 'internal' })
         return
       }
     }
@@ -129,16 +123,12 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
       setHandlers({ onDown: handleDown, onMove: handleMove, onUp: handleUp })
     })
 
-    function finishPolygon() {
-      const board = boardRef.current
-      if (!board || pendingPointsRef.current.length < 3) { resetPending(); return }
-      board.create('polygon', pendingPointsRef.current, { fillColor: '#7c3aed', fillOpacity: 0.15, strokeColor: '#7c3aed' })
-      resetPending()
-    }
-
     function handleClear() {
       clearBoard()
-      resetPending()
+      graphPointsRef.current = []
+      curveRef.current = null
+      strokeRef.current = null
+      drawingRef.current = false
     }
 
     return (
@@ -150,7 +140,7 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
               type="button"
               title={t.label}
               disabled={disabled}
-              onClick={() => selectTool(t.id)}
+              onClick={() => setTool(t.id)}
               style={{
                 background: tool === t.id ? 'rgba(79,142,247,0.25)' : 'transparent',
                 border: `1px solid ${tool === t.id ? '#4f8ef7' : '#2a2d3d'}`,
@@ -161,14 +151,6 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
               {t.icon}
             </button>
           ))}
-          {tool === 'polygon' && (
-            <button type="button" onClick={finishPolygon} style={{
-              background: 'rgba(124,58,237,0.2)', border: '1px solid #7c3aed', color: '#c4b5fd',
-              borderRadius: '8px', padding: '6px 12px', fontSize: '13px', cursor: 'pointer',
-            }}>
-              Готово (замкнуть)
-            </button>
-          )}
           <button
             type="button"
             disabled={disabled}
@@ -180,6 +162,9 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
           >
             🗑 Очистить
           </button>
+        </div>
+        <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '8px' }}>
+          Ставь точки графика (📍) — они соединятся линией по возрастанию x. Точку можно перетащить.
         </div>
         <div
           id={containerId}

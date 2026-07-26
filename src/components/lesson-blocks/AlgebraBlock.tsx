@@ -2,25 +2,25 @@
 import { useRef, useState } from 'react'
 import { Formula } from './Formula'
 import { FormulaTextarea } from './FormulaTextarea'
-import { GeometryBoard, type GeometryBoardHandle } from './GeometryBoard'
+import { AlgebraBoard, type AlgebraBoardHandle } from './AlgebraBoard'
 import { compressPhoto } from './photoUpload'
 import { labelStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
-export interface GeometryContent {
+export interface AlgebraContent {
   question: string
 }
 
-export const geometryDefault: GeometryContent = { question: '' }
+export const algebraDefault: AlgebraContent = { question: '' }
 
-export interface GeometryAnswer {
+export interface AlgebraAnswer {
   drawing: string | null
   solutionText: string
   photo: string | null
 }
 
-export function GeometryEditor({ content, onChange }: {
-  content: GeometryContent
-  onChange: (content: GeometryContent) => void
+export function AlgebraEditor({ content, onChange }: {
+  content: AlgebraContent
+  onChange: (content: AlgebraContent) => void
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -29,22 +29,22 @@ export function GeometryEditor({ content, onChange }: {
         value={content.question}
         onChange={question => onChange({ ...content, question })}
         rows={3}
-        placeholder="Например: В треугольнике ABC угол A равен 60°. Найдите..."
+        placeholder="Например: Постройте график функции $y = x^2 - 2x$ на отрезке [-2; 4]"
       />
       <div style={{ color: '#6b7280', fontSize: '12px' }}>
-        Ученик решает задачу на мини-доске и/или записывает решение текстом или фото из тетради.
-        Ответ не проверяется автоматически — его нужно посмотреть вручную.
+        Ученик строит график, отмечая точки на координатной плоскости, и/или записывает решение
+        текстом или фото из тетради. Ответ не проверяется автоматически — его нужно посмотреть вручную.
       </div>
     </div>
   )
 }
 
-export function GeometryPlayer({ content, onSubmit, disabled }: {
-  content: GeometryContent
-  onSubmit: (answer: GeometryAnswer) => void
+export function AlgebraPlayer({ content, onSubmit, disabled }: {
+  content: AlgebraContent
+  onSubmit: (answer: AlgebraAnswer) => void
   disabled?: boolean
 }) {
-  const boardRef = useRef<GeometryBoardHandle>(null)
+  const boardRef = useRef<AlgebraBoardHandle>(null)
   const [solutionText, setSolutionText] = useState('')
   const [photo, setPhoto] = useState<string | null>(null)
   const [photoBusy, setPhotoBusy] = useState(false)
@@ -83,8 +83,8 @@ export function GeometryPlayer({ content, onSubmit, disabled }: {
         <Formula text={content.question} />
       </div>
 
-      <label style={labelStyle}>Мини-доска (черновик решения)</label>
-      <GeometryBoard ref={boardRef} disabled={disabled} />
+      <label style={labelStyle}>График (черновик решения)</label>
+      <AlgebraBoard ref={boardRef} disabled={disabled} />
 
       <label style={{ ...labelStyle, marginTop: '14px' }}>Решение текстом</label>
       <FormulaTextarea

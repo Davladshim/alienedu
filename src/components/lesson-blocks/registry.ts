@@ -8,10 +8,11 @@ import { MatchingEditor, MatchingPlayer, matchingDefault, checkMatching, describ
 import { OrderingEditor, OrderingPlayer, orderingDefault, checkOrdering, describeOrderingAnswer } from './OrderingBlock'
 import { FillBlankEditor, FillBlankPlayer, fillBlankDefault, checkFillBlank, describeFillBlankAnswer } from './FillBlankBlock'
 import { GeometryEditor, GeometryPlayer, geometryDefault } from './GeometryBlock'
+import { AlgebraEditor, AlgebraPlayer, algebraDefault } from './AlgebraBlock'
 
 export type BlockType =
   | 'theory' | 'single-choice' | 'multi-choice' | 'short-text' | 'numeric'
-  | 'matching' | 'ordering' | 'fill-blank' | 'geometry'
+  | 'matching' | 'ordering' | 'fill-blank' | 'geometry' | 'algebra'
 
 export interface LessonBlockData {
   id: string
@@ -81,9 +82,14 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
     defaultContent: geometryDefault, Editor: GeometryEditor, Player: GeometryPlayer,
     checkAnswer: null, manualReview: true,
   },
+  algebra: {
+    type: 'algebra', label: 'Алгебра (график по точкам)', icon: '📈',
+    defaultContent: algebraDefault, Editor: AlgebraEditor, Player: AlgebraPlayer,
+    checkAnswer: null, manualReview: true,
+  },
 }
 
 export const blockTypes: BlockType[] = [
   'theory', 'single-choice', 'multi-choice', 'short-text', 'numeric',
-  'matching', 'ordering', 'fill-blank', 'geometry',
+  'matching', 'ordering', 'fill-blank', 'geometry', 'algebra',
 ]
