@@ -118,13 +118,22 @@ function QuestBlock({ title, quests, loading, formatDate, getStatusLabel, placeh
           {title}
         </h2>
         {title === 'Квест "Комнаты"' && (
-          <Link href="/teacher/quest/new" style={{
-            background: '#4f8ef7', color: '#fff',
-            textDecoration: 'none', borderRadius: '8px',
-            padding: '6px 14px', fontSize: '13px', fontWeight: 600
-          }}>
-            + Новый квест
-          </Link>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Link href="/teacher/room-editor" style={{
+              background: 'transparent', color: '#9ca3af', border: '1px solid #2a2d3d',
+              textDecoration: 'none', borderRadius: '8px',
+              padding: '6px 14px', fontSize: '13px', fontWeight: 600
+            }}>
+              🗺️ Редактор комнат
+            </Link>
+            <Link href="/teacher/quest/new" style={{
+              background: '#4f8ef7', color: '#fff',
+              textDecoration: 'none', borderRadius: '8px',
+              padding: '6px 14px', fontSize: '13px', fontWeight: 600
+            }}>
+              + Новый квест
+            </Link>
+          </div>
         )}
       </div>
 
