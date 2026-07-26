@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Formula } from './Formula'
-import { labelStyle, textareaStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextarea } from './FormulaTextarea'
+import { labelStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface MultiChoiceContent {
   question: string
@@ -50,11 +51,10 @@ export function MultiChoiceEditor({ content, onChange }: {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <label style={labelStyle}>Вопрос</label>
-      <textarea
+      <FormulaTextarea
         value={content.question}
-        onChange={e => onChange({ ...content, question: e.target.value })}
+        onChange={question => onChange({ ...content, question })}
         rows={2}
-        style={textareaStyle}
         placeholder="Например: Какие из чисел — простые?"
       />
       <label style={labelStyle}>Варианты ответа (отметь все правильные)</label>

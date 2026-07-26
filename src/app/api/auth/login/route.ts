@@ -29,6 +29,15 @@ export async function POST(request: NextRequest) {
 
     const user = result.rows[0]
 
+    // Карточки-заглушки для незарегистрированных учеников не имеют рабочего
+    // логина/кода в принципе, но проверяем явно — на случай угадывания
+    if (user.is_placeholder) {
+      return NextResponse.json(
+        { error: 'Неверный логин или код' },
+        { status: 401 }
+      )
+    }
+
     // Проверяем код
     const codeMatch = await bcrypt.compare(code, user.code_hash)
     if (!codeMatch) {

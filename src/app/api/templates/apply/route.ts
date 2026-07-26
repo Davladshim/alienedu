@@ -68,9 +68,9 @@ export async function POST(request: NextRequest) {
         }
 
         await query(
-          `INSERT INTO schedule_lessons (teacher_id, student_id, date, time, duration_minutes, subject, price)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [decoded.id, tpl.student_id, dateStr, tpl.time, tpl.duration_minutes, tpl.subject, tpl.price]
+          `INSERT INTO schedule_lessons (teacher_id, student_id, date, time, duration_minutes, subject, price, template_id)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [decoded.id, tpl.student_id, dateStr, tpl.time, tpl.duration_minutes, tpl.subject, tpl.price, tpl.id]
         )
         created++
       }

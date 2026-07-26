@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Formula } from './Formula'
-import { labelStyle, inputStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextarea } from './FormulaTextarea'
+import { labelStyle, inputStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface NumericContent {
   question: string
@@ -27,34 +28,50 @@ export function NumericEditor({ content, onChange }: {
   content: NumericContent
   onChange: (content: NumericContent) => void
 }) {
+  // Локальный текст вместо number-инпута, привязанного напрямую к content —
+  // иначе поле нельзя нормально очистить (снова превращается в "0" на каждый ввод)
+  const [correctValueText, setCorrectValueText] = useState(String(content.correctValue ?? ''))
+  const [toleranceText, setToleranceText] = useState(String(content.tolerance ?? ''))
+
+  function handleCorrectValueChange(v: string) {
+    setCorrectValueText(v)
+    const num = Number(v.replace(',', '.'))
+    if (v.trim() !== '' && !Number.isNaN(num)) onChange({ ...content, correctValue: num })
+  }
+  function handleToleranceChange(v: string) {
+    setToleranceText(v)
+    const num = Number(v.replace(',', '.'))
+    if (v.trim() !== '' && !Number.isNaN(num)) onChange({ ...content, tolerance: num })
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <label style={labelStyle}>Вопрос (можно использовать формулы через $...$)</label>
-      <textarea
+      <label style={labelStyle}>Вопрос</label>
+      <FormulaTextarea
         value={content.question}
-        onChange={e => onChange({ ...content, question: e.target.value })}
+        onChange={question => onChange({ ...content, question })}
         rows={2}
-        style={textareaStyle}
         placeholder="Например: Чему равно ускорение свободного падения на Земле, м/с²?"
       />
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: '140px' }}>
           <label style={labelStyle}>Правильный ответ</label>
           <input
-            type="number"
-            value={content.correctValue}
-            onChange={e => onChange({ ...content, correctValue: Number(e.target.value) })}
+            type="text"
+            inputMode="decimal"
+            value={correctValueText}
+            onChange={e => handleCorrectValueChange(e.target.value)}
             style={inputStyle}
           />
         </div>
         <div style={{ flex: 1, minWidth: '140px' }}>
           <label style={labelStyle}>Допустимая погрешность (±)</label>
           <input
-            type="number"
-            value={content.tolerance}
-            onChange={e => onChange({ ...content, tolerance: Number(e.target.value) })}
+            type="text"
+            inputMode="decimal"
+            value={toleranceText}
+            onChange={e => handleToleranceChange(e.target.value)}
             style={inputStyle}
-            min={0}
           />
         </div>
         <div style={{ flex: 1, minWidth: '140px' }}>

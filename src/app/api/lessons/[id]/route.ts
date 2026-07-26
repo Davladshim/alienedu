@@ -73,16 +73,16 @@ export async function PUT(
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
     }
 
-    const { title, subject, grade, status, blocks } = await request.json()
+    const { title, subject, grade, status, mode, blocks } = await request.json()
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Введите название урока' }, { status: 400 })
     }
 
     await query(
-      `UPDATE lessons SET title = $1, subject = $2, grade = $3, status = $4, updated_at = NOW()
-       WHERE id = $5`,
-      [title, subject || null, grade || null, status || 'draft', lessonId]
+      `UPDATE lessons SET title = $1, subject = $2, grade = $3, status = $4, mode = $5, updated_at = NOW()
+       WHERE id = $6`,
+      [title, subject || null, grade || null, status || 'draft', mode === 'exam' ? 'exam' : 'quiz', lessonId]
     )
 
     await query(`DELETE FROM lesson_blocks WHERE lesson_id = $1`, [lessonId])

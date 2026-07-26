@@ -7,7 +7,7 @@
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
 -- Последнее обновление: 26.07.2026
--- Обновлено модулем: shop (access_codes.presentation_id стал nullable — подписка на весь магазин)
+-- Обновлено модулем: platform (lessons.mode — режим Контрольная/Проверочная)
 -- ============================================================================
 
 
@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) NOT NULL DEFAULT 'student',
     secret_question VARCHAR(255),
     secret_answer_hash VARCHAR(255),
+    -- заглушка вместо реального аккаунта: репетитор завёл карточку ученика
+    -- в ростере до того, как тот сам зарегистрировался; login/code_hash —
+    -- случайные и нерабочие, вход под таким аккаунтом всегда отклоняется
+    is_placeholder BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -97,6 +101,7 @@ CREATE TABLE IF NOT EXISTS lessons (
     subject VARCHAR(100),
     grade INTEGER,
     status VARCHAR(20) NOT NULL DEFAULT 'draft', -- 'draft', 'published'
+    mode VARCHAR(20) NOT NULL DEFAULT 'quiz', -- 'quiz' (Проверочная — сразу видно верно/неверно), 'exam' (Контрольная — без подсказок по ходу, разбор в конце)
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -174,30 +179,6 @@ CREATE INDEX IF NOT EXISTS idx_teacher_students_teacher ON teacher_students(teac
 CREATE INDEX IF NOT EXISTS idx_lesson_assignments_lesson ON lesson_assignments(lesson_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_assignments_student ON lesson_assignments(student_id);
 
--- Расписание — запланированные занятия репетитора с учениками
--- (не путать с lessons/lesson_blocks — это интерактивный контент-урок,
---  а schedule_lessons — просто время+ученик в календаре преподавателя)
-CREATE TABLE IF NOT EXISTS schedule_lessons (
-    id SERIAL PRIMARY KEY,
-    teacher_id INTEGER NOT NULL REFERENCES users(id),
-    student_id INTEGER NOT NULL REFERENCES users(id),
-    date DATE NOT NULL,
-    time VARCHAR(5) NOT NULL, -- 'HH:MM'
-    duration_minutes INTEGER NOT NULL DEFAULT 60,
-    subject VARCHAR(100),
-    status VARCHAR(20) NOT NULL DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled'
-    price DECIMAL(10, 2), -- копия lesson_price ученика на момент создания занятия (можно менять точечно)
-    is_paid BOOLEAN NOT NULL DEFAULT false, -- списано ли price с баланса ученика/семьи
-    notes TEXT,
-    original_date DATE, -- заполняется при первом переносе — откуда перенесли
-    original_time VARCHAR(5),
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_schedule_lessons_teacher_date ON schedule_lessons(teacher_id, date);
-CREATE INDEX IF NOT EXISTS idx_schedule_lessons_student ON schedule_lessons(student_id);
-
 -- Шаблон недели — повторяющийся еженедельный слот ученика,
 -- из которого генерируются реальные строки schedule_lessons
 CREATE TABLE IF NOT EXISTS lesson_templates (
@@ -215,6 +196,32 @@ CREATE TABLE IF NOT EXISTS lesson_templates (
 );
 
 CREATE INDEX IF NOT EXISTS idx_lesson_templates_teacher ON lesson_templates(teacher_id);
+
+-- Расписание — запланированные занятия репетитора с учениками
+-- (не путать с lessons/lesson_blocks — это интерактивный контент-урок,
+--  а schedule_lessons — просто время+ученик в календаре преподавателя)
+CREATE TABLE IF NOT EXISTS schedule_lessons (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    student_id INTEGER NOT NULL REFERENCES users(id),
+    date DATE NOT NULL,
+    time VARCHAR(5) NOT NULL, -- 'HH:MM'
+    duration_minutes INTEGER NOT NULL DEFAULT 60,
+    subject VARCHAR(100),
+    status VARCHAR(20) NOT NULL DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled'
+    price DECIMAL(10, 2), -- копия lesson_price ученика на момент создания занятия (можно менять точечно)
+    is_paid BOOLEAN NOT NULL DEFAULT false, -- списано ли price с баланса ученика/семьи
+    notes TEXT,
+    original_date DATE, -- заполняется при первом переносе — откуда перенесли
+    original_time VARCHAR(5),
+    -- NULL = занятие добавлено вручную (незапланированное), не NULL = сгенерировано из шаблона недели
+    template_id INTEGER REFERENCES lesson_templates(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_schedule_lessons_teacher_date ON schedule_lessons(teacher_id, date);
+CREATE INDEX IF NOT EXISTS idx_schedule_lessons_student ON schedule_lessons(student_id);
 
 
 -- ============================================================================

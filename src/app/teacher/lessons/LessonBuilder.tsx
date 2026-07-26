@@ -2,7 +2,7 @@
 import { useState, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { blockRegistry, blockTypes, type BlockType, type LessonBlockData } from '@/components/lesson-blocks'
-import { inputStyle, labelStyle, submitButtonStyle, submitButtonDisabledStyle } from '@/components/lesson-blocks/styles'
+import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle } from '@/components/lesson-blocks/styles'
 import { LessonPreview } from './LessonPreview'
 import { LessonAssignment } from './LessonAssignment'
 
@@ -11,6 +11,7 @@ export interface LessonMeta {
   subject: string
   grade: number | ''
   status: 'draft' | 'published'
+  mode: 'quiz' | 'exam'
 }
 
 function iconBtnStyle(disabled: boolean, danger?: boolean): CSSProperties {
@@ -29,6 +30,7 @@ export function LessonBuilder({
   initialSubject = '',
   initialGrade = '',
   initialStatus = 'draft',
+  initialMode = 'quiz',
   initialBlocks = [],
   initialAssignedStudentIds = [],
   saving,
@@ -42,6 +44,7 @@ export function LessonBuilder({
   initialSubject?: string
   initialGrade?: number | ''
   initialStatus?: 'draft' | 'published'
+  initialMode?: 'quiz' | 'exam'
   initialBlocks?: LessonBlockData[]
   initialAssignedStudentIds?: number[]
   saving: boolean
@@ -54,6 +57,7 @@ export function LessonBuilder({
   const [subject, setSubject] = useState(initialSubject)
   const [grade, setGrade] = useState<number | ''>(initialGrade)
   const [status, setStatus] = useState<'draft' | 'published'>(initialStatus)
+  const [mode, setMode] = useState<'quiz' | 'exam'>(initialMode)
   const [blocks, setBlocks] = useState<LessonBlockData[]>(initialBlocks)
   const [previewing, setPreviewing] = useState(false)
 
@@ -126,6 +130,14 @@ export function LessonBuilder({
             />
             Опубликован (виден назначенным ученикам)
           </label>
+
+          <div style={{ marginTop: '16px' }}>
+            <label style={labelStyle}>Режим прохождения</label>
+            <select value={mode} onChange={e => setMode(e.target.value === 'exam' ? 'exam' : 'quiz')} style={{ ...inputStyle, maxWidth: '280px' }}>
+              <option value="quiz">Проверочная — сразу видно верно/неверно</option>
+              <option value="exam">Контрольная — без подсказок, разбор в конце</option>
+            </select>
+          </div>
         </div>
 
         {lessonId && (
@@ -148,6 +160,9 @@ export function LessonBuilder({
                   </div>
                 </div>
                 <Editor content={block.content} onChange={(c: any) => updateBlockContent(block.id, c)} />
+                {def.checkAnswer !== null && (
+                  <BlockRetrySettings content={block.content} onChange={c => updateBlockContent(block.id, c)} />
+                )}
               </div>
             )
           })}
@@ -205,7 +220,7 @@ export function LessonBuilder({
               👁 Предпросмотр
             </button>
             <button
-              onClick={() => onSave({ title, subject, grade, status }, blocks)}
+              onClick={() => onSave({ title, subject, grade, status, mode }, blocks)}
               disabled={!canSave}
               style={canSave ? submitButtonStyle : submitButtonDisabledStyle}
             >
@@ -215,6 +230,48 @@ export function LessonBuilder({
         </div>
 
       </div>
+    </div>
+  )
+}
+
+// Настройки повторных попыток и объяснения — общие для любого блока
+// с автопроверкой, хранятся прямо в JSON-содержимом блока (без отдельных
+// полей БД), поэтому вынесены сюда одним компонентом вместо повторения
+// в каждом Editor'е блока
+function BlockRetrySettings({ content, onChange }: { content: any; onChange: (content: any) => void }) {
+  const retryable = !!content.retryable
+  const maxAttempts = content.maxAttempts ?? 2
+
+  return (
+    <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid #2a2d3d' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#9ca3af', marginBottom: retryable ? '10px' : 0 }}>
+        <input
+          type="checkbox"
+          checked={retryable}
+          onChange={e => onChange({ ...content, retryable: e.target.checked })}
+        />
+        Разрешить перерешать при неверном ответе
+      </label>
+      {retryable && (
+        <div style={{ marginBottom: '10px' }}>
+          <label style={labelStyle}>Максимум попыток</label>
+          <input
+            type="number"
+            min={2}
+            value={maxAttempts}
+            onChange={e => onChange({ ...content, maxAttempts: Math.max(2, Number(e.target.value) || 2) })}
+            style={{ ...inputStyle, width: '90px' }}
+          />
+        </div>
+      )}
+      <label style={labelStyle}>Объяснение (необязательно, покажется ученику после попыток)</label>
+      <textarea
+        value={content.explanation || ''}
+        onChange={e => onChange({ ...content, explanation: e.target.value })}
+        rows={2}
+        style={textareaStyle}
+        placeholder="Почему ответ именно такой..."
+      />
     </div>
   )
 }

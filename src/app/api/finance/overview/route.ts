@@ -19,8 +19,13 @@ export async function GET(request: NextRequest) {
     )
 
     const monthCompleted = await query(
-      `SELECT COUNT(*) as count, COALESCE(SUM(price), 0) as total FROM schedule_lessons
-       WHERE teacher_id = $1 AND status = 'completed'
+      `SELECT
+         COUNT(*) FILTER (WHERE status = 'completed') as count,
+         COALESCE(SUM(price) FILTER (WHERE status = 'completed'), 0) as total,
+         COUNT(*) FILTER (WHERE template_id IS NOT NULL) as planned_count,
+         COUNT(*) FILTER (WHERE status = 'completed' AND template_id IS NULL) as unplanned_completed_count
+       FROM schedule_lessons
+       WHERE teacher_id = $1
          AND date >= date_trunc('month', NOW())::date
          AND date < (date_trunc('month', NOW()) + interval '1 month')::date`,
       [decoded.id]
@@ -48,6 +53,8 @@ export async function GET(request: NextRequest) {
       monthIncome: monthPayments.rows[0].total,
       monthCompletedCount: monthCompleted.rows[0].count,
       monthCompletedTotal: monthCompleted.rows[0].total,
+      monthPlannedCount: monthCompleted.rows[0].planned_count,
+      monthUnplannedCompletedCount: monthCompleted.rows[0].unplanned_completed_count,
       unpaidLessons: unpaid.rows,
       unpaidTotal: unpaid.rows.reduce((sum, r) => sum + Number(r.price || 0), 0),
       totalBalance: Number(personalBalance.rows[0].total) + Number(familyBalance.rows[0].total),

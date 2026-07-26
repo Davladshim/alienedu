@@ -66,6 +66,24 @@ export default function FinancePage() {
               </div>
             </div>
 
+            <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem' }}>
+              <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>План и факт за месяц</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px' }}>
+                <div>
+                  <div style={{ fontSize: '18px', fontWeight: 700 }}>{data.monthPlannedCount}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>запланировано по шаблону</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#34d399' }}>{data.monthCompletedCount}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>проведено всего</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#fbbf24' }}>{data.monthUnplannedCompletedCount}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>проведено вне плана</div>
+                </div>
+              </div>
+            </div>
+
             <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                 <div style={{ fontWeight: 600, fontSize: '15px' }}>Нужно напомнить об оплате</div>
