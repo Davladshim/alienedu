@@ -125,9 +125,13 @@ export default function StudentLessonPage() {
     )
   }
 
+  // Пассивные блоки (сейчас — только теория) проходятся без явного действия:
+  // достаточно просто прочитать и уйти дальше. Блоки "с проверкой вручную"
+  // (геометрия) тоже не оцениваются автоматически, но требуют явной отправки
+  // ответа — как обычные проверяемые блоки, просто без "верно/неверно".
   function finalizeTheoryIfNeeded(b: LessonBlockData) {
     const def = blockRegistry[b.type]
-    if (def.checkAnswer !== null) return
+    if (def.checkAnswer !== null || def.manualReview) return
     if (blockStates[b.id]?.done) return
     setBlockStates(s => ({ ...s, [b.id]: { ...EMPTY_STATE, done: true } }))
     logAttempt(b.id, null, null)
@@ -139,7 +143,7 @@ export default function StudentLessonPage() {
       const def = blockRegistry[b.type]
       const st = blockStates[b.id]
       if (st?.done) continue
-      if (def.checkAnswer === null) {
+      if (def.checkAnswer === null && !def.manualReview) {
         updates[b.id] = { ...EMPTY_STATE, done: true }
         logAttempt(b.id, null, null)
       } else {
@@ -246,6 +250,8 @@ export default function StudentLessonPage() {
   const Player = def.Player
   const isLast = index === blocks.length - 1
   const isGradable = def.checkAnswer !== null
+  const isManualReview = !!def.manualReview
+  const interactive = isGradable || isManualReview
   const state = blockStates[block.id] || EMPTY_STATE
   const awaitingRetry = isGradable && state.attempts > 0 && !state.done
   // Пока остались попытки, плеер не блокируется — можно сразу поменять
@@ -309,7 +315,7 @@ export default function StudentLessonPage() {
         </div>
 
         <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.75rem' }}>
-          {!isGradable ? (
+          {!interactive ? (
             <Player content={block.content} />
           ) : (
             <Player content={block.content} disabled={playerDisabled} onSubmit={handleSubmit} />
@@ -337,8 +343,18 @@ export default function StudentLessonPage() {
             </div>
           )}
 
+          {isManualReview && state.attempts > 0 && (
+            <div style={{
+              marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
+              background: state.skipped ? 'rgba(107,114,128,0.15)' : 'rgba(96,165,250,0.15)',
+              color: state.skipped ? '#9ca3af' : '#60a5fa',
+            }}>
+              {state.skipped ? '⏭ Пропущено' : '✅ Решение отправлено — учитель проверит вручную'}
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
-            {isGradable && !state.done && (
+            {interactive && !state.done && (
               <button
                 onClick={skipBlock}
                 style={{ background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}

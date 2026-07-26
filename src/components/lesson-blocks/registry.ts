@@ -7,10 +7,11 @@ import { NumericEditor, NumericPlayer, numericDefault, checkNumeric, describeNum
 import { MatchingEditor, MatchingPlayer, matchingDefault, checkMatching, describeMatchingAnswer } from './MatchingBlock'
 import { OrderingEditor, OrderingPlayer, orderingDefault, checkOrdering, describeOrderingAnswer } from './OrderingBlock'
 import { FillBlankEditor, FillBlankPlayer, fillBlankDefault, checkFillBlank, describeFillBlankAnswer } from './FillBlankBlock'
+import { GeometryEditor, GeometryPlayer, geometryDefault } from './GeometryBlock'
 
 export type BlockType =
   | 'theory' | 'single-choice' | 'multi-choice' | 'short-text' | 'numeric'
-  | 'matching' | 'ordering' | 'fill-blank'
+  | 'matching' | 'ordering' | 'fill-blank' | 'geometry'
 
 export interface LessonBlockData {
   id: string
@@ -29,6 +30,9 @@ export interface BlockDefinition {
   checkAnswer: ((content: any, answer: any) => boolean) | null
   // человекочитаемое описание правильного ответа — для экрана разбора ответов
   describeAnswer?: (content: any) => string
+  // блок без автопроверки, но требующий явной отправки ответа (учитель проверяет вручную),
+  // в отличие от теории, которую достаточно просто прочитать
+  manualReview?: boolean
 }
 
 export const blockRegistry: Record<BlockType, BlockDefinition> = {
@@ -72,9 +76,14 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
     defaultContent: fillBlankDefault, Editor: FillBlankEditor, Player: FillBlankPlayer,
     checkAnswer: checkFillBlank, describeAnswer: describeFillBlankAnswer,
   },
+  geometry: {
+    type: 'geometry', label: 'Геометрия (мини-доска)', icon: '📐',
+    defaultContent: geometryDefault, Editor: GeometryEditor, Player: GeometryPlayer,
+    checkAnswer: null, manualReview: true,
+  },
 }
 
 export const blockTypes: BlockType[] = [
   'theory', 'single-choice', 'multi-choice', 'short-text', 'numeric',
-  'matching', 'ordering', 'fill-blank',
+  'matching', 'ordering', 'fill-blank', 'geometry',
 ]
