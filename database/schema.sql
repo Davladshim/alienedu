@@ -7,7 +7,7 @@
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
 -- Последнее обновление: 26.07.2026
--- Обновлено модулем: platform (добавлены families/payments, оплата в teacher_students/schedule_lessons)
+-- Обновлено модулем: platform (добавлена lesson_templates — шаблон недели)
 -- ============================================================================
 
 
@@ -197,6 +197,24 @@ CREATE TABLE IF NOT EXISTS schedule_lessons (
 
 CREATE INDEX IF NOT EXISTS idx_schedule_lessons_teacher_date ON schedule_lessons(teacher_id, date);
 CREATE INDEX IF NOT EXISTS idx_schedule_lessons_student ON schedule_lessons(student_id);
+
+-- Шаблон недели — повторяющийся еженедельный слот ученика,
+-- из которого генерируются реальные строки schedule_lessons
+CREATE TABLE IF NOT EXISTS lesson_templates (
+    id SERIAL PRIMARY KEY,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    student_id INTEGER NOT NULL REFERENCES users(id),
+    day_of_week INTEGER NOT NULL, -- 0=понедельник ... 6=воскресенье
+    time VARCHAR(5) NOT NULL,
+    duration_minutes INTEGER NOT NULL DEFAULT 60,
+    subject VARCHAR(100),
+    price DECIMAL(10, 2),
+    start_date DATE NOT NULL,
+    end_date DATE, -- NULL = бессрочно
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_lesson_templates_teacher ON lesson_templates(teacher_id);
 
 
 -- ============================================================================
