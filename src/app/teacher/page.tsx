@@ -112,16 +112,21 @@ export default function TeacherPage() {
             </div>
           </a>
 
-          {/* StereoSpace — заглушка */}
-          <div style={{
-            background: '#1a1d27', border: '1px solid #2a2d3d',
-            borderRadius: '16px', padding: '1.5rem',
-            opacity: 0.5
-          }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔷</div>
-            <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>StereoSpace</div>
-            <div style={{ color: '#6b7280', fontSize: '13px' }}>Задачи по стереометрии — скоро</div>
-          </div>
+          {/* StereoSpace */}
+          <a href="/stereo" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+            <div style={{
+              background: '#1a1d27', border: '1px solid #2a2d3d',
+              borderRadius: '16px', padding: '1.5rem', cursor: 'pointer',
+              transition: 'border-color 0.2s',
+            }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#60a5fa')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔷</div>
+              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>StereoSpace</div>
+              <div style={{ color: '#6b7280', fontSize: '13px' }}>Задачи по стереометрии</div>
+            </div>
+          </a>
 
           {/* Мои уроки */}
           <Link href="/teacher/lessons" style={{ textDecoration: 'none' }}>
