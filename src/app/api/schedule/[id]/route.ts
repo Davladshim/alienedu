@@ -31,7 +31,7 @@ export async function PUT(
 
     const isMoved = (date && date !== String(existing.date).slice(0, 10)) || (time && time !== existing.time)
 
-    // Занятие, которое уже прошло, переносить нельзя — только менять статус/оплату
+    // Занятие, которое уже прошло, переносить нельзя — только менять статус
     // или удалять. Дата берётся такая, какой она была ДО этого запроса.
     if (isMoved && isPast(existing.date, existing.time)) {
       return NextResponse.json({ error: 'Занятие уже прошло — перенести нельзя, можно только удалить' }, { status: 400 })
@@ -44,9 +44,13 @@ export async function PUT(
     const originalTime = isMoved && !existing.original_time ? existing.time : existing.original_time
 
     const newPrice = price !== undefined ? price : existing.price
+
+    // Статус/оплата теперь меняются автоматически по времени (см. autoCompleteDueLessons).
+    // Вручную из календаря можно только отменить занятие; ручная отметка "оплачено"
+    // остаётся как аварийный вариант на странице "Финансы" (если авто-списание почему-то не сработало)
+    const newStatus = status === 'cancelled' ? 'cancelled' : existing.status
     const newIsPaid = is_paid !== undefined ? is_paid : existing.is_paid
 
-    // Если статус оплаты меняется — списываем/возвращаем price с баланса ученика или его семьи
     if (newIsPaid !== existing.is_paid && newPrice) {
       const studentResult = await query(
         `SELECT id, family_id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
@@ -72,7 +76,7 @@ export async function PUT(
         newDate, newTime,
         duration_minutes ?? existing.duration_minutes,
         subject !== undefined ? subject : existing.subject,
-        status || existing.status,
+        newStatus,
         notes !== undefined ? notes : existing.notes,
         originalDate, originalTime,
         newPrice, newIsPaid,

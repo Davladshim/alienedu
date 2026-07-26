@@ -14,13 +14,19 @@ export async function DELETE(
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     const { id } = await params
 
-    const result = await query(
-      `DELETE FROM lesson_templates WHERE id = $1 AND teacher_id = $2`,
-      [id, decoded.id]
-    )
-    if (result.rowCount === 0) {
+    const owner = await query(`SELECT teacher_id FROM lesson_templates WHERE id = $1`, [id])
+    if (owner.rows.length === 0 || owner.rows[0].teacher_id !== decoded.id) {
       return NextResponse.json({ error: 'Не найдено' }, { status: 404 })
     }
+
+    // Ещё не проведённые занятия, сгенерированные из этого слота, тоже убираем —
+    // проведённые остаются в истории
+    await query(
+      `DELETE FROM schedule_lessons WHERE template_id = $1 AND status != 'completed'`,
+      [id]
+    )
+
+    await query(`DELETE FROM lesson_templates WHERE id = $1`, [id])
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { inputStyle, labelStyle, submitButtonDisabledStyle } from '@/components/lesson-blocks/styles'
+import { SubjectPicker, SubjectIcon } from '@/components/subjects'
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 const WEEKDAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -18,6 +19,17 @@ const accentSubmitStyle = {
   background: `linear-gradient(135deg, ${ACCENT}, #c026d3)`,
   color: '#fff', border: 'none', borderRadius: '8px',
   padding: '10px 20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+}
+
+function formatClock(minutes: number): string {
+  const h = Math.floor(((minutes % 1440) + 1440) % 1440 / 60)
+  const m = ((minutes % 60) + 60) % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+function formatTimeRange(time: string, durationMinutes: number): string {
+  const [h, m] = time.split(':').map(Number)
+  const start = h * 60 + m
+  return `${formatClock(start)} · ${formatClock(start + Number(durationMinutes || 0))}`
 }
 
 function todayISO(): string {
@@ -120,7 +132,7 @@ export default function TemplatePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: '1100px', padding: '2rem' }}>
+      <div style={{ width: '95%', maxWidth: '1600px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
           <Link href="/teacher" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>← Кабинет</Link>
@@ -149,7 +161,7 @@ export default function TemplatePage() {
         {loading && <p style={{ color: '#6b7280' }}>Загрузка...</p>}
 
         <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(140px, 1fr))', gap: '10px', minWidth: '980px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(160px, 1fr))', gap: '10px', minWidth: '1120px' }}>
             {WEEKDAYS.map((weekday, dow) => {
               const dayTemplates = templates.filter(t => t.day_of_week === dow)
               const isToday = dow === todayDow
@@ -159,37 +171,32 @@ export default function TemplatePage() {
                   background: '#1a1d27', border: `1px solid ${isToday ? ACCENT : '#2a2d3d'}`,
                   borderRadius: '12px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px',
                 }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? ACCENT : '#fff' }}>
-                      {WEEKDAYS_SHORT[dow]}
-                    </div>
-                    <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '2px' }}>
-                      {dayTemplates.length > 0 ? `${dayTemplates.length} ${dayTemplates.length === 1 ? 'занятие' : 'занятия'}` : 'пусто'}
-                    </div>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? ACCENT : '#fff', textAlign: 'center' }}>
+                    {WEEKDAYS_SHORT[dow]}
                   </div>
+
+                  <button onClick={() => openAddForm(dow)} style={{ ...accentButtonStyle, fontSize: '11px', padding: '5px 8px' }}>+ Добавить</button>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {dayTemplates.map(tpl => (
                       <div key={tpl.id} style={{
-                        padding: '6px 8px', background: '#0f1117', border: '1px solid #2a2d3d',
-                        borderLeftWidth: '3px', borderLeftColor: ACCENT, borderRadius: '6px',
+                        position: 'relative', padding: '8px', background: '#0f1117',
+                        border: `2px solid ${ACCENT}`, borderRadius: '8px', textAlign: 'center',
                       }}>
-                        <div style={{ fontWeight: 600, fontSize: '12px' }}>{tpl.time} · {tpl.student_name}</div>
-                        <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '2px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                          {tpl.subject && <span>{tpl.subject}</span>}
-                          {tpl.price && <span>{tpl.price}₽</span>}
-                          <button
-                            onClick={() => handleDelete(tpl.id)}
-                            style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '11px', padding: 0, marginLeft: 'auto' }}
-                          >
-                            ✕
-                          </button>
+                        <button
+                          onClick={() => handleDelete(tpl.id)}
+                          style={{ position: 'absolute', top: '2px', right: '6px', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '12px', padding: 0 }}
+                        >
+                          ✕
+                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 600, fontSize: '12px' }}>
+                          <span>{formatTimeRange(tpl.time, tpl.duration_minutes)}</span>
+                          {tpl.subject && <SubjectIcon subject={tpl.subject} size={13} />}
                         </div>
+                        <div style={{ color: '#9ca3af', fontSize: '11px', marginTop: '3px' }}>{tpl.student_name}</div>
                       </div>
                     ))}
                   </div>
-
-                  <button onClick={() => openAddForm(dow)} style={{ ...accentButtonStyle, fontSize: '11px', padding: '5px 8px' }}>+ Добавить</button>
                 </div>
               )
             })}
@@ -217,9 +224,9 @@ export default function TemplatePage() {
                 <label style={labelStyle}>Длительность (мин)</label>
                 <input type="number" value={addForm.duration_minutes} onChange={e => setAddForm({ ...addForm, duration_minutes: Number(e.target.value) })} style={{ ...inputStyle, width: '90px' }} />
               </div>
-              <div style={{ flex: 1, minWidth: '140px' }}>
+              <div style={{ minWidth: '200px' }}>
                 <label style={labelStyle}>Предмет</label>
-                <input value={addForm.subject} onChange={e => setAddForm({ ...addForm, subject: e.target.value })} style={inputStyle} placeholder="Математика" />
+                <SubjectPicker value={addForm.subject} onChange={v => setAddForm({ ...addForm, subject: v })} />
               </div>
               <div>
                 <label style={labelStyle}>Цена, ₽</label>

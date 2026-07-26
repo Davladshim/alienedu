@@ -7,7 +7,7 @@
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
 -- Последнее обновление: 26.07.2026
--- Обновлено модулем: platform (lessons.mode — режим Контрольная/Проверочная)
+-- Обновлено модулем: platform (schedule_lessons: пробные уроки, автостатусы)
 -- ============================================================================
 
 
@@ -203,14 +203,18 @@ CREATE INDEX IF NOT EXISTS idx_lesson_templates_teacher ON lesson_templates(teac
 CREATE TABLE IF NOT EXISTS schedule_lessons (
     id SERIAL PRIMARY KEY,
     teacher_id INTEGER NOT NULL REFERENCES users(id),
-    student_id INTEGER NOT NULL REFERENCES users(id),
+    -- NULL допустим только для пробных уроков (is_trial=true) без карточки в ростере —
+    -- тогда имя берётся из student_name
+    student_id INTEGER REFERENCES users(id),
+    student_name VARCHAR(255), -- имя для пробного урока без привязки к ростеру
+    is_trial BOOLEAN NOT NULL DEFAULT false, -- бесплатный пробный урок
     date DATE NOT NULL,
     time VARCHAR(5) NOT NULL, -- 'HH:MM'
     duration_minutes INTEGER NOT NULL DEFAULT 60,
     subject VARCHAR(100),
-    status VARCHAR(20) NOT NULL DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled'
+    status VARCHAR(20) NOT NULL DEFAULT 'scheduled', -- 'scheduled', 'completed', 'cancelled' — меняется автоматически
     price DECIMAL(10, 2), -- копия lesson_price ученика на момент создания занятия (можно менять точечно)
-    is_paid BOOLEAN NOT NULL DEFAULT false, -- списано ли price с баланса ученика/семьи
+    is_paid BOOLEAN NOT NULL DEFAULT false, -- списывается автоматически по завершении занятия
     notes TEXT,
     original_date DATE, -- заполняется при первом переносе — откуда перенесли
     original_time VARCHAR(5),

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { LogoutButton } from '@/components/LogoutButton'
 
 export default function TeacherPage() {
   const [quests, setQuests] = useState<any[]>([])
@@ -31,13 +32,16 @@ export default function TeacherPage() {
       }}>
 
         {/* Шапка */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
-            🪐 Кабинет преподавателя
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
-            AlienEdu — платформа для интерактивных уроков
-          </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
+              🪐 Кабинет преподавателя
+            </h1>
+            <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+              AlienEdu — платформа для интерактивных уроков
+            </p>
+          </div>
+          <LogoutButton />
         </div>
 
         {/* Сетка модулей */}

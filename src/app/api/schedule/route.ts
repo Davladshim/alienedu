@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { autoCompleteDueLessons } from '@/lib/scheduleAutoComplete'
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,10 +18,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Укажите диапазон дат (from, to)' }, { status: 400 })
     }
 
+    await autoCompleteDueLessons()
+
     const result = await query(
-      `SELECT sl.*, u.full_name as student_name
+      `SELECT sl.*, COALESCE(u.full_name, sl.student_name, 'Пробный урок') as student_name
        FROM schedule_lessons sl
-       JOIN users u ON u.id = sl.student_id
+       LEFT JOIN users u ON u.id = sl.student_id
        WHERE sl.teacher_id = $1 AND sl.date BETWEEN $2 AND $3
        ORDER BY sl.date, sl.time`,
       [decoded.id, from, to]
@@ -41,9 +44,23 @@ export async function POST(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    const { student_id, date, time, duration_minutes, subject, notes, price } = await request.json()
+    const { student_id, student_name, is_trial, date, time, duration_minutes, subject, notes, price } = await request.json()
 
-    if (!student_id || !date || !time) {
+    if (!date || !time) {
+      return NextResponse.json({ error: 'Укажите дату и время' }, { status: 400 })
+    }
+
+    if (is_trial) {
+      const result = await query(
+        `INSERT INTO schedule_lessons (teacher_id, student_id, student_name, is_trial, date, time, duration_minutes, subject, notes, price)
+         VALUES ($1, NULL, $2, true, $3, $4, $5, $6, $7, 0)
+         RETURNING id`,
+        [decoded.id, (student_name || '').trim() || null, date, time, duration_minutes || 60, subject || null, notes || null]
+      )
+      return NextResponse.json({ success: true, id: result.rows[0].id })
+    }
+
+    if (!student_id) {
       return NextResponse.json({ error: 'Заполните ученика, дату и время' }, { status: 400 })
     }
 
