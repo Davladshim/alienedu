@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Formula } from './Formula'
-import { labelStyle, textareaStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextarea } from './FormulaTextarea'
+import { labelStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface ShortTextContent {
   question: string
@@ -42,11 +43,10 @@ export function ShortTextEditor({ content, onChange }: {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <label style={labelStyle}>Вопрос</label>
-      <textarea
+      <FormulaTextarea
         value={content.question}
-        onChange={e => onChange({ ...content, question: e.target.value })}
+        onChange={question => onChange({ ...content, question })}
         rows={2}
-        style={textareaStyle}
         placeholder="Например: Как называется раздел физики, изучающий движение?"
       />
       <label style={labelStyle}>Правильные варианты ответа (регистр и пробелы не важны)</label>

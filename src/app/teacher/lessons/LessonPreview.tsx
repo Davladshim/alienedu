@@ -8,7 +8,7 @@ export function LessonPreview({ blocks, onExit }: {
   onExit: () => void
 }) {
   const [index, setIndex] = useState(0)
-  const [answered, setAnswered] = useState(false)
+  const [attempts, setAttempts] = useState(0)
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null)
 
   if (blocks.length === 0) return null
@@ -17,17 +17,22 @@ export function LessonPreview({ blocks, onExit }: {
   const def = blockRegistry[block.type]
   const Player = def.Player
   const isLast = index === blocks.length - 1
+  const retryable = !!block.content.retryable
+  const maxAttempts = block.content.maxAttempts ?? 2
+  const answered = attempts > 0
+  const awaitingRetry = answered && lastCorrect === false && retryable && attempts < maxAttempts
+  const done = answered && !awaitingRetry
 
   function handleSubmit(answer: any) {
     const isCorrect = def.checkAnswer ? def.checkAnswer(block.content, answer) : null
     setLastCorrect(isCorrect)
-    setAnswered(true)
+    setAttempts(a => a + 1)
   }
 
   function next() {
     if (isLast) { onExit(); return }
     setIndex(i => i + 1)
-    setAnswered(false)
+    setAttempts(0)
     setLastCorrect(null)
   }
 
@@ -45,7 +50,7 @@ export function LessonPreview({ blocks, onExit }: {
           {def.checkAnswer === null ? (
             <Player content={block.content} />
           ) : (
-            <Player content={block.content} disabled={answered} onSubmit={handleSubmit} />
+            <Player content={block.content} disabled={done} onSubmit={handleSubmit} />
           )}
 
           {answered && lastCorrect !== null && (
@@ -54,11 +59,21 @@ export function LessonPreview({ blocks, onExit }: {
               background: lastCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
               color: lastCorrect ? '#34d399' : '#f87171',
             }}>
-              {lastCorrect ? '✅ Правильно!' : '❌ Неверно'}
+              {lastCorrect
+                ? '✅ Правильно!'
+                : awaitingRetry
+                  ? `❌ Неверно — попробуй ещё раз (попытка ${attempts} из ${maxAttempts})`
+                  : '❌ Неверно'}
             </div>
           )}
 
-          {(def.checkAnswer === null || answered) && (
+          {done && lastCorrect === false && block.content.explanation && (
+            <div style={{ marginTop: '10px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(251,191,36,0.1)', color: '#fbbf24' }}>
+              Объяснение: {block.content.explanation}
+            </div>
+          )}
+
+          {(def.checkAnswer === null || done) && (
             <button onClick={next} style={{ ...submitButtonStyle, marginTop: '16px' }}>
               {isLast ? 'Завершить' : 'Далее →'}
             </button>

@@ -48,17 +48,17 @@ export async function POST(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    const { title, subject, grade, status, blocks } = await request.json()
+    const { title, subject, grade, status, mode, blocks } = await request.json()
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Введите название урока' }, { status: 400 })
     }
 
     const lessonResult = await query(
-      `INSERT INTO lessons (teacher_id, title, subject, grade, status)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO lessons (teacher_id, title, subject, grade, status, mode)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id`,
-      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft']
+      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz']
     )
     const lessonId = lessonResult.rows[0].id
 

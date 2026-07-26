@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Formula } from './Formula'
-import { labelStyle, inputStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextarea } from './FormulaTextarea'
+import { labelStyle, inputStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface NumericContent {
   question: string
@@ -45,12 +46,11 @@ export function NumericEditor({ content, onChange }: {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <label style={labelStyle}>Вопрос (можно использовать формулы через $...$)</label>
-      <textarea
+      <label style={labelStyle}>Вопрос</label>
+      <FormulaTextarea
         value={content.question}
-        onChange={e => onChange({ ...content, question: e.target.value })}
+        onChange={question => onChange({ ...content, question })}
         rows={2}
-        style={textareaStyle}
         placeholder="Например: Чему равно ускорение свободного падения на Земле, м/с²?"
       />
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>

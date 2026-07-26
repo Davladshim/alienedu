@@ -37,7 +37,7 @@ export default function EditLessonPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title: meta.title, subject: meta.subject, grade: meta.grade || null,
-        status: meta.status, blocks: newBlocks,
+        status: meta.status, mode: meta.mode, blocks: newBlocks,
       }),
     })
     const data = await res.json()
@@ -80,6 +80,7 @@ export default function EditLessonPage() {
       initialSubject={lesson.subject || ''}
       initialGrade={lesson.grade || ''}
       initialStatus={lesson.status === 'published' ? 'published' : 'draft'}
+      initialMode={lesson.mode === 'exam' ? 'exam' : 'quiz'}
       initialBlocks={blocks}
       initialAssignedStudentIds={assignedStudentIds}
       saving={saving}

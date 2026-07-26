@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Formula } from './Formula'
-import { labelStyle, textareaStyle, inputStyle } from './styles'
+import { FormulaTextarea } from './FormulaTextarea'
+import { labelStyle, inputStyle } from './styles'
 
 export interface TheoryContent {
   text: string
@@ -16,12 +17,11 @@ export function TheoryEditor({ content, onChange }: {
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <label style={labelStyle}>Текст (для формул используй $...$ или $$...$$, например $S = \pi r^2$)</label>
-      <textarea
+      <label style={labelStyle}>Текст (кнопки ниже вставляют формулы, можно и вручную через $...$)</label>
+      <FormulaTextarea
         value={content.text}
-        onChange={e => onChange({ ...content, text: e.target.value })}
+        onChange={text => onChange({ ...content, text })}
         rows={5}
-        style={textareaStyle}
         placeholder="Объяснение темы..."
       />
       <label style={labelStyle}>Ссылка на картинку (необязательно)</label>

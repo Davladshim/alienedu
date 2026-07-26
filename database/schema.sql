@@ -7,7 +7,7 @@
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
 -- Последнее обновление: 26.07.2026
--- Обновлено модулем: platform (schedule_lessons.template_id — план/незапланировано для календаря)
+-- Обновлено модулем: platform (lessons.mode — режим Контрольная/Проверочная)
 -- ============================================================================
 
 
@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS lessons (
     subject VARCHAR(100),
     grade INTEGER,
     status VARCHAR(20) NOT NULL DEFAULT 'draft', -- 'draft', 'published'
+    mode VARCHAR(20) NOT NULL DEFAULT 'quiz', -- 'quiz' (Проверочная — сразу видно верно/неверно), 'exam' (Контрольная — без подсказок по ходу, разбор в конце)
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
