@@ -10,9 +10,16 @@ export async function GET(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
+    // Баланс семьи не хранится отдельно — это сумма личных балансов её учеников
     const result = await query(
-      `SELECT id, name, balance, created_at FROM families
-       WHERE teacher_id = $1 ORDER BY name`,
+      `SELECT f.id, f.name, f.created_at,
+         COALESCE(SUM(ts.balance), 0) as balance,
+         COALESCE(AVG(ts.lesson_price) FILTER (WHERE ts.lesson_price IS NOT NULL), 0) as avg_lesson_price
+       FROM families f
+       LEFT JOIN teacher_students ts ON ts.family_id = f.id
+       WHERE f.teacher_id = $1
+       GROUP BY f.id
+       ORDER BY f.name`,
       [decoded.id]
     )
 

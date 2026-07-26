@@ -53,17 +53,13 @@ export async function PUT(
 
     if (newIsPaid !== existing.is_paid && newPrice) {
       const studentResult = await query(
-        `SELECT id, family_id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
+        `SELECT id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
         [decoded.id, existing.student_id]
       )
       const rosterEntry = studentResult.rows[0]
       if (rosterEntry) {
         const delta = newIsPaid ? -newPrice : newPrice
-        if (rosterEntry.family_id) {
-          await query(`UPDATE families SET balance = balance + $1 WHERE id = $2`, [delta, rosterEntry.family_id])
-        } else {
-          await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [delta, rosterEntry.id])
-        }
+        await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [delta, rosterEntry.id])
       }
     }
 
@@ -116,16 +112,12 @@ export async function DELETE(
     // иначе удаление уронит баланс ученика без причины
     if (existing.is_paid && existing.price) {
       const studentResult = await query(
-        `SELECT id, family_id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
+        `SELECT id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
         [decoded.id, existing.student_id]
       )
       const rosterEntry = studentResult.rows[0]
       if (rosterEntry) {
-        if (rosterEntry.family_id) {
-          await query(`UPDATE families SET balance = balance + $1 WHERE id = $2`, [existing.price, rosterEntry.family_id])
-        } else {
-          await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [existing.price, rosterEntry.id])
-        }
+        await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [existing.price, rosterEntry.id])
       }
     }
 

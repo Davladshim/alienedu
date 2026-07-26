@@ -60,13 +60,21 @@ export async function DELETE(
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     const { id } = await params
 
-    const result = await query(
-      `DELETE FROM teacher_students WHERE id = $1 AND teacher_id = $2`,
-      [id, decoded.id]
-    )
-    if (result.rowCount === 0) {
+    const existing = await query(`SELECT * FROM teacher_students WHERE id = $1 AND teacher_id = $2`, [id, decoded.id])
+    if (existing.rows.length === 0) {
       return NextResponse.json({ error: 'Не найдено' }, { status: 404 })
     }
+    const studentId = existing.rows[0].student_id
+
+    // Убираем ещё не проведённые занятия и шаблон этого ученика — проведённые
+    // уроки остаются в истории, даже когда его больше нет в ростере
+    await query(
+      `DELETE FROM schedule_lessons WHERE teacher_id = $1 AND student_id = $2 AND status != 'completed'`,
+      [decoded.id, studentId]
+    )
+    await query(`DELETE FROM lesson_templates WHERE teacher_id = $1 AND student_id = $2`, [decoded.id, studentId])
+
+    await query(`DELETE FROM teacher_students WHERE id = $1`, [id])
 
     return NextResponse.json({ success: true })
   } catch (error) {

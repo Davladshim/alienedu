@@ -66,7 +66,7 @@ export default function StudentsPage() {
       setNewStudentName('')
       loadAll()
     } else {
-      setError(data.error || 'Ошибка')
+      setError(data.detail ? `${data.error || 'Ошибка'}: ${data.detail}` : (data.error || 'Ошибка'))
     }
   }
 
@@ -97,7 +97,7 @@ export default function StudentsPage() {
   }
 
   async function handleRemove(id: number) {
-    if (!confirm('Убрать ученика из списка?')) return
+    if (!confirm('Убрать ученика из списка? Ещё не проведённые занятия и шаблон с ним удалятся, проведённые останутся в истории.')) return
     const res = await fetch(`/api/students/${id}`, { method: 'DELETE' })
     if (res.ok) {
       setStudents(s => s.filter(st => st.id !== id))
@@ -118,6 +118,12 @@ export default function StudentsPage() {
       setNewFamilyName('')
       loadAll()
     }
+  }
+
+  async function handleDeleteFamily(id: number) {
+    if (!confirm('Удалить семью? Ученики останутся в списке со своим личным балансом, просто больше не будут сгруппированы.')) return
+    const res = await fetch(`/api/families/${id}`, { method: 'DELETE' })
+    if (res.ok) loadAll()
   }
 
   function openRow(student: any) {
@@ -190,12 +196,27 @@ export default function StudentsPage() {
           <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>Семьи (общий баланс на нескольких учеников)</div>
           {families.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
-              {families.map(f => (
-                <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', padding: '6px 0' }}>
-                  <span>{f.name}</span>
-                  <span style={{ color: Number(f.balance) < 0 ? '#f87171' : '#9ca3af' }}>{formatMoney(f.balance)} ₽</span>
-                </div>
-              ))}
+              {families.map(f => {
+                const balance = Number(f.balance)
+                const avgPrice = Number(f.avg_lesson_price)
+                const available = balance > 0 && avgPrice > 0 ? Math.floor(balance / avgPrice) : 0
+                return (
+                  <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '6px 0' }}>
+                    <span>{f.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ color: balance < 0 ? '#f87171' : '#9ca3af' }}>
+                        {formatMoney(f.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteFamily(f.id)}
+                        style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '13px' }}
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
           <form onSubmit={handleCreateFamily} style={{ display: 'flex', gap: '10px' }}>
@@ -288,11 +309,39 @@ export default function StudentsPage() {
           </div>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {students.map(student => {
-            const isOpen = expandedId === student.id
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {families.map(family => {
+            const members = students.filter(s => s.family_id === family.id)
+            if (members.length === 0) return null
+            const balance = Number(family.balance)
+            const avgPrice = Number(family.avg_lesson_price)
+            const available = balance > 0 && avgPrice > 0 ? Math.floor(balance / avgPrice) : 0
             return (
-              <div key={student.id} style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '12px' }}>
+              <div key={`family-${family.id}`} style={{ border: '1px solid #4f8ef7', borderRadius: '16px', padding: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px 10px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#4f8ef7' }}>👪 {family.name}</span>
+                  <span style={{ fontSize: '13px', color: balance < 0 ? '#f87171' : '#9ca3af' }}>
+                    {formatMoney(family.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {members.map(student => renderStudentCard(student))}
+                </div>
+              </div>
+            )
+          })}
+
+          {students.filter(s => !s.family_id).map(student => renderStudentCard(student))}
+        </div>
+
+      </div>
+    </div>
+  )
+
+  function renderStudentCard(student: any) {
+    const isOpen = expandedId === student.id
+    return (
+      <div key={student.id} style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '12px' }}>
                 <div
                   onClick={() => openRow(student)}
                   style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
@@ -401,12 +450,7 @@ export default function StudentsPage() {
                     )}
                   </div>
                 )}
-              </div>
-            )
-          })}
-        </div>
-
       </div>
-    </div>
-  )
+    )
+  }
 }

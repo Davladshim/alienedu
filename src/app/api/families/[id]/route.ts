@@ -22,11 +22,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
     }
 
-    const members = await query(`SELECT 1 FROM teacher_students WHERE family_id = $1`, [id])
-    if (members.rows.length > 0) {
-      return NextResponse.json({ error: 'Сначала убери всех учеников из этой семьи' }, { status: 400 })
-    }
-
+    // Учеников не удаляем — просто разгруппировываем, у каждого остаётся его
+    // личный баланс
+    await query(`UPDATE teacher_students SET family_id = NULL WHERE family_id = $1`, [id])
     await query(`DELETE FROM families WHERE id = $1`, [id])
 
     return NextResponse.json({ success: true })

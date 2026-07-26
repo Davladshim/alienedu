@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const result = await query(
       `SELECT ts.id, u.id as student_id, u.full_name, u.login, u.is_placeholder, ts.created_at,
          ts.lesson_price, ts.family_id, f.name as family_name,
-         COALESCE(f.balance, ts.balance) as balance,
+         ts.balance as balance,
          COALESCE(prog.assigned_count, 0) as assigned_count,
          COALESCE(prog.completed_count, 0) as completed_count
        FROM teacher_students ts
@@ -118,6 +118,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Ошибка добавления ученика:', error)
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
+    // Временная диагностика: показываем текст реальной ошибки, чтобы понять,
+    // почему это падает на проде (убрать после того как разберёмся)
+    const detail = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: 'Ошибка сервера', detail }, { status: 500 })
   }
 }

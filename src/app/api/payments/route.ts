@@ -56,11 +56,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
     }
 
-    if (student.family_id) {
-      await query(`UPDATE families SET balance = balance + $1 WHERE id = $2`, [amount, student.family_id])
-    } else {
-      await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [amount, teacher_student_id])
-    }
+    // Пополнение всегда идёт на личный баланс ученика — даже если он в семье,
+    // баланс семьи это просто сумма балансов её учеников
+    await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [amount, teacher_student_id])
 
     const result = await query(
       `INSERT INTO payments (teacher_id, teacher_student_id, amount, description)
