@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { query } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
@@ -11,7 +13,7 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const result = await query(
-      `SELECT ts.id, u.id as student_id, u.full_name, u.login, ts.created_at,
+      `SELECT ts.id, u.id as student_id, u.full_name, u.login, u.is_placeholder, ts.created_at,
          ts.lesson_price, ts.family_id, f.name as family_name,
          COALESCE(f.balance, ts.balance) as balance,
          COALESCE(prog.assigned_count, 0) as assigned_count,
@@ -53,24 +55,42 @@ export async function POST(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    const { login } = await request.json()
-    if (!login || !login.trim()) {
-      return NextResponse.json({ error: 'Введите логин ученика' }, { status: 400 })
-    }
+    const { login, full_name } = await request.json()
 
-    const userResult = await query(
-      `SELECT id, full_name, login, role FROM users WHERE login = $1`,
-      [login.trim()]
-    )
-    if (userResult.rows.length === 0) {
-      return NextResponse.json({ error: 'Ученик с таким логином не найден' }, { status: 404 })
-    }
-    const student = userResult.rows[0]
-    if (student.role !== 'student') {
-      return NextResponse.json({ error: 'Этот логин принадлежит не ученику' }, { status: 400 })
-    }
-    if (student.id === decoded.id) {
-      return NextResponse.json({ error: 'Нельзя добавить самого себя' }, { status: 400 })
+    let student: { id: number; full_name: string; login: string; is_placeholder?: boolean }
+
+    if (full_name && full_name.trim()) {
+      // Ученик ещё не зарегистрирован — заводим карточку-заглушку,
+      // которую можно будет привязать к реальному аккаунту позже
+      const placeholderLogin = `_placeholder_${crypto.randomBytes(12).toString('hex')}`
+      const placeholderCode = crypto.randomBytes(24).toString('hex')
+      const codeHash = await bcrypt.hash(placeholderCode, 10)
+
+      const created = await query(
+        `INSERT INTO users (full_name, login, code_hash, role, is_placeholder)
+         VALUES ($1, $2, $3, 'student', true)
+         RETURNING id, full_name, login, is_placeholder`,
+        [full_name.trim(), placeholderLogin, codeHash]
+      )
+      student = created.rows[0]
+    } else if (login && login.trim()) {
+      const userResult = await query(
+        `SELECT id, full_name, login, role FROM users WHERE login = $1`,
+        [login.trim()]
+      )
+      if (userResult.rows.length === 0) {
+        return NextResponse.json({ error: 'Ученик с таким логином не найден' }, { status: 404 })
+      }
+      const found = userResult.rows[0]
+      if (found.role !== 'student') {
+        return NextResponse.json({ error: 'Этот логин принадлежит не ученику' }, { status: 400 })
+      }
+      if (found.id === decoded.id) {
+        return NextResponse.json({ error: 'Нельзя добавить самого себя' }, { status: 400 })
+      }
+      student = found
+    } else {
+      return NextResponse.json({ error: 'Введите логин ученика или имя' }, { status: 400 })
     }
 
     const existing = await query(
@@ -93,6 +113,7 @@ export async function POST(request: NextRequest) {
         student_id: student.id,
         full_name: student.full_name,
         login: student.login,
+        is_placeholder: !!student.is_placeholder,
       },
     })
   } catch (error) {

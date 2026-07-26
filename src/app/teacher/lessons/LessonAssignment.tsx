@@ -66,7 +66,11 @@ export function LessonAssignment({ lessonId, initialAssignedIds }: {
                 onChange={() => toggle(student.student_id)}
               />
               <span style={{ fontSize: '14px' }}>{student.full_name}</span>
-              <span style={{ color: '#6b7280', fontSize: '12px' }}>@{student.login}</span>
+              {student.is_placeholder ? (
+                <span style={{ color: '#fbbf24', fontSize: '12px' }}>не зарегистрирован</span>
+              ) : (
+                <span style={{ color: '#6b7280', fontSize: '12px' }}>@{student.login}</span>
+              )}
             </label>
           ))}
         </div>

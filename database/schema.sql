@@ -7,7 +7,7 @@
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
 -- Последнее обновление: 26.07.2026
--- Обновлено модулем: platform (добавлена lesson_templates — шаблон недели)
+-- Обновлено модулем: platform (users.is_placeholder — незарегистрированные ученики в ростере)
 -- ============================================================================
 
 
@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) NOT NULL DEFAULT 'student',
     secret_question VARCHAR(255),
     secret_answer_hash VARCHAR(255),
+    -- заглушка вместо реального аккаунта: репетитор завёл карточку ученика
+    -- в ростере до того, как тот сам зарегистрировался; login/code_hash —
+    -- случайные и нерабочие, вход под таким аккаунтом всегда отклоняется
+    is_placeholder BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
