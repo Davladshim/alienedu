@@ -7,11 +7,26 @@ interface Model {
   label: string;
 }
 
+interface StereoCode {
+  id: number;
+  code: string;
+  status: string;
+  first_used_at: string | null;
+  valid_days: number;
+  created_at: string;
+}
+
 export default function StereoAdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [tab, setTab] = useState<"tasks" | "codes">("tasks");
   const [models, setModels] = useState<Model[]>([]);
+  const [codes, setCodes] = useState<StereoCode[]>([]);
+  const [codeCount, setCodeCount] = useState("1");
+  const [codeValidDays, setCodeValidDays] = useState("30");
+  const [newCodes, setNewCodes] = useState<string[]>([]);
+  const [codesLoading, setCodesLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [condition, setCondition] = useState("");
   const [solution, setSolution] = useState("");
@@ -111,6 +126,39 @@ export default function StereoAdminPage() {
     }
   }
 
+  async function loadCodes() {
+    setCodesLoading(true);
+    const res = await fetch("/api/stereo-admin-codes");
+    if (res.ok) setCodes(await res.json());
+    setCodesLoading(false);
+  }
+
+  async function handleGenerateCodes(e: React.FormEvent) {
+    e.preventDefault();
+    setCodesLoading(true);
+    setNewCodes([]);
+    const res = await fetch("/api/stereo-admin-codes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ count: Number(codeCount), validDays: Number(codeValidDays) }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setNewCodes(data.codes);
+      loadCodes();
+    }
+    setCodesLoading(false);
+  }
+
+  async function handleRevokeCode(codeId: number) {
+    await fetch("/api/stereo-admin-codes", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codeId }),
+    });
+    loadCodes();
+  }
+
   const inputStyle = {
     width: "100%",
     padding: "10px 14px",
@@ -182,12 +230,106 @@ export default function StereoAdminPage() {
     );
   }
 
+  const badgeStyle = (status: string) => ({
+    display: "inline-block", padding: "2px 8px", borderRadius: 6, fontSize: "0.72rem",
+    background: status === "active" ? "rgba(16,185,129,0.15)" : status === "expired" ? "rgba(239,68,68,0.15)" : "rgba(107,114,128,0.15)",
+    color: status === "active" ? "#10b981" : status === "expired" ? "#ef4444" : "#6b7280",
+  } as React.CSSProperties);
+
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "48px 24px" }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24 }}>
-        StereoSpace — добавить задачу
+        StereoSpace — админка
       </h1>
 
+      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+        <button
+          onClick={() => setTab("tasks")}
+          style={{
+            padding: "8px 20px", borderRadius: 8, cursor: "pointer", fontSize: "0.9rem",
+            border: tab === "tasks" ? "1px solid #3b82f6" : "1px solid #1e2029",
+            background: tab === "tasks" ? "rgba(59,130,246,0.15)" : "#1e2029",
+            color: tab === "tasks" ? "#60a5fa" : "#6b7280",
+          }}
+        >
+          Задачи
+        </button>
+        <button
+          onClick={() => { setTab("codes"); loadCodes(); }}
+          style={{
+            padding: "8px 20px", borderRadius: 8, cursor: "pointer", fontSize: "0.9rem",
+            border: tab === "codes" ? "1px solid #3b82f6" : "1px solid #1e2029",
+            background: tab === "codes" ? "rgba(59,130,246,0.15)" : "#1e2029",
+            color: tab === "codes" ? "#60a5fa" : "#6b7280",
+          }}
+        >
+          Коды доступа
+        </button>
+      </div>
+
+      {tab === "codes" && (
+        <div>
+          <div style={{ background: "#1e2029", border: "1px solid #2a2d3a", borderRadius: 12, padding: 20, marginBottom: 24 }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>Сгенерировать коды подписки</div>
+            <p style={{ color: "#6b7280", fontSize: "0.82rem", marginBottom: 16 }}>
+              Один код открывает весь банк задач StereoSpace на указанное число дней.
+            </p>
+            <form onSubmit={handleGenerateCodes} style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
+              <div>
+                <label style={labelStyle}>Количество кодов</label>
+                <input style={{ ...inputStyle, width: 140, marginBottom: 0 }} type="number" min="1" max="50" value={codeCount} onChange={(e) => setCodeCount(e.target.value)} />
+              </div>
+              <div>
+                <label style={labelStyle}>Срок действия (дней)</label>
+                <input style={{ ...inputStyle, width: 140, marginBottom: 0 }} type="number" min="1" value={codeValidDays} onChange={(e) => setCodeValidDays(e.target.value)} />
+              </div>
+              <button
+                type="submit"
+                disabled={codesLoading}
+                style={{
+                  padding: "10px 20px", borderRadius: 8, border: "none",
+                  background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff",
+                  fontSize: "0.9rem", fontWeight: 600, cursor: codesLoading ? "not-allowed" : "pointer",
+                }}
+              >
+                {codesLoading ? "Генерируем..." : "Сгенерировать"}
+              </button>
+            </form>
+            {newCodes.length > 0 && (
+              <div style={{ marginTop: 16, background: "#12131a", borderRadius: 8, padding: 16 }}>
+                <div style={{ color: "#10b981", fontSize: "0.85rem", marginBottom: 8 }}>✅ Новые коды:</div>
+                {newCodes.map((c) => (
+                  <div key={c} style={{ fontFamily: "monospace", fontSize: "1rem", color: "#fff", marginBottom: 4 }}>{c}</div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {codes.length === 0 && <p style={{ color: "#6b7280" }}>Кодов пока нет</p>}
+          {codes.map((c) => (
+            <div key={c.id} style={{ background: "#1e2029", border: "1px solid #2a2d3a", borderRadius: 12, padding: 20, marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <span style={{ fontFamily: "monospace", fontSize: "1rem", color: "#fff", marginRight: 12 }}>{c.code}</span>
+                <span style={badgeStyle(c.status)}>{c.status}</span>
+                <div style={{ color: "#6b7280", fontSize: "0.78rem", marginTop: 4 }}>
+                  {c.valid_days} дн.
+                  {c.first_used_at && ` · использован ${new Date(c.first_used_at).toLocaleDateString("ru")}`}
+                </div>
+              </div>
+              {c.status === "active" && (
+                <button
+                  style={{ background: "#7f1d1d", color: "#fca5a5", border: "none", borderRadius: 6, padding: "4px 10px", fontSize: "0.78rem", cursor: "pointer" }}
+                  onClick={() => handleRevokeCode(c.id)}
+                >
+                  Отозвать
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "tasks" && (
       <form onSubmit={handleSubmit}>
         <label style={labelStyle}>Название задачи *</label>
         <input style={inputStyle} value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -275,6 +417,7 @@ export default function StereoAdminPage() {
           {saving ? "Сохраняем..." : "Добавить задачу"}
         </button>
       </form>
+      )}
     </div>
   );
 }

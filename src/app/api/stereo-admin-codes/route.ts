@@ -3,7 +3,7 @@ import { query } from "@/lib/db";
 import crypto from "crypto";
 
 function checkAdmin(req: NextRequest): boolean {
-  const session = req.cookies.get("admin_session_shop");
+  const session = req.cookies.get("stereo_admin_session");
   return session?.value === process.env.ADMIN_SECRET;
 }
 
@@ -16,17 +16,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Нет доступа" }, { status: 401 });
   }
 
-  const presentationId = req.nextUrl.searchParams.get("presentationId");
-
   try {
     const result = await query(
-      `SELECT ac.id, ac.code, ac.status, ac.first_used_at, ac.valid_days, ac.created_at,
-              p.title as presentation_title
-       FROM access_codes ac
-       LEFT JOIN presentations p ON p.id = ac.presentation_id
-       WHERE ($1::int IS NULL OR ac.presentation_id = $1::int)
-       ORDER BY ac.created_at DESC`,
-      [presentationId || null]
+      `SELECT id, code, status, first_used_at, valid_days, created_at
+       FROM stereo_access_codes
+       ORDER BY created_at DESC`
     );
     return NextResponse.json(result.rows);
   } catch (error) {
@@ -41,13 +35,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { presentationId, count = 1, validDays = 10 } = await req.json();
-
-    // presentationId === null явно означает подписку на весь магазин.
-    // undefined/не передано — ошибка, ничего не выбрано.
-    if (presentationId === undefined) {
-      return NextResponse.json({ error: "Укажи презентацию или подписку на весь магазин" }, { status: 400 });
-    }
+    const { count = 1, validDays = 30 } = await req.json();
 
     const codes: string[] = [];
 
@@ -58,8 +46,8 @@ export async function POST(req: NextRequest) {
       while (attempts < 10) {
         try {
           await query(
-            `INSERT INTO access_codes (code, presentation_id, valid_days) VALUES ($1, $2, $3)`,
-            [code, presentationId, validDays]
+            `INSERT INTO stereo_access_codes (code, valid_days) VALUES ($1, $2)`,
+            [code, validDays]
           );
           codes.push(code);
           break;
@@ -84,7 +72,7 @@ export async function DELETE(req: NextRequest) {
 
   try {
     const { codeId } = await req.json();
-    await query(`UPDATE access_codes SET status = 'revoked' WHERE id = $1`, [codeId]);
+    await query(`UPDATE stereo_access_codes SET status = 'revoked' WHERE id = $1`, [codeId]);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error(error);

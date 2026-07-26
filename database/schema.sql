@@ -246,11 +246,12 @@ CREATE TABLE IF NOT EXISTS presentations (
     updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Коды доступа — один код = один доступ к одной презентации
+-- Коды доступа — один код = один доступ к одной презентации,
+-- presentation_id = NULL означает подписку на весь магазин (все презентации)
 CREATE TABLE IF NOT EXISTS access_codes (
     id SERIAL PRIMARY KEY,
     code VARCHAR(64) UNIQUE NOT NULL, -- сам код-ключ
-    presentation_id INTEGER NOT NULL REFERENCES presentations(id),
+    presentation_id INTEGER REFERENCES presentations(id), -- NULL = подписка на весь магазин
 
     -- Если покупатель был залогинен на платформе в момент покупки — связь с его аккаунтом.
     -- Может быть NULL для анонимных покупок (просто код, без привязки к платформе).
