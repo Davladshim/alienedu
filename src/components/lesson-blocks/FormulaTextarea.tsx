@@ -1,25 +1,12 @@
 'use client'
 import { useRef, useState } from 'react'
 import { textareaStyle } from './styles'
+import { FormulaEditorModal } from './FormulaEditorModal'
 
-const SYMBOLS: { label: string; snippet: string }[] = [
-  { label: 'дробь', snippet: '\\frac{a}{b}' },
-  { label: 'степень', snippet: 'x^{2}' },
-  { label: 'корень', snippet: '\\sqrt{x}' },
-  { label: '±', snippet: '\\pm' },
-  { label: '≤', snippet: '\\leq' },
-  { label: '≥', snippet: '\\geq' },
-  { label: '≠', snippet: '\\neq' },
-  { label: 'π', snippet: '\\pi' },
-  { label: '∆', snippet: '\\Delta' },
-  { label: '°', snippet: '^{\\circ}' },
-  { label: '∞', snippet: '\\infty' },
-  { label: 'индекс', snippet: 'x_{1}' },
-]
-
-// Textarea с кнопками вставки формул — оборачивает выделенный/введённый
-// фрагмент в $...$ (или $$...$$ для формулы по центру), не требуя от
-// преподавателя знания синтаксиса LaTeX
+// Textarea с визуальным конструктором формул — открывает окно, где формула
+// вводится и сразу выглядит как формула (не как код), готовый LaTeX
+// оборачивается в $...$ (или $$...$$ для формулы по центру) и вставляется
+// в текст на месте курсора
 export function FormulaTextarea({ value, onChange, rows = 2, placeholder }: {
   value: string
   onChange: (value: string) => void
@@ -28,10 +15,11 @@ export function FormulaTextarea({ value, onChange, rows = 2, placeholder }: {
 }) {
   const ref = useRef<HTMLTextAreaElement>(null)
   const [centered, setCentered] = useState(false)
+  const [editorOpen, setEditorOpen] = useState(false)
 
-  function insert(snippet: string) {
+  function insert(latex: string) {
     const wrap = centered ? '$$' : '$'
-    const wrapped = `${wrap}${snippet}${wrap}`
+    const wrapped = `${wrap}${latex}${wrap}`
     const el = ref.current
     if (!el) {
       onChange(value + wrapped)
@@ -58,25 +46,26 @@ export function FormulaTextarea({ value, onChange, rows = 2, placeholder }: {
         style={textareaStyle}
         placeholder={placeholder}
       />
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', marginTop: '6px' }}>
-        {SYMBOLS.map(s => (
-          <button
-            key={s.label}
-            type="button"
-            onClick={() => insert(s.snippet)}
-            style={{
-              background: '#0f1117', border: '1px solid #2a2d3d', color: '#9ca3af',
-              borderRadius: '6px', padding: '3px 9px', fontSize: '12px', cursor: 'pointer',
-            }}
-          >
-            {s.label}
-          </button>
-        ))}
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#6b7280', marginLeft: '6px', cursor: 'pointer' }}>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '6px' }}>
+        <button
+          type="button"
+          onClick={() => setEditorOpen(true)}
+          style={{
+            background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+            borderRadius: '6px', padding: '5px 12px', fontSize: '12px', cursor: 'pointer',
+          }}
+        >
+          🧮 Вставить формулу
+        </button>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#6b7280', cursor: 'pointer' }}>
           <input type="checkbox" checked={centered} onChange={e => setCentered(e.target.checked)} />
           формула по центру
         </label>
       </div>
+
+      {editorOpen && (
+        <FormulaEditorModal onInsert={insert} onClose={() => setEditorOpen(false)} />
+      )}
     </div>
   )
 }

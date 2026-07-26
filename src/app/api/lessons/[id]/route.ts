@@ -42,10 +42,20 @@ export async function GET(
       [lessonId]
     )
 
+    // Прошлые попытки текущего пользователя — чтобы плеер урока мог
+    // восстановить прогресс после перезагрузки страницы, а не начинать заново
+    const attemptsResult = await query(
+      `SELECT block_id, answer, is_correct, completed_at FROM lesson_attempts
+       WHERE lesson_id = $1 AND student_id = $2
+       ORDER BY completed_at ASC`,
+      [lessonId, decoded.id]
+    )
+
     return NextResponse.json({
       lesson,
       blocks: blocksResult.rows,
       assigned_student_ids: assignmentsResult.rows.map(r => r.student_id),
+      attempts: attemptsResult.rows,
     })
   } catch (error) {
     console.error('Ошибка получения урока:', error)

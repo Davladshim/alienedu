@@ -22,6 +22,13 @@ interface BlockState {
   done: boolean
 }
 
+interface Attempt {
+  block_id: string | number
+  answer: unknown
+  is_correct: boolean | null
+  completed_at: string
+}
+
 const EMPTY_STATE: BlockState = { attempts: 0, isCorrect: null, skipped: false, done: false }
 
 export default function StudentLessonPage() {
@@ -44,9 +51,50 @@ export default function StudentLessonPage() {
       .then(async r => {
         if (!r.ok) { setNotFound(true); setLoading(false); return }
         const data = await r.json()
+        const lessonMode = data.lesson.mode === 'exam' ? 'exam' : 'quiz'
+        const loadedBlocks: LessonBlockData[] = (data.blocks || []).map((b: any) => ({ id: String(b.id), type: b.type, content: b.content }))
         setLessonTitle(data.lesson.title)
-        setMode(data.lesson.mode === 'exam' ? 'exam' : 'quiz')
-        setBlocks((data.blocks || []).map((b: any) => ({ id: String(b.id), type: b.type, content: b.content })))
+        setMode(lessonMode)
+        setBlocks(loadedBlocks)
+
+        // Восстанавливаем прогресс из прошлых попыток — иначе перезагрузка
+        // страницы сбрасывала бы все уже зафиксированные ответы
+        const attemptsByBlock: Record<string, Attempt[]> = {}
+        for (const a of (data.attempts || []) as Attempt[]) {
+          const key = String(a.block_id)
+          if (!attemptsByBlock[key]) attemptsByBlock[key] = []
+          attemptsByBlock[key].push(a)
+        }
+        const restored: Record<string, BlockState> = {}
+        for (const b of loadedBlocks) {
+          const rows = attemptsByBlock[b.id]
+          if (!rows || rows.length === 0) continue
+          const def = blockRegistry[b.type]
+          if (def.checkAnswer === null) {
+            restored[b.id] = { ...EMPTY_STATE, done: true }
+            continue
+          }
+          const last = rows[rows.length - 1]
+          const isSkip = last.answer === null && last.is_correct === false
+          if (isSkip) {
+            restored[b.id] = { attempts: rows.length, isCorrect: false, skipped: true, done: true }
+            continue
+          }
+          const isCorrect = last.is_correct === true
+          const retryable = !!b.content.retryable
+          const maxAttempts = b.content.maxAttempts ?? 2
+          const done = isCorrect || lessonMode === 'exam' || !retryable || rows.length >= maxAttempts
+          restored[b.id] = { attempts: rows.length, isCorrect: last.is_correct, skipped: false, done }
+        }
+        setBlockStates(restored)
+
+        if (loadedBlocks.length > 0 && loadedBlocks.every(b => restored[b.id]?.done)) {
+          setFinished(true)
+        } else {
+          const resumeIndex = loadedBlocks.findIndex(b => !restored[b.id]?.done)
+          setIndex(resumeIndex === -1 ? 0 : resumeIndex)
+        }
+
         setLoading(false)
       })
       .catch(() => { setNotFound(true); setLoading(false) })
