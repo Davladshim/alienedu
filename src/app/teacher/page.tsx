@@ -141,19 +141,25 @@ export default function TeacherPage() {
 
         </div>
 
-        {/* Календарь — заглушка */}
-        <div style={{
-          background: '#1a1d27', border: '1px solid #2a2d3d',
-          borderRadius: '16px', padding: '2rem',
-          minHeight: '200px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{ textAlign: 'center', color: '#4b5563' }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>📅</div>
-            <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '4px' }}>Календарь преподавателя</div>
-            <div style={{ fontSize: '13px' }}>Здесь будет Календаша — скоро</div>
+        {/* Расписание */}
+        <Link href="/teacher/calendar" style={{ textDecoration: 'none' }}>
+          <div style={{
+            background: '#1a1d27', border: '1px solid #2a2d3d',
+            borderRadius: '16px', padding: '2rem',
+            minHeight: '120px', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: '20px',
+            transition: 'border-color 0.2s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+          >
+            <div style={{ fontSize: '40px' }}>📅</div>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '4px', color: '#fff' }}>Расписание</div>
+              <div style={{ fontSize: '13px', color: '#6b7280' }}>Занятия по неделям, переносы, отмены</div>
+            </div>
           </div>
-        </div>
+        </Link>
 
       </div>
     </div>
