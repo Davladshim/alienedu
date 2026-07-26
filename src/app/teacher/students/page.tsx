@@ -221,6 +221,7 @@ export default function StudentsPage() {
                     <div style={{ fontWeight: 600, fontSize: '15px' }}>{student.full_name}</div>
                     <div style={{ color: '#6b7280', fontSize: '13px', marginTop: '2px' }}>
                       @{student.login}{student.family_name ? ` · семья: ${student.family_name}` : ''}
+                      {Number(student.assigned_count) > 0 && ` · уроков пройдено: ${student.completed_count}/${student.assigned_count}`}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>

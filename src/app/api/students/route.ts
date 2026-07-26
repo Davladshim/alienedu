@@ -13,10 +13,26 @@ export async function GET(request: NextRequest) {
     const result = await query(
       `SELECT ts.id, u.id as student_id, u.full_name, u.login, ts.created_at,
          ts.lesson_price, ts.family_id, f.name as family_name,
-         COALESCE(f.balance, ts.balance) as balance
+         COALESCE(f.balance, ts.balance) as balance,
+         COALESCE(prog.assigned_count, 0) as assigned_count,
+         COALESCE(prog.completed_count, 0) as completed_count
        FROM teacher_students ts
        JOIN users u ON u.id = ts.student_id
        LEFT JOIN families f ON f.id = ts.family_id
+       LEFT JOIN LATERAL (
+         SELECT
+           COUNT(*) as assigned_count,
+           COUNT(*) FILTER (WHERE total_blocks > 0 AND answered_blocks >= total_blocks) as completed_count
+         FROM (
+           SELECT
+             (SELECT COUNT(*) FROM lesson_blocks lb WHERE lb.lesson_id = l.id) as total_blocks,
+             (SELECT COUNT(DISTINCT block_id) FROM lesson_attempts att
+               WHERE att.lesson_id = l.id AND att.student_id = ts.student_id) as answered_blocks
+           FROM lesson_assignments la
+           JOIN lessons l ON l.id = la.lesson_id AND l.status = 'published'
+           WHERE la.student_id = ts.student_id
+         ) per_lesson
+       ) prog ON true
        WHERE ts.teacher_id = $1
        ORDER BY u.full_name`,
       [decoded.id]

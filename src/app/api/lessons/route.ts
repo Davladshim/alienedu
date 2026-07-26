@@ -11,10 +11,25 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const result = await query(
-      `SELECT id, title, subject, grade, status, created_at, updated_at
-       FROM lessons
-       WHERE teacher_id = $1
-       ORDER BY updated_at DESC`,
+      `SELECT l.id, l.title, l.subject, l.grade, l.status, l.created_at, l.updated_at,
+         COALESCE(stats.assigned_count, 0) as assigned_count,
+         COALESCE(stats.completed_count, 0) as completed_count
+       FROM lessons l
+       LEFT JOIN LATERAL (
+         SELECT
+           COUNT(*) as assigned_count,
+           COUNT(*) FILTER (WHERE total_blocks > 0 AND answered_blocks >= total_blocks) as completed_count
+         FROM (
+           SELECT la.student_id,
+             (SELECT COUNT(*) FROM lesson_blocks lb WHERE lb.lesson_id = l.id) as total_blocks,
+             (SELECT COUNT(DISTINCT block_id) FROM lesson_attempts att
+               WHERE att.lesson_id = l.id AND att.student_id = la.student_id) as answered_blocks
+           FROM lesson_assignments la
+           WHERE la.lesson_id = l.id
+         ) per_student
+       ) stats ON true
+       WHERE l.teacher_id = $1
+       ORDER BY l.updated_at DESC`,
       [decoded.id]
     )
 

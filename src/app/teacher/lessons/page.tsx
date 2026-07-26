@@ -69,6 +69,7 @@ export default function LessonsPage() {
                 <div style={{ fontWeight: 600, fontSize: '15px' }}>{lesson.title}</div>
                 <div style={{ color: '#6b7280', fontSize: '13px', marginTop: '2px' }}>
                   {[lesson.subject, lesson.grade ? `${lesson.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
+                  {Number(lesson.assigned_count) > 0 && ` · прошли ${lesson.completed_count} из ${lesson.assigned_count}`}
                 </div>
               </div>
               <span style={{
