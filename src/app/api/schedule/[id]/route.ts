@@ -23,7 +23,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
     }
 
-    const { date, time, duration_minutes, subject, status, notes } = await request.json()
+    const { date, time, duration_minutes, subject, status, notes, price, is_paid } = await request.json()
 
     const newDate = date || existing.date
     const newTime = time || existing.time
@@ -32,11 +32,31 @@ export async function PUT(
     const originalDate = isMoved && !existing.original_date ? existing.date : existing.original_date
     const originalTime = isMoved && !existing.original_time ? existing.time : existing.original_time
 
+    const newPrice = price !== undefined ? price : existing.price
+    const newIsPaid = is_paid !== undefined ? is_paid : existing.is_paid
+
+    // Если статус оплаты меняется — списываем/возвращаем price с баланса ученика или его семьи
+    if (newIsPaid !== existing.is_paid && newPrice) {
+      const studentResult = await query(
+        `SELECT id, family_id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
+        [decoded.id, existing.student_id]
+      )
+      const rosterEntry = studentResult.rows[0]
+      if (rosterEntry) {
+        const delta = newIsPaid ? -newPrice : newPrice
+        if (rosterEntry.family_id) {
+          await query(`UPDATE families SET balance = balance + $1 WHERE id = $2`, [delta, rosterEntry.family_id])
+        } else {
+          await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [delta, rosterEntry.id])
+        }
+      }
+    }
+
     await query(
       `UPDATE schedule_lessons
        SET date = $1, time = $2, duration_minutes = $3, subject = $4, status = $5, notes = $6,
-           original_date = $7, original_time = $8, updated_at = NOW()
-       WHERE id = $9`,
+           original_date = $7, original_time = $8, price = $9, is_paid = $10, updated_at = NOW()
+       WHERE id = $11`,
       [
         newDate, newTime,
         duration_minutes ?? existing.duration_minutes,
@@ -44,6 +64,7 @@ export async function PUT(
         status || existing.status,
         notes !== undefined ? notes : existing.notes,
         originalDate, originalTime,
+        newPrice, newIsPaid,
         id,
       ]
     )
