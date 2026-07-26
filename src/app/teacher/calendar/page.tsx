@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle, removeButtonStyle } from '@/components/lesson-blocks/styles'
-import { TemplatePanel } from './TemplatePanel'
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 const WEEKDAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -137,6 +136,7 @@ export default function CalendarPage() {
 
   function openEdit(lesson: any) {
     setEditingId(lesson.id)
+    const isPastLesson = new Date(`${String(lesson.date).slice(0, 10)}T${lesson.time}:00`) < new Date()
     setEditForm({
       date: String(lesson.date).slice(0, 10),
       time: lesson.time,
@@ -148,6 +148,7 @@ export default function CalendarPage() {
       is_paid: lesson.is_paid,
       student_name: lesson.student_name,
       template_id: lesson.template_id,
+      isPastLesson,
     })
     setAddingForDate(null)
   }
@@ -203,7 +204,20 @@ export default function CalendarPage() {
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📅 Расписание</h1>
         </div>
 
-        <TemplatePanel roster={roster} onGenerated={loadLessons} />
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '1.5rem' }}>
+          <span style={{
+            padding: '6px 16px', borderRadius: '8px', fontSize: '13px',
+            background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7', fontWeight: 600,
+          }}>
+            📅 Расписание
+          </span>
+          <Link href="/teacher/calendar/template" style={{
+            padding: '6px 16px', borderRadius: '8px', fontSize: '13px', textDecoration: 'none',
+            background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+          }}>
+            🔁 Шаблон
+          </Link>
+        </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -353,14 +367,19 @@ export default function CalendarPage() {
                     <span style={{ marginLeft: '8px', fontSize: '11px', color: '#34d399', fontWeight: 400 }}>не по шаблону</span>
                   )}
                 </div>
+                {editForm.isPastLesson && (
+                  <div style={{ color: '#fbbf24', fontSize: '12px', marginBottom: '10px', padding: '8px 12px', background: 'rgba(251,191,36,0.1)', borderRadius: '8px' }}>
+                    Занятие уже прошло — дату и время менять нельзя, можно поставить статус или удалить
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
                   <div>
                     <label style={labelStyle}>Дата</label>
-                    <input type="date" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} style={inputStyle} />
+                    <input type="date" value={editForm.date} disabled={editForm.isPastLesson} onChange={e => setEditForm({ ...editForm, date: e.target.value })} style={inputStyle} />
                   </div>
                   <div>
                     <label style={labelStyle}>Время</label>
-                    <input type="time" value={editForm.time} onChange={e => setEditForm({ ...editForm, time: e.target.value })} style={inputStyle} />
+                    <input type="time" value={editForm.time} disabled={editForm.isPastLesson} onChange={e => setEditForm({ ...editForm, time: e.target.value })} style={inputStyle} />
                   </div>
                   <div>
                     <label style={labelStyle}>Длительность (мин)</label>
