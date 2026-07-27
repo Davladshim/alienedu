@@ -78,12 +78,12 @@ export const blockRegistry: Record<BlockType, BlockDefinition> = {
     checkAnswer: checkFillBlank, describeAnswer: describeFillBlankAnswer,
   },
   geometry: {
-    type: 'geometry', label: 'Геометрия (мини-доска)', icon: '📐',
+    type: 'geometry', label: 'Геометрия (чертёж в GeoGebra)', icon: '📐',
     defaultContent: geometryDefault, Editor: GeometryEditor, Player: GeometryPlayer,
     checkAnswer: null, manualReview: true,
   },
   algebra: {
-    type: 'algebra', label: 'Алгебра (график по точкам)', icon: '📈',
+    type: 'algebra', label: 'Алгебра (график в GeoGebra)', icon: '📈',
     defaultContent: algebraDefault, Editor: AlgebraEditor, Player: AlgebraPlayer,
     checkAnswer: null, manualReview: true,
   },

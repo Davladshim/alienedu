@@ -32,8 +32,8 @@ export function AlgebraEditor({ content, onChange }: {
         placeholder="Например: Постройте график функции $y = x^2 - 2x$ на отрезке [-2; 4]"
       />
       <div style={{ color: '#6b7280', fontSize: '12px' }}>
-        Ученик строит график, отмечая точки на координатной плоскости, и/или записывает решение
-        текстом или фото из тетради. Ответ не проверяется автоматически — его нужно посмотреть вручную.
+        Ученик может построить график в GeoGebra и/или записать решение текстом или фото из тетради.
+        Ответ не проверяется автоматически — его нужно посмотреть вручную.
       </div>
     </div>
   )
@@ -83,7 +83,7 @@ export function AlgebraPlayer({ content, onSubmit, disabled }: {
         <Formula text={content.question} />
       </div>
 
-      <label style={labelStyle}>График (черновик решения)</label>
+      <label style={labelStyle}>График (черновик решения, необязательно)</label>
       <AlgebraBoard ref={boardRef} disabled={disabled} />
 
       <label style={{ ...labelStyle, marginTop: '14px' }}>Решение текстом</label>

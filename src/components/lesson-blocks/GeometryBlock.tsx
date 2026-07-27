@@ -32,7 +32,7 @@ export function GeometryEditor({ content, onChange }: {
         placeholder="Например: В треугольнике ABC угол A равен 60°. Найдите..."
       />
       <div style={{ color: '#6b7280', fontSize: '12px' }}>
-        Ученик решает задачу на мини-доске и/или записывает решение текстом или фото из тетради.
+        Ученик может построить чертёж в GeoGebra и/или записать решение текстом или фото из тетради.
         Ответ не проверяется автоматически — его нужно посмотреть вручную.
       </div>
     </div>
@@ -83,7 +83,7 @@ export function GeometryPlayer({ content, onSubmit, disabled }: {
         <Formula text={content.question} />
       </div>
 
-      <label style={labelStyle}>Мини-доска (черновик решения)</label>
+      <label style={labelStyle}>Чертёж (черновик решения, необязательно)</label>
       <GeometryBoard ref={boardRef} disabled={disabled} />
 
       <label style={{ ...labelStyle, marginTop: '14px' }}>Решение текстом</label>

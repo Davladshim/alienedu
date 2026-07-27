@@ -15,7 +15,6 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "jsonwebtoken": "^9.0.3",
-    "jsxgraph": "^1.13.1",
     "katex": "^0.18.1",
     "mathlive": "^0.110.0",
     "next": "16.2.9",
