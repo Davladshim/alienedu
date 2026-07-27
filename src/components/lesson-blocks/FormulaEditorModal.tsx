@@ -44,17 +44,21 @@ export function FormulaEditorModal({ onInsert, onClose }: {
 
   return (
     <div
-      onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000,
+        // MathLive рисует свою виртуальную клавиатуру отдельным элементом
+        // прямо в document.body поверх всей страницы, с z-index 105 — если
+        // наша подложка выше, клавиатура визуально "гаснет" под ней и не
+        // ловит клики. Поэтому подложка ниже клавиатуры, а закрытие —
+        // только по кнопкам, не по клику снаружи (иначе клик по клавиатуре,
+        // не попавшей "внутрь" модалки, закрывал бы конструктор)
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 90,
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
       }}
     >
       <div
-        onClick={e => e.stopPropagation()}
         style={{
           background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px',
-          padding: '1.5rem', width: '100%', maxWidth: '520px',
+          padding: '1.5rem', width: '100%', maxWidth: '520px', zIndex: 91,
         }}
       >
         <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '12px' }}>Конструктор формулы</div>

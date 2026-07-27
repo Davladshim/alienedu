@@ -161,7 +161,7 @@ export function LessonBuilder({
                 </div>
                 <Editor content={block.content} onChange={(c: any) => updateBlockContent(block.id, c)} />
                 {def.checkAnswer !== null && (
-                  <BlockRetrySettings content={block.content} onChange={c => updateBlockContent(block.id, c)} />
+                  <BlockRetrySettings content={block.content} onChange={c => updateBlockContent(block.id, c)} mode={mode} />
                 )}
               </div>
             )
@@ -238,31 +238,39 @@ export function LessonBuilder({
 // с автопроверкой, хранятся прямо в JSON-содержимом блока (без отдельных
 // полей БД), поэтому вынесены сюда одним компонентом вместо повторения
 // в каждом Editor'е блока
-function BlockRetrySettings({ content, onChange }: { content: any; onChange: (content: any) => void }) {
+function BlockRetrySettings({ content, onChange, mode }: { content: any; onChange: (content: any) => void; mode: 'quiz' | 'exam' }) {
   const retryable = !!content.retryable
   const maxAttempts = content.maxAttempts ?? 2
 
   return (
     <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid #2a2d3d' }}>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#9ca3af', marginBottom: retryable ? '10px' : 0 }}>
-        <input
-          type="checkbox"
-          checked={retryable}
-          onChange={e => onChange({ ...content, retryable: e.target.checked })}
-        />
-        Разрешить перерешать при неверном ответе
-      </label>
-      {retryable && (
-        <div style={{ marginBottom: '10px' }}>
-          <label style={labelStyle}>Максимум попыток</label>
-          <input
-            type="number"
-            min={2}
-            value={maxAttempts}
-            onChange={e => onChange({ ...content, maxAttempts: Math.max(2, Number(e.target.value) || 2) })}
-            style={{ ...inputStyle, width: '90px' }}
-          />
+      {mode === 'exam' ? (
+        <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px' }}>
+          В режиме «Контрольная» повторные попытки недоступны — ответ фиксируется сразу
         </div>
+      ) : (
+        <>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#9ca3af', marginBottom: retryable ? '10px' : 0 }}>
+            <input
+              type="checkbox"
+              checked={retryable}
+              onChange={e => onChange({ ...content, retryable: e.target.checked })}
+            />
+            Разрешить перерешать при неверном ответе
+          </label>
+          {retryable && (
+            <div style={{ marginBottom: '10px' }}>
+              <label style={labelStyle}>Максимум попыток</label>
+              <input
+                type="number"
+                min={2}
+                value={maxAttempts}
+                onChange={e => onChange({ ...content, maxAttempts: Math.max(2, Number(e.target.value) || 2) })}
+                style={{ ...inputStyle, width: '90px' }}
+              />
+            </div>
+          )}
+        </>
       )}
       <label style={labelStyle}>Объяснение (необязательно, покажется ученику после попыток)</label>
       <textarea
