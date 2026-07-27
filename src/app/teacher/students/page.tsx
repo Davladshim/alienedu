@@ -107,6 +107,9 @@ export default function StudentsPage() {
     const res = await fetch(`/api/students/${id}`, { method: 'DELETE' })
     if (res.ok) {
       setStudents(s => s.filter(st => st.id !== id))
+    } else {
+      const data = await res.json().catch(() => ({}))
+      alert(data.error || 'Не удалось убрать ученика')
     }
   }
 
@@ -129,7 +132,12 @@ export default function StudentsPage() {
   async function handleDeleteFamily(id: number) {
     if (!confirm('Удалить семью? Ученики останутся в списке со своим личным балансом, просто больше не будут сгруппированы.')) return
     const res = await fetch(`/api/families/${id}`, { method: 'DELETE' })
-    if (res.ok) loadAll()
+    if (res.ok) {
+      loadAll()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      alert(data.error || 'Не удалось удалить семью')
+    }
   }
 
   function openRow(student: any) {

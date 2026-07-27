@@ -15,22 +15,28 @@ export async function autoCompleteDueLessons() {
   )
 
   for (const lesson of due.rows) {
-    if (!lesson.is_trial && !lesson.is_paid && lesson.price && lesson.student_id) {
-      const rosterResult = await query(
-        `SELECT id, family_id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
-        [lesson.teacher_id, lesson.student_id]
-      )
-      const rosterEntry = rosterResult.rows[0]
-      if (rosterEntry) {
-        await chargeForLesson(rosterEntry.id, rosterEntry.family_id, lesson.price)
+    try {
+      if (!lesson.is_trial && !lesson.is_paid && lesson.price && lesson.student_id) {
+        const rosterResult = await query(
+          `SELECT id, family_id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
+          [lesson.teacher_id, lesson.student_id]
+        )
+        const rosterEntry = rosterResult.rows[0]
+        if (rosterEntry) {
+          await chargeForLesson(rosterEntry.id, rosterEntry.family_id, lesson.price)
+        }
+        await query(`UPDATE schedule_lessons SET status = 'completed', is_paid = true, updated_at = NOW() WHERE id = $1`, [lesson.id])
+      } else if (lesson.is_trial) {
+        // Пробный урок бесплатный — считаем его "оплаченным" (нечего списывать),
+        // чтобы он не попадал в списки неоплаченных занятий
+        await query(`UPDATE schedule_lessons SET status = 'completed', is_paid = true, updated_at = NOW() WHERE id = $1`, [lesson.id])
+      } else {
+        await query(`UPDATE schedule_lessons SET status = 'completed', updated_at = NOW() WHERE id = $1`, [lesson.id])
       }
-      await query(`UPDATE schedule_lessons SET status = 'completed', is_paid = true, updated_at = NOW() WHERE id = $1`, [lesson.id])
-    } else if (lesson.is_trial) {
-      // Пробный урок бесплатный — считаем его "оплаченным" (нечего списывать),
-      // чтобы он не попадал в списки неоплаченных занятий
-      await query(`UPDATE schedule_lessons SET status = 'completed', is_paid = true, updated_at = NOW() WHERE id = $1`, [lesson.id])
-    } else {
-      await query(`UPDATE schedule_lessons SET status = 'completed', updated_at = NOW() WHERE id = $1`, [lesson.id])
+    } catch (error) {
+      // Один проблемный урок не должен ронять весь календарь/финансы —
+      // пропускаем его, он подхватится на следующем вызове
+      console.error(`Ошибка автозавершения занятия ${lesson.id}:`, error)
     }
   }
 }

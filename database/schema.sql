@@ -164,8 +164,8 @@ CREATE TABLE IF NOT EXISTS teacher_students (
 CREATE TABLE IF NOT EXISTS payments (
     id SERIAL PRIMARY KEY,
     teacher_id INTEGER NOT NULL REFERENCES users(id),
-    teacher_student_id INTEGER REFERENCES teacher_students(id),
-    family_id INTEGER REFERENCES families(id),
+    teacher_student_id INTEGER REFERENCES teacher_students(id) ON DELETE SET NULL,
+    family_id INTEGER REFERENCES families(id) ON DELETE SET NULL,
     amount DECIMAL(10, 2) NOT NULL,
     description VARCHAR(255),
     payment_date TIMESTAMP DEFAULT NOW(),

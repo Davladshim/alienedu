@@ -8,16 +8,36 @@ function formatMoney(n: any): string {
   return num.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
+// Один и тот же порядок и цвета для уроков и денег, чтобы счётчики читались
+// зеркально: по шаблону / внеплановые / отмены / всего
+const COUNTER_GROUPS = [
+  { key: 'template', label: 'по шаблону', color: '#4f8ef7' },
+  { key: 'unplanned', label: 'внеплановые', color: '#fbbf24' },
+  { key: 'cancelled', label: 'отмены', color: '#f87171' },
+  { key: 'total', label: 'всего', color: '#34d399' },
+] as const
+
 export default function FinancePage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [markingId, setMarkingId] = useState<number | null>(null)
 
   function load() {
     fetch('/api/finance/overview')
-      .then(r => r.json())
-      .then(d => {
+      .then(async r => {
+        const d = await r.json().catch(() => ({}))
+        if (!r.ok) {
+          setError(d.error || 'Не удалось загрузить финансы')
+          setLoading(false)
+          return
+        }
+        setError('')
         setData(d)
+        setLoading(false)
+      })
+      .catch(() => {
+        setError('Не удалось загрузить финансы')
         setLoading(false)
       })
   }
@@ -49,7 +69,13 @@ export default function FinancePage() {
 
         {loading && <p style={{ color: '#6b7280' }}>Загрузка...</p>}
 
-        {!loading && data && (
+        {!loading && error && (
+          <div style={{ background: '#1a1d27', border: '1px solid #f87171', borderRadius: '16px', padding: '1.25rem', color: '#f87171' }}>
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && data && (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '1.5rem' }}>
               <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem' }}>
@@ -57,30 +83,32 @@ export default function FinancePage() {
                 <div style={{ fontSize: '22px', fontWeight: 700, color: '#34d399' }}>{formatMoney(data.monthIncome)} ₽</div>
               </div>
               <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem' }}>
-                <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '6px' }}>Проведено уроков в этом месяце</div>
-                <div style={{ fontSize: '22px', fontWeight: 700 }}>{data.monthCompletedCount} <span style={{ fontSize: '14px', color: '#6b7280' }}>на {formatMoney(data.monthCompletedTotal)} ₽</span></div>
-              </div>
-              <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem' }}>
                 <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '6px' }}>Общий баланс всех учеников</div>
                 <div style={{ fontSize: '22px', fontWeight: 700, color: Number(data.totalBalance) < 0 ? '#f87171' : '#fff' }}>{formatMoney(data.totalBalance)} ₽</div>
               </div>
             </div>
 
+            <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem', marginBottom: '1rem' }}>
+              <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>Уроки в этом месяце</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '14px' }}>
+                {COUNTER_GROUPS.map(g => (
+                  <div key={g.key}>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: g.color }}>{data.lessonStats[`${g.key}Count`]}</div>
+                    <div style={{ color: '#6b7280', fontSize: '12px' }}>{g.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-              <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>План и факт за месяц</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px' }}>
-                <div>
-                  <div style={{ fontSize: '18px', fontWeight: 700 }}>{data.monthPlannedCount}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>запланировано по шаблону</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#34d399' }}>{data.monthCompletedCount}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>проведено всего</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#fbbf24' }}>{data.monthUnplannedCompletedCount}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>проведено вне плана</div>
-                </div>
+              <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>Деньги в этом месяце</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '14px' }}>
+                {COUNTER_GROUPS.map(g => (
+                  <div key={g.key}>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: g.color }}>{formatMoney(data.moneyStats[`${g.key}Money`])} ₽</div>
+                    <div style={{ color: '#6b7280', fontSize: '12px' }}>{g.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
 

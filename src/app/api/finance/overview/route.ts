@@ -21,12 +21,27 @@ export async function GET(request: NextRequest) {
       [decoded.id]
     )
 
-    const monthCompleted = await query(
+    // Уроки этого месяца, кроме пробных, по 4 категориям — и уроки, и деньги
+    // считаются одним и тем же фильтром, только COUNT vs SUM(price):
+    //  - "по шаблону": сгенерированы из шаблона недели (template_id задан)
+    //    и не отменены — включает как уже проведённые, так и ещё предстоящие
+    //    в этом месяце (сколько всего запланировано)
+    //  - "внеплановые": не из шаблона (template_id NULL) и уже проведены —
+    //    перенос шаблонного урока остаётся шаблонным (template_id не трогается
+    //    при переносе), поэтому сюда попадают только реально добавленные
+    //    внепланово уроки
+    //  - "отмены": из шаблона, но отменены (перенос тоже остаётся "из шаблона")
+    //  - "всего": все проведённые в этом месяце, кроме пробных
+    const monthStats = await query(
       `SELECT
-         COUNT(*) FILTER (WHERE status = 'completed') as count,
-         COALESCE(SUM(price) FILTER (WHERE status = 'completed'), 0) as total,
-         COUNT(*) FILTER (WHERE template_id IS NOT NULL) as planned_count,
-         COUNT(*) FILTER (WHERE status = 'completed' AND template_id IS NULL) as unplanned_completed_count
+         COUNT(*) FILTER (WHERE template_id IS NOT NULL AND status != 'cancelled') as template_count,
+         COALESCE(SUM(price) FILTER (WHERE template_id IS NOT NULL AND status != 'cancelled'), 0) as template_money,
+         COUNT(*) FILTER (WHERE template_id IS NULL AND status = 'completed' AND is_trial = false) as unplanned_count,
+         COALESCE(SUM(price) FILTER (WHERE template_id IS NULL AND status = 'completed' AND is_trial = false), 0) as unplanned_money,
+         COUNT(*) FILTER (WHERE template_id IS NOT NULL AND status = 'cancelled') as cancelled_count,
+         COALESCE(SUM(price) FILTER (WHERE template_id IS NOT NULL AND status = 'cancelled'), 0) as cancelled_money,
+         COUNT(*) FILTER (WHERE status = 'completed' AND is_trial = false) as total_count,
+         COALESCE(SUM(price) FILTER (WHERE status = 'completed' AND is_trial = false), 0) as total_money
        FROM schedule_lessons
        WHERE teacher_id = $1
          AND date >= date_trunc('month', NOW())::date
@@ -54,12 +69,22 @@ export async function GET(request: NextRequest) {
       [decoded.id]
     )
 
+    const s = monthStats.rows[0]
+
     return NextResponse.json({
       monthIncome: monthPayments.rows[0].total,
-      monthCompletedCount: monthCompleted.rows[0].count,
-      monthCompletedTotal: monthCompleted.rows[0].total,
-      monthPlannedCount: monthCompleted.rows[0].planned_count,
-      monthUnplannedCompletedCount: monthCompleted.rows[0].unplanned_completed_count,
+      lessonStats: {
+        templateCount: s.template_count,
+        unplannedCount: s.unplanned_count,
+        cancelledCount: s.cancelled_count,
+        totalCount: s.total_count,
+      },
+      moneyStats: {
+        templateMoney: s.template_money,
+        unplannedMoney: s.unplanned_money,
+        cancelledMoney: s.cancelled_money,
+        totalMoney: s.total_money,
+      },
       unpaidLessons: unpaid.rows,
       unpaidTotal: unpaid.rows.reduce((sum, r) => sum + Number(r.price || 0), 0),
       totalBalance: Number(studentsBalance.rows[0].total) + Number(familyBalance.rows[0].total),
