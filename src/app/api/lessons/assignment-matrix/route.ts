@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const result = await query(
-      `SELECT la.student_id, u.full_name as student_name, la.lesson_id, l.title as lesson_title,
+      `SELECT la.student_id, u.full_name as student_name, la.lesson_id, l.title as lesson_title, l.mode as lesson_mode,
               CASE
                 WHEN tb.total_blocks = 0 OR ab.answered_blocks = 0 THEN 'not_started'
                 WHEN ab.answered_blocks < tb.total_blocks THEN 'in_progress'
@@ -31,15 +31,15 @@ export async function GET(request: NextRequest) {
     )
 
     const students = new Map<number, string>()
-    const lessons = new Map<number, string>()
+    const lessons = new Map<number, { title: string; mode: string }>()
     for (const row of result.rows) {
       students.set(row.student_id, row.student_name)
-      lessons.set(row.lesson_id, row.lesson_title)
+      lessons.set(row.lesson_id, { title: row.lesson_title, mode: row.lesson_mode })
     }
 
     return NextResponse.json({
       students: Array.from(students, ([id, full_name]) => ({ id, full_name })),
-      lessons: Array.from(lessons, ([id, title]) => ({ id, title })),
+      lessons: Array.from(lessons, ([id, l]) => ({ id, title: l.title, mode: l.mode })),
       cells: result.rows.map(r => ({ student_id: r.student_id, lesson_id: r.lesson_id, status: r.status })),
     })
   } catch (error) {

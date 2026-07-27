@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { liveChannelName } from '@/lib/liveChannelName'
 
 export async function GET(
   request: NextRequest,
@@ -51,11 +52,18 @@ export async function GET(
       [lessonId, decoded.id]
     )
 
+    // Канал живого наблюдения нужен только ученику и только для проверочных
+    // уроков (учитель не может подглядывать/подсказывать на контрольной)
+    const liveChannel = !isOwner && lesson.mode === 'quiz'
+      ? liveChannelName(lessonId, decoded.id)
+      : null
+
     return NextResponse.json({
       lesson,
       blocks: blocksResult.rows,
       assigned_student_ids: assignmentsResult.rows.map(r => r.student_id),
       attempts: attemptsResult.rows,
+      live_channel: liveChannel,
     })
   } catch (error) {
     console.error('Ошибка получения урока:', error)

@@ -4,6 +4,8 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { blockRegistry, Formula, type LessonBlockData } from '@/components/lesson-blocks'
 import { submitButtonStyle } from '@/components/lesson-blocks/styles'
+import { useLiveChannel } from '@/components/lesson-blocks/useLiveChannel'
+import { LiveStudentBoardViewer } from '@/components/lesson-blocks/LiveStudentBoardViewer'
 
 function promptFor(block: LessonBlockData): string {
   const c = block.content
@@ -46,6 +48,22 @@ export default function StudentLessonPage() {
   const [finished, setFinished] = useState(false)
   const [blockStates, setBlockStates] = useState<Record<string, BlockState>>({})
 
+  // Живое наблюдение учителя: канал приходит с сервера только для
+  // проверочных уроков (см. GET /api/lessons/[id]) — на контрольной остаётся null
+  const [liveChannelId, setLiveChannelId] = useState<string | null>(null)
+  const [revealedSolutions, setRevealedSolutions] = useState<Record<string, boolean>>({})
+  const [boardVisible, setBoardVisible] = useState(false)
+  const [boardBase64, setBoardBase64] = useState<string | null>(null)
+  const live = useLiveChannel(liveChannelId, {
+    onBroadcast: {
+      'show-solution': payload => setRevealedSolutions(s => ({ ...s, [String(payload.blockId)]: true })),
+      'hide-solution': payload => setRevealedSolutions(s => ({ ...s, [String(payload.blockId)]: false })),
+      'show-board': () => setBoardVisible(true),
+      'hide-board': () => { setBoardVisible(false); setBoardBase64(null) },
+      'board-state': payload => setBoardBase64(payload.base64 as string),
+    },
+  })
+
   useEffect(() => {
     fetch(`/api/lessons/${id}`)
       .then(async r => {
@@ -56,6 +74,7 @@ export default function StudentLessonPage() {
         setLessonTitle(data.lesson.title)
         setMode(lessonMode)
         setBlocks(loadedBlocks)
+        setLiveChannelId(data.live_channel || null)
 
         // Восстанавливаем прогресс из прошлых попыток — иначе перезагрузка
         // страницы сбрасывала бы все уже зафиксированные ответы
@@ -99,6 +118,30 @@ export default function StudentLessonPage() {
       })
       .catch(() => { setNotFound(true); setLoading(false) })
   }, [id])
+
+  // Сообщаем о себе присутствие — сам факт открытого урока говорит
+  // учителю "ученик сейчас здесь"
+  useEffect(() => {
+    if (live.ready) live.track({ online: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live.ready])
+
+  // Транслируем учителю живой прогресс — на каком блоке ученик сейчас
+  // и что уже отправлено по каждому блоку
+  useEffect(() => {
+    if (!liveChannelId || !live.ready) return
+    live.broadcast('progress', {
+      index,
+      finished,
+      statuses: Object.fromEntries(
+        blocks.map(b => {
+          const st = blockStates[b.id] || EMPTY_STATE
+          return [b.id, { done: st.done, isCorrect: st.isCorrect, skipped: st.skipped, attempts: st.attempts }]
+        })
+      ),
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveChannelId, live.ready, index, finished, blockStates, blocks])
 
   function logAttempt(blockId: string, answer: any, isCorrect: boolean | null) {
     fetch(`/api/lessons/${id}/attempt`, {
@@ -353,6 +396,16 @@ export default function StudentLessonPage() {
             </div>
           )}
 
+          {revealedSolutions[block.id] && block.content.explanation && (
+            <div style={{
+              marginTop: '14px', padding: '12px 16px', borderRadius: '8px', fontSize: '14px',
+              background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#fbbf24',
+            }}>
+              💡 Учитель показал решение:<br />
+              <Formula text={block.content.explanation} />
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
             {interactive && !state.done && (
               <button
@@ -374,6 +427,19 @@ export default function StudentLessonPage() {
           </div>
         </div>
       </div>
+
+      {boardVisible && (
+        <div style={{
+          position: 'fixed', bottom: '20px', right: '20px', width: '340px', zIndex: 200,
+          background: '#1a1d27', border: '1px solid #4f8ef7', borderRadius: '12px',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '10px',
+        }}>
+          <div style={{ fontSize: '13px', color: '#4f8ef7', marginBottom: '8px', fontWeight: 600 }}>
+            🧑‍🏫 Учитель объясняет на доске
+          </div>
+          <LiveStudentBoardViewer base64={boardBase64} />
+        </div>
+      )}
     </div>
   )
 }

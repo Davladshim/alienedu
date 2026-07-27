@@ -77,12 +77,21 @@ export default function LessonsPage() {
                       {matrixLessons.map(l => {
                         const status = cellStatus(s.id, l.id)
                         const st = status ? STATUS_LABEL[status] : null
+                        const canWatch = status && status !== 'completed' && l.mode === 'quiz'
                         return (
                           <td key={l.id} style={{ padding: '6px 10px', textAlign: 'center' }}>
-                            {st ? (
+                            {!st && <span style={{ color: '#374151' }}>—</span>}
+                            {st && !canWatch && (
                               <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: st.color }} title={st.label} />
-                            ) : (
-                              <span style={{ color: '#374151' }}>—</span>
+                            )}
+                            {st && canWatch && (
+                              <Link
+                                href={`/teacher/lessons/${l.id}/watch/${s.id}`}
+                                title={`${st.label} · смотреть, как решает`}
+                                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', textDecoration: 'none' }}
+                              >
+                                <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: st.color, boxShadow: '0 0 0 2px rgba(79,142,247,0.4)' }} />
+                              </Link>
                             )}
                           </td>
                         )
@@ -100,6 +109,10 @@ export default function LessonsPage() {
                 </span>
               ))}
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>— не назначен</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#4b5563', boxShadow: '0 0 0 2px rgba(79,142,247,0.4)', display: 'inline-block' }} />
+                кружок с ободком — нажми, чтобы посмотреть процесс вживую
+              </span>
             </div>
           </div>
         )}

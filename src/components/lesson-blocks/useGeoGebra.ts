@@ -5,6 +5,11 @@ export interface GeoGebraAppApi {
   getPNGBase64: (scaleParameter: number, transparent: boolean, dpi: number) => string
   newConstruction: () => void
   setSize: (width: number, height: number) => void
+  getBase64: () => string
+  setBase64: (base64: string, callback?: () => void) => void
+  registerUpdateListener: (fn: () => void) => void
+  registerAddListener: (fn: (objName: string) => void) => void
+  registerRemoveListener: (fn: (objName: string) => void) => void
 }
 
 interface GeoGebraAppletParams {
@@ -51,11 +56,19 @@ function loadGeoGebraScript(): Promise<void> {
   return ggbScriptPromise
 }
 
+export interface UseGeoGebraOptions {
+  height?: number
+  // Апплет только для просмотра (трансляция доски учителя ученику) — без
+  // тулбара и панели ввода, ученик ничего не может на нём построить сам
+  readOnly?: boolean
+}
+
 // Общая база для встраивания апплета GeoGebra (алгебра — appName "graphing",
 // геометрия — appName "geometry"): загрузка скрипта апплета, инициализация
 // и подгонка ширины под контейнер — вынесено сюда, чтобы не дублировать
-// одну и ту же обвязку в блоках "Геометрия" и "Алгебра"
-export function useGeoGebra(appName: 'geometry' | 'graphing', height = 420) {
+// одну и ту же обвязку в блоках "Геометрия"/"Алгебра" и в живой доске урока
+export function useGeoGebra(appName: 'geometry' | 'graphing', options: UseGeoGebraOptions = {}) {
+  const { height = 420, readOnly = false } = options
   const reactId = useId()
   const containerId = `ggb-${reactId.replace(/:/g, '')}`
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -75,11 +88,11 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', height = 420) {
           width,
           height,
           language: 'ru',
-          showToolBar: true,
+          showToolBar: !readOnly,
           showAlgebraInput: false,
           showMenuBar: false,
-          showResetIcon: true,
-          showZoomButtons: true,
+          showResetIcon: !readOnly,
+          showZoomButtons: !readOnly,
           enableLabelDrags: false,
           appletOnLoad: (api) => {
             if (cancelled) return
@@ -101,7 +114,7 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', height = 420) {
       const container = document.getElementById(containerId)
       if (container) container.innerHTML = ''
     }
-    // containerId/appName/height стабильны на весь жизненный цикл инстанса — пересоздавать апплет при ререндере не нужно
+    // containerId/appName/height/readOnly стабильны на весь жизненный цикл инстанса — пересоздавать апплет при ререндере не нужно
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -136,5 +149,41 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', height = 420) {
     appRef.current?.newConstruction()
   }
 
-  return { containerId, wrapperRef, ready, loadError, exportSnapshot, clear }
+  function getBase64(): string | null {
+    try {
+      return appRef.current?.getBase64() ?? null
+    } catch {
+      return null
+    }
+  }
+
+  function loadBase64(base64: string) {
+    try {
+      appRef.current?.setBase64(base64)
+    } catch {
+      // рассинхронизированное или битое состояние — просто пропускаем
+      // этот кадр, следующее обновление от учителя всё поправит
+    }
+  }
+
+  // Вызывает callback с текущим getBase64() при любом изменении доски —
+  // добавление/перенос/удаление объекта, с небольшим дебаунсом, чтобы не
+  // рассылать состояние на каждый промежуточный кадр перетаскивания
+  function onChange(callback: (base64: string) => void, debounceMs = 200) {
+    const app = appRef.current
+    if (!app) return
+    let timer: ReturnType<typeof setTimeout> | null = null
+    const fire = () => {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        const base64 = getBase64()
+        if (base64) callback(base64)
+      }, debounceMs)
+    }
+    app.registerUpdateListener(fire)
+    app.registerAddListener(fire)
+    app.registerRemoveListener(fire)
+  }
+
+  return { containerId, wrapperRef, ready, loadError, exportSnapshot, clear, getBase64, loadBase64, onChange }
 }

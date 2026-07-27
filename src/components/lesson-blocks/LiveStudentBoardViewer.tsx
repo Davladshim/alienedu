@@ -1,0 +1,35 @@
+'use client'
+import { useEffect } from 'react'
+import { useGeoGebra } from './useGeoGebra'
+
+// Доска ученика во время объяснения учителем — апплет GeoGebra без
+// тулбара и без возможности что-либо построить, только отображает то,
+// что прислал учитель (base64 всей конструкции)
+export function LiveStudentBoardViewer({ base64 }: { base64: string | null }) {
+  const { containerId, wrapperRef, ready, loadError, loadBase64 } = useGeoGebra('geometry', { height: 300, readOnly: true })
+
+  useEffect(() => {
+    if (ready && base64) loadBase64(base64)
+    // loadBase64 обращается к текущему апплету через ref — пересоздавать
+    // подписку не нужно, реагируем только на новые кадры от учителя
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, base64])
+
+  return (
+    <div style={{ position: 'relative', minHeight: '300px', borderRadius: '8px', border: '1px solid #2a2d3d', background: '#fff', overflow: 'hidden', pointerEvents: 'none' }}>
+      <div ref={wrapperRef} style={{ width: '100%' }}>
+        <div id={containerId} />
+      </div>
+      {!ready && !loadError && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: '13px' }}>
+          Загрузка доски...
+        </div>
+      )}
+      {loadError && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '13px', padding: '0 20px', textAlign: 'center' }}>
+          Не удалось загрузить GeoGebra.
+        </div>
+      )}
+    </div>
+  )
+}

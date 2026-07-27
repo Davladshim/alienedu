@@ -8,6 +8,7 @@ import { labelStyle, submitButtonStyle, submitButtonDisabledStyle } from './styl
 
 export interface AlgebraContent {
   question: string
+  explanation?: string
 }
 
 export const algebraDefault: AlgebraContent = { question: '' }
@@ -35,6 +36,13 @@ export function AlgebraEditor({ content, onChange }: {
         Ученик может построить график в GeoGebra и/или записать решение текстом или фото из тетради.
         Ответ не проверяется автоматически — его нужно посмотреть вручную.
       </div>
+      <label style={{ ...labelStyle, marginTop: '4px' }}>Решение (необязательно, можно показать ученику во время урока)</label>
+      <FormulaTextarea
+        value={content.explanation || ''}
+        onChange={explanation => onChange({ ...content, explanation })}
+        rows={3}
+        placeholder="Готовое решение, которое можно показать ученику, если он застрял"
+      />
     </div>
   )
 }
