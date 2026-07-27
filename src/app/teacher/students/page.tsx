@@ -34,6 +34,12 @@ export default function StudentsPage() {
   const [savingRow, setSavingRow] = useState(false)
   const [history, setHistory] = useState<any[] | null>(null)
 
+  const [expandedFamilyId, setExpandedFamilyId] = useState<number | null>(null)
+  const [familyPaymentAmount, setFamilyPaymentAmount] = useState('')
+  const [familyPaymentDescription, setFamilyPaymentDescription] = useState('')
+  const [savingFamilyPayment, setSavingFamilyPayment] = useState(false)
+  const [familyHistory, setFamilyHistory] = useState<any[] | null>(null)
+
   function loadAll() {
     Promise.all([
       fetch('/api/students').then(r => r.json()),
@@ -177,6 +183,37 @@ export default function StudentsPage() {
       .then(data => setHistory(data.payments || []))
   }
 
+  function openFamilyPayment(familyId: number) {
+    setExpandedFamilyId(expandedFamilyId === familyId ? null : familyId)
+    setFamilyPaymentAmount('')
+    setFamilyPaymentDescription('')
+    setFamilyHistory(null)
+  }
+
+  async function submitFamilyPayment(familyId: number) {
+    if (!familyPaymentAmount || Number.isNaN(Number(familyPaymentAmount))) return
+    setSavingFamilyPayment(true)
+    await fetch('/api/payments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        family_id: familyId,
+        amount: Number(familyPaymentAmount),
+        description: familyPaymentDescription || null,
+      }),
+    })
+    setSavingFamilyPayment(false)
+    setFamilyPaymentAmount('')
+    setFamilyPaymentDescription('')
+    loadAll()
+  }
+
+  function loadFamilyHistory(familyId: number) {
+    fetch(`/api/payments?family_id=${familyId}`)
+      .then(r => r.json())
+      .then(data => setFamilyHistory(data.payments || []))
+  }
+
   return (
     <div style={{
       minHeight: '100vh', background: '#0f1117', fontFamily: 'system-ui, sans-serif',
@@ -318,12 +355,53 @@ export default function StudentsPage() {
             const available = balance > 0 && avgPrice > 0 ? Math.floor(balance / avgPrice) : 0
             return (
               <div key={`family-${family.id}`} style={{ border: '1px solid #4f8ef7', borderRadius: '16px', padding: '10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px 10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px 10px', flexWrap: 'wrap', gap: '8px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: '#4f8ef7' }}>👪 {family.name}</span>
-                  <span style={{ fontSize: '13px', color: balance < 0 ? '#f87171' : '#9ca3af' }}>
-                    {formatMoney(family.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '13px', color: balance < 0 ? '#f87171' : '#9ca3af' }}>
+                      {formatMoney(family.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
+                    </span>
+                    <button
+                      onClick={() => openFamilyPayment(family.id)}
+                      style={{ background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', padding: '4px 10px' }}
+                    >
+                      Пополнить баланс
+                    </button>
+                  </div>
                 </div>
+
+                {expandedFamilyId === family.id && (
+                  <div style={{ background: '#0f1117', border: '1px solid #2a2d3d', borderRadius: '10px', padding: '12px 14px', marginBottom: '10px' }}>
+                    <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '8px', textTransform: 'uppercase' }}>Пополнить баланс семьи</div>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                      <input type="number" value={familyPaymentAmount} onChange={e => setFamilyPaymentAmount(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="Сумма" />
+                      <input value={familyPaymentDescription} onChange={e => setFamilyPaymentDescription(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '160px' }} placeholder="Комментарий (необязательно)" />
+                      <button
+                        onClick={() => submitFamilyPayment(family.id)}
+                        disabled={savingFamilyPayment || !familyPaymentAmount}
+                        style={savingFamilyPayment || !familyPaymentAmount ? submitButtonDisabledStyle : submitButtonStyle}
+                      >
+                        + Оплата
+                      </button>
+                    </div>
+                    {familyHistory === null ? (
+                      <button onClick={() => loadFamilyHistory(family.id)} style={{ background: 'none', border: 'none', color: '#4f8ef7', cursor: 'pointer', fontSize: '13px', padding: 0 }}>
+                        Показать историю платежей
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                        {familyHistory.length === 0 && <div style={{ color: '#4b5563', fontSize: '13px' }}>Платежей ещё не было</div>}
+                        {familyHistory.map(p => (
+                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#9ca3af' }}>
+                            <span>{p.description || 'Пополнение'} · {new Date(p.payment_date).toLocaleDateString('ru-RU')}</span>
+                            <span style={{ color: '#34d399' }}>+{formatMoney(p.amount)} ₽</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {members.map(student => renderStudentCard(student))}
                 </div>
@@ -424,29 +502,38 @@ export default function StudentsPage() {
                       </div>
                     </div>
 
-                    <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '8px', textTransform: 'uppercase' }}>Пополнить баланс</div>
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                      <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="Сумма" />
-                      <input value={paymentDescription} onChange={e => setPaymentDescription(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '160px' }} placeholder="Комментарий (необязательно)" />
-                      <button onClick={() => submitPayment(student.id)} disabled={savingRow || !paymentAmount} style={savingRow || !paymentAmount ? submitButtonDisabledStyle : submitButtonStyle}>
-                        + Оплата
-                      </button>
-                    </div>
-
-                    {history === null ? (
-                      <button onClick={() => loadHistory(student.id)} style={{ background: 'none', border: 'none', color: '#4f8ef7', cursor: 'pointer', fontSize: '13px', padding: 0 }}>
-                        Показать историю платежей
-                      </button>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
-                        {history.length === 0 && <div style={{ color: '#4b5563', fontSize: '13px' }}>Платежей ещё не было</div>}
-                        {history.map(p => (
-                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#9ca3af' }}>
-                            <span>{p.description || 'Пополнение'} · {new Date(p.payment_date).toLocaleDateString('ru-RU')}</span>
-                            <span style={{ color: '#34d399' }}>+{formatMoney(p.amount)} ₽</span>
-                          </div>
-                        ))}
+                    {student.family_id ? (
+                      <div style={{ color: '#6b7280', fontSize: '13px' }}>
+                        Баланс пополняется на уровне семьи — кнопка «Пополнить баланс» в шапке семьи выше.
+                        Здесь виден только личный долг ученика за уже проведённые занятия.
                       </div>
+                    ) : (
+                      <>
+                        <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '8px', textTransform: 'uppercase' }}>Пополнить баланс</div>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                          <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="Сумма" />
+                          <input value={paymentDescription} onChange={e => setPaymentDescription(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '160px' }} placeholder="Комментарий (необязательно)" />
+                          <button onClick={() => submitPayment(student.id)} disabled={savingRow || !paymentAmount} style={savingRow || !paymentAmount ? submitButtonDisabledStyle : submitButtonStyle}>
+                            + Оплата
+                          </button>
+                        </div>
+
+                        {history === null ? (
+                          <button onClick={() => loadHistory(student.id)} style={{ background: 'none', border: 'none', color: '#4f8ef7', cursor: 'pointer', fontSize: '13px', padding: 0 }}>
+                            Показать историю платежей
+                          </button>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                            {history.length === 0 && <div style={{ color: '#4b5563', fontSize: '13px' }}>Платежей ещё не было</div>}
+                            {history.map(p => (
+                              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#9ca3af' }}>
+                                <span>{p.description || 'Пополнение'} · {new Date(p.payment_date).toLocaleDateString('ru-RU')}</span>
+                                <span style={{ color: '#34d399' }}>+{formatMoney(p.amount)} ₽</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}

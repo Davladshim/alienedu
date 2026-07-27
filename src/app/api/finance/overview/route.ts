@@ -43,8 +43,10 @@ export async function GET(request: NextRequest) {
       [decoded.id]
     )
 
-    const personalBalance = await query(
-      `SELECT COALESCE(SUM(balance), 0) as total FROM teacher_students WHERE teacher_id = $1 AND family_id IS NULL`,
+    // Личный баланс учеников без семьи (может быть и +, и -) + долги учеников
+    // в семьях (только <= 0) + общий пул семей (только >= 0)
+    const studentsBalance = await query(
+      `SELECT COALESCE(SUM(balance), 0) as total FROM teacher_students WHERE teacher_id = $1`,
       [decoded.id]
     )
     const familyBalance = await query(
@@ -60,7 +62,7 @@ export async function GET(request: NextRequest) {
       monthUnplannedCompletedCount: monthCompleted.rows[0].unplanned_completed_count,
       unpaidLessons: unpaid.rows,
       unpaidTotal: unpaid.rows.reduce((sum, r) => sum + Number(r.price || 0), 0),
-      totalBalance: Number(personalBalance.rows[0].total) + Number(familyBalance.rows[0].total),
+      totalBalance: Number(studentsBalance.rows[0].total) + Number(familyBalance.rows[0].total),
     })
   } catch (error) {
     console.error('Ошибка получения финансового обзора:', error)

@@ -6,8 +6,8 @@
 -- Перед началом работы в любом из двух чатов — сверяйтесь с этим файлом
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
--- Последнее обновление: 26.07.2026
--- Обновлено модулем: platform (schedule_lessons: пробные уроки, автостатусы)
+-- Последнее обновление: 27.07.2026
+-- Обновлено модулем: platform (payments: пополнение баланса семьи)
 -- ============================================================================
 
 
@@ -136,6 +136,9 @@ CREATE TABLE IF NOT EXISTS families (
     id SERIAL PRIMARY KEY,
     teacher_id INTEGER NOT NULL REFERENCES users(id),
     name VARCHAR(255) NOT NULL,
+    -- Пул ещё не распределённых между детьми денег — всегда >= 0.
+    -- Долги за конкретные проведённые занятия сюда не входят, они личные
+    -- у каждого ученика (см. teacher_students.balance)
     balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -146,18 +149,23 @@ CREATE TABLE IF NOT EXISTS teacher_students (
     teacher_id INTEGER NOT NULL REFERENCES users(id),
     student_id INTEGER NOT NULL REFERENCES users(id),
     lesson_price DECIMAL(10, 2), -- стоимость одного занятия для этого ученика
-    balance DECIMAL(10, 2) NOT NULL DEFAULT 0, -- личный баланс (не используется, если есть family_id)
+    -- Если family_id задан — это только долг (<= 0) за проведённые занятия,
+    -- положительный остаток в этом случае живёт в families.balance.
+    -- Без семьи — обычный личный баланс, может быть и + и -
+    balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
     family_id INTEGER REFERENCES families(id),
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (teacher_id, student_id)
 );
 
--- Пополнения баланса (истории платежей — привязаны к ученику,
--- но фактически увеличивают семейный баланс, если ученик состоит в семье)
+-- Пополнения баланса (история платежей). Привязан либо к конкретному ученику
+-- без семьи (teacher_student_id), либо к семье целиком (family_id) — деньги,
+-- пополняющие семью, ещё не распределены между её учениками
 CREATE TABLE IF NOT EXISTS payments (
     id SERIAL PRIMARY KEY,
     teacher_id INTEGER NOT NULL REFERENCES users(id),
-    teacher_student_id INTEGER NOT NULL REFERENCES teacher_students(id),
+    teacher_student_id INTEGER REFERENCES teacher_students(id),
+    family_id INTEGER REFERENCES families(id),
     amount DECIMAL(10, 2) NOT NULL,
     description VARCHAR(255),
     payment_date TIMESTAMP DEFAULT NOW(),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { chargeForLesson, refundForLesson } from '@/lib/familyBalance'
 
 function isPast(date: string, time: string): boolean {
   return new Date(`${String(date).slice(0, 10)}T${time}:00`) < new Date()
@@ -53,13 +54,16 @@ export async function PUT(
 
     if (newIsPaid !== existing.is_paid && newPrice) {
       const studentResult = await query(
-        `SELECT id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
+        `SELECT id, family_id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
         [decoded.id, existing.student_id]
       )
       const rosterEntry = studentResult.rows[0]
       if (rosterEntry) {
-        const delta = newIsPaid ? -newPrice : newPrice
-        await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [delta, rosterEntry.id])
+        if (newIsPaid) {
+          await chargeForLesson(rosterEntry.id, rosterEntry.family_id, newPrice)
+        } else {
+          await refundForLesson(rosterEntry.id, rosterEntry.family_id, newPrice)
+        }
       }
     }
 
@@ -112,12 +116,12 @@ export async function DELETE(
     // иначе удаление уронит баланс ученика без причины
     if (existing.is_paid && existing.price) {
       const studentResult = await query(
-        `SELECT id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
+        `SELECT id, family_id FROM teacher_students WHERE teacher_id = $1 AND student_id = $2`,
         [decoded.id, existing.student_id]
       )
       const rosterEntry = studentResult.rows[0]
       if (rosterEntry) {
-        await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [existing.price, rosterEntry.id])
+        await refundForLesson(rosterEntry.id, rosterEntry.family_id, existing.price)
       }
     }
 

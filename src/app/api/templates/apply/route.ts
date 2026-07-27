@@ -21,6 +21,16 @@ function addDays(d: Date, n: number): Date {
   date.setDate(date.getDate() + n)
   return date
 }
+// pg возвращает колонки DATE как Date-объект в UTC-полночь, а даты, с
+// которыми мы тут считаем (today/targetDate), строятся в локальной
+// полночи сервера — сравнивать их как Date напрямую нельзя (в любом
+// часовом поясе, кроме UTC, это на несколько часов сдвигает результат
+// и может исключить ближайшую к start_date неделю). Поэтому везде
+// сравниваем только строки 'YYYY-MM-DD'.
+function toISODateStr(value: unknown): string {
+  if (value instanceof Date) return toISODate(value)
+  return String(value).slice(0, 10)
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +51,7 @@ export async function POST(request: NextRequest) {
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const todayStr = toISODate(today)
     const currentWeekStart = startOfWeek(today)
 
     let created = 0
@@ -50,13 +61,12 @@ export async function POST(request: NextRequest) {
       const weekStart = addDays(currentWeekStart, w * 7)
       for (const tpl of templates) {
         const targetDate = addDays(weekStart, tpl.day_of_week)
-        if (targetDate < today) continue
-
-        const startDate = new Date(tpl.start_date)
-        if (targetDate < startDate) continue
-        if (tpl.end_date && targetDate > new Date(tpl.end_date)) continue
-
         const dateStr = toISODate(targetDate)
+        if (dateStr < todayStr) continue
+
+        const startDateStr = toISODateStr(tpl.start_date)
+        if (dateStr < startDateStr) continue
+        if (tpl.end_date && dateStr > toISODateStr(tpl.end_date)) continue
 
         const existing = await query(
           `SELECT 1 FROM schedule_lessons WHERE teacher_id = $1 AND student_id = $2 AND date = $3 AND time = $4`,
