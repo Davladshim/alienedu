@@ -29,6 +29,8 @@ export default function StudentsPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [priceDraft, setPriceDraft] = useState('')
   const [familyDraft, setFamilyDraft] = useState('')
+  const [gradeDraft, setGradeDraft] = useState('')
+  const [parentNameDraft, setParentNameDraft] = useState('')
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentDescription, setPaymentDescription] = useState('')
   const [savingRow, setSavingRow] = useState(false)
@@ -148,6 +150,8 @@ export default function StudentsPage() {
     setExpandedId(student.id)
     setPriceDraft(student.lesson_price ?? '')
     setFamilyDraft(student.family_id ?? '')
+    setGradeDraft(student.grade ?? '')
+    setParentNameDraft(student.parent_name ?? '')
     setPaymentAmount('')
     setPaymentDescription('')
     setHistory(null)
@@ -161,6 +165,8 @@ export default function StudentsPage() {
       body: JSON.stringify({
         lesson_price: priceDraft === '' ? null : Number(priceDraft),
         family_id: familyDraft === '' ? null : Number(familyDraft),
+        grade: gradeDraft === '' ? null : Number(gradeDraft),
+        parent_name: parentNameDraft === '' ? null : parentNameDraft,
       }),
     })
     setSavingRow(false)
@@ -494,7 +500,15 @@ export default function StudentsPage() {
                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
                       <div>
                         <label style={labelStyle}>Стоимость занятия, ₽</label>
-                        <input type="number" value={priceDraft} onChange={e => setPriceDraft(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="1500" />
+                        <input type="number" value={priceDraft} onChange={e => setPriceDraft(e.target.value)} style={{ ...inputStyle, width: '120px' }} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Класс</label>
+                        <input type="number" value={gradeDraft} onChange={e => setGradeDraft(e.target.value)} style={{ ...inputStyle, width: '80px' }} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Имя родителя</label>
+                        <input type="text" value={parentNameDraft} onChange={e => setParentNameDraft(e.target.value)} style={{ ...inputStyle, width: '160px' }} />
                       </div>
                       <div>
                         <label style={labelStyle}>Семья</label>

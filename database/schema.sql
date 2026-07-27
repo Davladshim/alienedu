@@ -149,6 +149,8 @@ CREATE TABLE IF NOT EXISTS teacher_students (
     teacher_id INTEGER NOT NULL REFERENCES users(id),
     student_id INTEGER NOT NULL REFERENCES users(id),
     lesson_price DECIMAL(10, 2), -- стоимость одного занятия для этого ученика
+    grade INTEGER, -- класс ученика
+    parent_name VARCHAR(255), -- имя родителя, для удобства (кто платит/на связи)
     -- Если family_id задан — это только долг (<= 0) за проведённые занятия,
     -- положительный остаток в этом случае живёт в families.balance.
     -- Без семьи — обычный личный баланс, может быть и + и -

@@ -112,6 +112,16 @@ export default function CalendarPage() {
     fetch('/api/students').then(r => r.json()).then(data => setRoster(data.students || []))
   }, [])
 
+  // Статус "проведён" выставляется на сервере в момент окончания занятия,
+  // но без периодического опроса страница показывала бы устаревшие статусы
+  // всем занятиям, которые закончились уже после того, как календарь
+  // загрузился — обновляем список раз в минуту, чтобы это не зависело от
+  // ручной перезагрузки страницы
+  useEffect(() => {
+    const interval = setInterval(loadLessons, 60000)
+    return () => clearInterval(interval)
+  }, [loadLessons])
+
   function openAddForm(dateStr: string) {
     setAddingForDate(dateStr)
     setAddForm(emptyForm)
