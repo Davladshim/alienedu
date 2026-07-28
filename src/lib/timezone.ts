@@ -42,6 +42,17 @@ function getTimezoneOffsetMinutes(timeZone: string, at: Date): number {
   return Math.round((asUTC - at.getTime()) / 60000)
 }
 
+// Переводит "настенное" время date+time в поясе timeZone в абсолютный
+// момент времени (мс с начала эпохи) — нужно, чтобы сравнивать занятия
+// разных репетиторов в разных поясах на пересечение по единому мировому времени
+export function wallTimeToUtcMs(dateStr: string, timeStr: string, timeZone: string): number {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const [hour, minute] = timeStr.split(':').map(Number)
+  const naiveUtc = new Date(Date.UTC(year, month - 1, day, hour, minute))
+  const offset = getTimezoneOffsetMinutes(timeZone, naiveUtc)
+  return naiveUtc.getTime() - offset * 60000
+}
+
 // Переводит "настенное" время date+time, понимаемое как время в поясе
 // fromTz, в соответствующее настенное время в поясе toTz — тот самый
 // физический момент, но в других "часах на стене"

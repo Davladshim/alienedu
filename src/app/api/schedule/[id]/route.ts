@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
 import { chargeForLesson, refundForLesson } from '@/lib/familyBalance'
+import { hasCrossTeacherConflict } from '@/lib/scheduleConflict'
+import { DEFAULT_TIMEZONE } from '@/lib/timezone'
 
 function isPast(date: string, time: string): boolean {
   return new Date(`${String(date).slice(0, 10)}T${time}:00`) < new Date()
@@ -45,12 +47,22 @@ export async function PUT(
     const originalTime = isMoved && !existing.original_time ? existing.time : existing.original_time
 
     const newPrice = price !== undefined ? price : existing.price
+    const newDuration = duration_minutes ?? existing.duration_minutes
 
     // Статус/оплата теперь меняются автоматически по времени (см. autoCompleteDueLessons).
     // Вручную из календаря можно только отменить занятие; ручная отметка "оплачено"
     // остаётся как аварийный вариант на странице "Финансы" (если авто-списание почему-то не сработало)
     const newStatus = status === 'cancelled' ? 'cancelled' : existing.status
     const newIsPaid = is_paid !== undefined ? is_paid : existing.is_paid
+
+    if (existing.student_id && newStatus !== 'cancelled' && (isMoved || duration_minutes !== undefined)) {
+      const teacherResult = await query(`SELECT timezone FROM users WHERE id = $1`, [decoded.id])
+      const teacherTz: string = teacherResult.rows[0]?.timezone || DEFAULT_TIMEZONE
+      const conflict = await hasCrossTeacherConflict(existing.student_id, decoded.id, teacherTz, newDate, newTime, newDuration)
+      if (conflict) {
+        return NextResponse.json({ error: 'Это время у ученика уже занято другим репетитором' }, { status: 409 })
+      }
+    }
 
     if (newIsPaid !== existing.is_paid && newPrice) {
       const studentResult = await query(
@@ -74,7 +86,7 @@ export async function PUT(
        WHERE id = $11`,
       [
         newDate, newTime,
-        duration_minutes ?? existing.duration_minutes,
+        newDuration,
         subject !== undefined ? subject : existing.subject,
         newStatus,
         notes !== undefined ? notes : existing.notes,

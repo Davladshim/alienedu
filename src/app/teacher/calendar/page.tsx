@@ -381,6 +381,22 @@ export default function CalendarPage() {
                               {STATUS_SHORT[lesson.status]}
                             </span>
                           )}
+                          {!lesson.is_trial && lesson.call_link && (
+                            <a
+                              href={lesson.call_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              title="Перейти по ссылке урока"
+                              style={{ position: 'absolute', top: '3px', left: '5px', color: '#4f8ef7', display: 'flex', lineHeight: 0 }}
+                            >
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                                <path d="M9 15 L15 9" />
+                                <path d="M13 6.5 L14.5 5 A4 4 0 0 1 20 10.5 L18.5 12" />
+                                <path d="M11 17.5 L9.5 19 A4 4 0 0 1 4 13.5 L5.5 12" />
+                              </svg>
+                            </a>
+                          )}
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 600, fontSize: '12px' }}>
                             <span>{formatTimeRange(lesson.time, lesson.duration_minutes)}</span>
                             {lesson.subject && <SubjectIcon subject={lesson.subject} size={13} />}

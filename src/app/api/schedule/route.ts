@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
 import { autoCompleteDueLessons } from '@/lib/scheduleAutoComplete'
+import { hasCrossTeacherConflict } from '@/lib/scheduleConflict'
+import { DEFAULT_TIMEZONE } from '@/lib/timezone'
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,9 +23,10 @@ export async function GET(request: NextRequest) {
     await autoCompleteDueLessons()
 
     const result = await query(
-      `SELECT sl.*, COALESCE(u.full_name, sl.student_name, 'Пробный урок') as student_name
+      `SELECT sl.*, COALESCE(u.full_name, sl.student_name, 'Пробный урок') as student_name, ts.call_link
        FROM schedule_lessons sl
        LEFT JOIN users u ON u.id = sl.student_id
+       LEFT JOIN teacher_students ts ON ts.teacher_id = sl.teacher_id AND ts.student_id = sl.student_id
        WHERE sl.teacher_id = $1 AND sl.date BETWEEN $2 AND $3
        ORDER BY sl.date, sl.time`,
       [decoded.id, from, to]
@@ -72,6 +75,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Этот ученик не в твоём списке' }, { status: 400 })
     }
     const effectivePrice = price !== undefined && price !== '' ? price : roster.rows[0].lesson_price
+
+    const teacherResult = await query(`SELECT timezone FROM users WHERE id = $1`, [decoded.id])
+    const teacherTz: string = teacherResult.rows[0]?.timezone || DEFAULT_TIMEZONE
+    const conflict = await hasCrossTeacherConflict(student_id, decoded.id, teacherTz, date, time, duration_minutes || 60)
+    if (conflict) {
+      return NextResponse.json({ error: 'Это время у ученика уже занято другим репетитором' }, { status: 409 })
+    }
 
     const result = await query(
       `INSERT INTO schedule_lessons (teacher_id, student_id, date, time, duration_minutes, subject, notes, price)
