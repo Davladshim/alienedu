@@ -117,7 +117,16 @@ export default function LessonsPage() {
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '1.5rem' }}>
+          <button
+            onClick={() => router.push('/teacher/lessons/library')}
+            style={{
+              background: 'transparent', color: '#93c5fd', border: '1px solid rgba(96,165,250,0.4)',
+              borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            📖 Библиотека уроков
+          </button>
           <button
             onClick={() => router.push('/teacher/lessons/new')}
             style={{
@@ -152,7 +161,25 @@ export default function LessonsPage() {
               }}
             >
               <div>
-                <div style={{ fontWeight: 600, fontSize: '15px' }}>{lesson.title}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontWeight: 600, fontSize: '15px' }}>{lesson.title}</span>
+                  {lesson.locked && (
+                    <span style={{
+                      fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(96,165,250,0.15)', color: '#93c5fd', whiteSpace: 'nowrap',
+                    }}>
+                      📖 Из библиотеки{lesson.author_name ? ` · ${lesson.author_name}` : ''}
+                    </span>
+                  )}
+                  {!lesson.locked && lesson.is_public && (
+                    <span style={{
+                      fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(52,211,153,0.15)', color: '#34d399', whiteSpace: 'nowrap',
+                    }}>
+                      🌐 В библиотеке
+                    </span>
+                  )}
+                </div>
                 <div style={{ color: '#6b7280', fontSize: '13px', marginTop: '2px' }}>
                   {[lesson.subject, lesson.grade ? `${lesson.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
                   {Number(lesson.assigned_count) > 0 && ` · прошли ${lesson.completed_count} из ${lesson.assigned_count}`}

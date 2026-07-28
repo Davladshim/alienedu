@@ -83,24 +83,27 @@ export async function PUT(
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     const { id: lessonId } = await params
 
-    const owner = await query(`SELECT teacher_id FROM lessons WHERE id = $1`, [lessonId])
+    const owner = await query(`SELECT teacher_id, locked FROM lessons WHERE id = $1`, [lessonId])
     if (owner.rows.length === 0) {
       return NextResponse.json({ error: 'Урок не найден' }, { status: 404 })
     }
     if (owner.rows[0].teacher_id !== decoded.id) {
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
     }
+    if (owner.rows[0].locked) {
+      return NextResponse.json({ error: 'Урок из библиотеки нельзя редактировать' }, { status: 403 })
+    }
 
-    const { title, subject, grade, status, mode, blocks } = await request.json()
+    const { title, subject, grade, status, mode, is_public, blocks } = await request.json()
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Введите название урока' }, { status: 400 })
     }
 
     await query(
-      `UPDATE lessons SET title = $1, subject = $2, grade = $3, status = $4, mode = $5, updated_at = NOW()
-       WHERE id = $6`,
-      [title, subject || null, grade || null, status || 'draft', mode === 'exam' ? 'exam' : 'quiz', lessonId]
+      `UPDATE lessons SET title = $1, subject = $2, grade = $3, status = $4, mode = $5, is_public = $6, updated_at = NOW()
+       WHERE id = $7`,
+      [title, subject || null, grade || null, status || 'draft', mode === 'exam' ? 'exam' : 'quiz', !!is_public, lessonId]
     )
 
     await query(`DELETE FROM lesson_blocks WHERE lesson_id = $1`, [lessonId])

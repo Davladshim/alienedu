@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
 
     const result = await query(
       `SELECT l.id, l.title, l.subject, l.grade, l.status, l.created_at, l.updated_at,
+         l.is_public, l.locked, l.author_name,
          COALESCE(stats.assigned_count, 0) as assigned_count,
          COALESCE(stats.completed_count, 0) as completed_count
        FROM lessons l
@@ -48,17 +49,17 @@ export async function POST(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    const { title, subject, grade, status, mode, blocks } = await request.json()
+    const { title, subject, grade, status, mode, is_public, blocks } = await request.json()
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Введите название урока' }, { status: 400 })
     }
 
     const lessonResult = await query(
-      `INSERT INTO lessons (teacher_id, title, subject, grade, status, mode)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO lessons (teacher_id, title, subject, grade, status, mode, is_public)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
-      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz']
+      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz', !!is_public]
     )
     const lessonId = lessonResult.rows[0].id
 
