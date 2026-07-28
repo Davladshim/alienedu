@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
 import { autoCompleteDueLessons } from '@/lib/scheduleAutoComplete'
-import { convertWallTime, addMinutesToTime, DEFAULT_TIMEZONE } from '@/lib/timezone'
+import { convertWallTime, addMinutesToTime, toDateOnlyString, DEFAULT_TIMEZONE } from '@/lib/timezone'
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     // Переводим в пояс ученика, чтобы физический момент занятия совпадал
     const lessons = result.rows.map(row => {
       const teacherTz: string = row.teacher_timezone || DEFAULT_TIMEZONE
-      const converted = convertWallTime(String(row.date).slice(0, 10), row.time, teacherTz, studentTz)
+      const converted = convertWallTime(toDateOnlyString(row.date), row.time, teacherTz, studentTz)
       const end = addMinutesToTime(converted.date, converted.time, row.duration_minutes || 0)
       return {
         ...row,

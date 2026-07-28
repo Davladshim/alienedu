@@ -3,10 +3,10 @@ import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
 import { chargeForLesson, refundForLesson } from '@/lib/familyBalance'
 import { hasCrossTeacherConflict } from '@/lib/scheduleConflict'
-import { DEFAULT_TIMEZONE } from '@/lib/timezone'
+import { DEFAULT_TIMEZONE, toDateOnlyString } from '@/lib/timezone'
 
-function isPast(date: string, time: string): boolean {
-  return new Date(`${String(date).slice(0, 10)}T${time}:00`) < new Date()
+function isPast(date: string | Date, time: string): boolean {
+  return new Date(`${toDateOnlyString(date)}T${time}:00`) < new Date()
 }
 
 export async function PUT(
@@ -32,7 +32,7 @@ export async function PUT(
 
     const { date, time, duration_minutes, subject, status, notes, price, is_paid } = await request.json()
 
-    const isMoved = (date && date !== String(existing.date).slice(0, 10)) || (time && time !== existing.time)
+    const isMoved = (date && date !== toDateOnlyString(existing.date)) || (time && time !== existing.time)
 
     // Занятие, которое уже прошло, переносить нельзя — только менять статус
     // или удалять. Дата берётся такая, какой она была ДО этого запроса.

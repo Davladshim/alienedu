@@ -17,6 +17,14 @@ export const RUSSIAN_TIMEZONES: { tz: string; label: string }[] = [
 
 export const DEFAULT_TIMEZONE = 'Europe/Moscow'
 
+// Постгрес-строки date (тип DATE) драйвер pg по умолчанию превращает в
+// JS Date — обычный String(date) даёт локальный формат ("Wed Jul 29 2026..."),
+// а не "YYYY-MM-DD", поэтому явно берём именно календарную дату в UTC
+export function toDateOnlyString(value: string | Date): string {
+  if (value instanceof Date) return value.toISOString().slice(0, 10)
+  return String(value).slice(0, 10)
+}
+
 export function isValidTimezone(tz: string): boolean {
   try {
     new Intl.DateTimeFormat('en-US', { timeZone: tz })

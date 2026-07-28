@@ -1,5 +1,5 @@
 import { query } from '@/lib/db'
-import { wallTimeToUtcMs, DEFAULT_TIMEZONE } from '@/lib/timezone'
+import { wallTimeToUtcMs, toDateOnlyString, DEFAULT_TIMEZONE } from '@/lib/timezone'
 
 // Проверяет, не занято ли это время у ученика уже другим репетитором —
 // сравнение идёт по единому мировому времени (с учётом часовых поясов),
@@ -35,7 +35,7 @@ export async function hasCrossTeacherConflict(
 
   return result.rows.some(row => {
     const otherTz: string = row.timezone || DEFAULT_TIMEZONE
-    const otherStart = wallTimeToUtcMs(String(row.date).slice(0, 10), row.time, otherTz)
+    const otherStart = wallTimeToUtcMs(toDateOnlyString(row.date), row.time, otherTz)
     const otherEnd = otherStart + Number(row.duration_minutes || 0) * 60000
     return startMs < otherEnd && otherStart < endMs
   })
