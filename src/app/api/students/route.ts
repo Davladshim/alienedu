@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { query } from '@/lib/db'
+import { getTeacherLimits } from '@/lib/plan'
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,6 +55,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+
+    const limits = await getTeacherLimits(decoded.id)
+    const countResult = await query(`SELECT COUNT(*) FROM teacher_students WHERE teacher_id = $1`, [decoded.id])
+    if (Number(countResult.rows[0].count) >= limits.maxStudents) {
+      return NextResponse.json({
+        error: `На бесплатном тарифе доступно не больше ${limits.maxStudents} учеников. Чтобы добавить больше — перейдите на тариф Pro`,
+      }, { status: 403 })
+    }
 
     const { login, full_name } = await request.json()
 

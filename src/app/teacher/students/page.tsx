@@ -42,6 +42,11 @@ export default function StudentsPage() {
   const [savingFamilyPayment, setSavingFamilyPayment] = useState(false)
   const [familyHistory, setFamilyHistory] = useState<any[] | null>(null)
 
+  const [plan, setPlan] = useState<'free' | 'pro' | null>(null)
+  useEffect(() => {
+    fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free'))
+  }, [])
+
   function loadAll() {
     Promise.all([
       fetch('/api/students').then(r => r.json()),
@@ -241,6 +246,14 @@ export default function StudentsPage() {
           </Link>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>👥 Мои ученики</h1>
         </div>
+
+        {plan === 'free' && (
+          <div style={{ color: '#6b7280', fontSize: '13px', marginBottom: '1rem' }}>
+            Бесплатный тариф: {students.length} из 5 учеников. {students.length >= 5 && (
+              <>Чтобы добавить больше — <Link href="/teacher/tariffs" style={{ color: '#4f8ef7' }}>перейдите на Pro</Link>.</>
+            )}
+          </div>
+        )}
 
         {/* Семьи */}
         <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>

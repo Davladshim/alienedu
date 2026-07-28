@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { getTeacherLimits } from '@/lib/plan'
 
 // Копирует урок из библиотеки в собственный список репетитора: полная
 // копия урока и всех его блоков, но с locked = true — оригинал остаётся
@@ -32,6 +33,14 @@ export async function POST(
     }
     if (source.teacher_id === decoded.id) {
       return NextResponse.json({ error: 'Это ваш собственный урок' }, { status: 400 })
+    }
+
+    const limits = await getTeacherLimits(decoded.id)
+    const countResult = await query(`SELECT COUNT(*) FROM lessons WHERE teacher_id = $1 AND locked = true`, [decoded.id])
+    if (Number(countResult.rows[0].count) >= limits.maxLibraryLessons) {
+      return NextResponse.json({
+        error: `На бесплатном тарифе доступно не больше ${limits.maxLibraryLessons} уроков из библиотеки. Чтобы добавлять больше — перейдите на тариф Pro`,
+      }, { status: 403 })
     }
 
     const copyResult = await query(

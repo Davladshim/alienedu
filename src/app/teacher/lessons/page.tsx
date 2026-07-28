@@ -18,6 +18,7 @@ export default function LessonsPage() {
   const [matrixLessons, setMatrixLessons] = useState<any[]>([])
   const [matrixCells, setMatrixCells] = useState<any[]>([])
   const [matrixLoading, setMatrixLoading] = useState(true)
+  const [plan, setPlan] = useState<'free' | 'pro' | null>(null)
 
   useEffect(() => {
     fetch('/api/lessons')
@@ -34,7 +35,11 @@ export default function LessonsPage() {
         setMatrixCells(data.cells || [])
         setMatrixLoading(false)
       })
+    fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free'))
   }, [])
+
+  const ownLessonsCount = lessons.filter(l => !l.locked).length
+  const libraryLessonsCount = lessons.filter(l => l.locked).length
 
   function cellStatus(studentId: number, lessonId: number): string | null {
     const cell = matrixCells.find(c => c.student_id === studentId && c.lesson_id === lessonId)
@@ -114,6 +119,13 @@ export default function LessonsPage() {
                 кружок с ободком — нажми, чтобы посмотреть процесс вживую
               </span>
             </div>
+          </div>
+        )}
+
+        {plan === 'free' && !loading && (
+          <div style={{ color: '#6b7280', fontSize: '13px', marginBottom: '1rem', textAlign: 'right' }}>
+            Бесплатный тариф: {ownLessonsCount} из 1 своего урока, {libraryLessonsCount} из 5 из библиотеки.{' '}
+            <Link href="/teacher/tariffs" style={{ color: '#4f8ef7' }}>Перейти на Pro</Link>
           </div>
         )}
 

@@ -1,21 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { LogoutButton } from '@/components/LogoutButton'
 
 export default function TeacherPage() {
-  const [quests, setQuests] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/api/quest/my-quests')
-      .then(r => r.json())
-      .then(data => {
-        setQuests(data.quests || [])
-        setLoading(false)
-      })
-  }, [])
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -32,16 +18,13 @@ export default function TeacherPage() {
       }}>
 
         {/* Шапка */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
-              🪐 Кабинет преподавателя
-            </h1>
-            <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
-              AlienEdu — платформа для интерактивных уроков
-            </p>
-          </div>
-          <LogoutButton />
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
+            🪐 Кабинет преподавателя
+          </h1>
+          <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+            AlienEdu — платформа для интерактивных уроков
+          </p>
         </div>
 
         {/* Сетка модулей */}
@@ -51,22 +34,6 @@ export default function TeacherPage() {
           gap: '16px',
           marginBottom: '2rem'
         }}>
-
-          {/* Мои квесты */}
-          <Link href="/teacher/quests" style={{ textDecoration: 'none' }}>
-            <div style={{
-              background: '#1a1d27', border: '1px solid #2a2d3d',
-              borderRadius: '16px', padding: '1.5rem', cursor: 'pointer',
-              transition: 'border-color 0.2s',
-            }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
-            >
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎮</div>
-              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Мои квесты</div>
-              <div style={{ color: '#6b7280', fontSize: '13px' }}>Управление квест-уроками</div>
-            </div>
-          </Link>
 
           {/* Мои ученики */}
           <Link href="/teacher/students" style={{ textDecoration: 'none' }}>

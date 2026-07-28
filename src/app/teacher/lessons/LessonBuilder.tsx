@@ -37,6 +37,7 @@ export function LessonBuilder({
   initialAssignedStudentIds = [],
   locked = false,
   authorName = null,
+  canPublishToLibrary = true,
   saving,
   error,
   onSave,
@@ -54,6 +55,7 @@ export function LessonBuilder({
   initialAssignedStudentIds?: number[]
   locked?: boolean
   authorName?: string | null
+  canPublishToLibrary?: boolean
   saving: boolean
   error: string
   onSave: (meta: LessonMeta, blocks: LessonBlockData[]) => void
@@ -156,15 +158,24 @@ export function LessonBuilder({
             Опубликован (виден назначенным ученикам)
           </label>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', cursor: 'pointer', fontSize: '14px', color: '#9ca3af' }}>
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '14px', color: '#9ca3af',
+            cursor: canPublishToLibrary ? 'pointer' : 'not-allowed',
+          }}>
             <input
               type="checkbox"
               checked={isPublic}
+              disabled={!canPublishToLibrary}
               onChange={e => setIsPublic(e.target.checked)}
             />
             Опубликовать в библиотеке (виден другим репетиторам, они смогут добавить его себе)
           </label>
-          {isPublic && status !== 'published' && (
+          {!canPublishToLibrary && (
+            <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
+              Публикация в библиотеке доступна на тарифе Pro
+            </div>
+          )}
+          {canPublishToLibrary && isPublic && status !== 'published' && (
             <div style={{ color: '#fbbf24', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
               Появится в библиотеке только после публикации самого урока (галочка выше)
             </div>

@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { LessonBuilder, type LessonMeta } from '../LessonBuilder'
 import type { LessonBlockData } from '@/components/lesson-blocks'
@@ -8,6 +8,11 @@ export default function NewLessonPage() {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [canPublishToLibrary, setCanPublishToLibrary] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/me').then(r => r.json()).then(data => setCanPublishToLibrary(data.plan === 'pro'))
+  }, [])
 
   async function handleSave(meta: LessonMeta, blocks: LessonBlockData[]) {
     setError('')
@@ -29,6 +34,7 @@ export default function NewLessonPage() {
   return (
     <LessonBuilder
       backHref="/teacher/lessons"
+      canPublishToLibrary={canPublishToLibrary}
       saving={saving}
       error={error}
       onSave={handleSave}

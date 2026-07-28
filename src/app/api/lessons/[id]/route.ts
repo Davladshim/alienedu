@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
 import { liveChannelName } from '@/lib/liveChannelName'
+import { getTeacherLimits } from '@/lib/plan'
 
 export async function GET(
   request: NextRequest,
@@ -100,10 +101,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Введите название урока' }, { status: 400 })
     }
 
+    const limits = await getTeacherLimits(decoded.id)
+
     await query(
       `UPDATE lessons SET title = $1, subject = $2, grade = $3, status = $4, mode = $5, is_public = $6, updated_at = NOW()
        WHERE id = $7`,
-      [title, subject || null, grade || null, status || 'draft', mode === 'exam' ? 'exam' : 'quiz', !!is_public, lessonId]
+      [title, subject || null, grade || null, status || 'draft', mode === 'exam' ? 'exam' : 'quiz', limits.canPublishToLibrary ? !!is_public : false, lessonId]
     )
 
     await query(`DELETE FROM lesson_blocks WHERE lesson_id = $1`, [lessonId])

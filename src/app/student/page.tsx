@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { LogoutButton } from '@/components/LogoutButton'
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
@@ -51,16 +50,13 @@ export default function StudentSchedulePage() {
     }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
-              🪐 Кабинет ученика
-            </h1>
-            <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
-              Alien<span style={{ color: '#4f8ef7' }}>Edu</span> — платформа для интерактивных уроков
-            </p>
-          </div>
-          <LogoutButton />
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
+            🪐 Кабинет ученика
+          </h1>
+          <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+            Alien<span style={{ color: '#4f8ef7' }}>Edu</span> — платформа для интерактивных уроков
+          </p>
         </div>
 
         <div style={{ display: 'flex', gap: '6px', marginBottom: '1.5rem' }}>

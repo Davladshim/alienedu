@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS users (
     -- в ростере до того, как тот сам зарегистрировался; login/code_hash —
     -- случайные и нерабочие, вход под таким аккаунтом всегда отклоняется
     is_placeholder BOOLEAN NOT NULL DEFAULT false,
+    -- Тариф репетитора на самой платформе AlienEdu (не путать с access_codes/
+    -- stereo_access_codes — те про магазин презентаций и StereoSpace)
+    plan VARCHAR(20) NOT NULL DEFAULT 'free', -- 'free', 'pro'
+    plan_expires_at TIMESTAMP, -- NULL пока free; для pro — когда истекает текущий код
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -336,6 +340,21 @@ CREATE TABLE IF NOT EXISTS stereo_access_codes (
 
 CREATE INDEX IF NOT EXISTS idx_stereo_access_codes_code ON stereo_access_codes(code);
 CREATE INDEX IF NOT EXISTS idx_stereo_tasks_topic ON stereo_tasks(topic);
+
+-- Коды для перехода репетитора на платный тариф AlienEdu (Pro) — та же
+-- механика, что у access_codes/stereo_access_codes: код вводится один раз,
+-- first_used_at запускает отсчёт valid_days
+CREATE TABLE IF NOT EXISTS plan_codes (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(64) UNIQUE NOT NULL,
+    user_id INTEGER REFERENCES users(id), -- кто ввёл код
+    plan VARCHAR(20) NOT NULL DEFAULT 'pro',
+    first_used_at TIMESTAMP,
+    valid_days INTEGER NOT NULL DEFAULT 30,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_plan_codes_code ON plan_codes(code);
 -- ============================================================================
 -- ЗАМЕТКИ НА БУДУЩЕЕ (не таблицы, просто план)
 -- ============================================================================

@@ -15,6 +15,7 @@ export default function EditLessonPage() {
   const [lesson, setLesson] = useState<any>(null)
   const [blocks, setBlocks] = useState<LessonBlockData[]>([])
   const [assignedStudentIds, setAssignedStudentIds] = useState<number[]>([])
+  const [canPublishToLibrary, setCanPublishToLibrary] = useState(true)
 
   useEffect(() => {
     fetch(`/api/lessons/${id}`)
@@ -27,6 +28,7 @@ export default function EditLessonPage() {
         }
         setLoading(false)
       })
+    fetch('/api/me').then(r => r.json()).then(data => setCanPublishToLibrary(data.plan === 'pro'))
   }, [id])
 
   async function handleSave(meta: LessonMeta, newBlocks: LessonBlockData[]) {
@@ -86,6 +88,7 @@ export default function EditLessonPage() {
       initialAssignedStudentIds={assignedStudentIds}
       locked={!!lesson.locked}
       authorName={lesson.author_name}
+      canPublishToLibrary={canPublishToLibrary}
       saving={saving}
       error={error}
       onSave={handleSave}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { getTeacherLimits } from '@/lib/plan'
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,6 +50,14 @@ export async function POST(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
+    const limits = await getTeacherLimits(decoded.id)
+    const countResult = await query(`SELECT COUNT(*) FROM lessons WHERE teacher_id = $1 AND locked = false`, [decoded.id])
+    if (Number(countResult.rows[0].count) >= limits.maxOwnLessons) {
+      return NextResponse.json({
+        error: `На бесплатном тарифе доступен ${limits.maxOwnLessons} собственный урок. Чтобы создавать больше — перейдите на тариф Pro`,
+      }, { status: 403 })
+    }
+
     const { title, subject, grade, status, mode, is_public, blocks } = await request.json()
 
     if (!title || !title.trim()) {
@@ -59,7 +68,7 @@ export async function POST(request: NextRequest) {
       `INSERT INTO lessons (teacher_id, title, subject, grade, status, mode, is_public)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
-      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz', !!is_public]
+      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz', limits.canPublishToLibrary ? !!is_public : false]
     )
     const lessonId = lessonResult.rows[0].id
 
