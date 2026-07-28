@@ -122,7 +122,10 @@ export async function PUT(
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Ошибка обновления урока:', error)
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
+    // Временная диагностика: показываем текст реальной ошибки, чтобы понять,
+    // почему это падает на проде (убрать после того как разберёмся)
+    const detail = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: 'Ошибка сервера', detail }, { status: 500 })
   }
 }
 

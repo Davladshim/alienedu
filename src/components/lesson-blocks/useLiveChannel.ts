@@ -39,30 +39,38 @@ export function useLiveChannel(channelName: string | null, options: LiveChannelO
 
   useEffect(() => {
     if (!channelName) return
-    const supabase = getSupabase()
-    const channel = supabase.channel(channelName)
-    channelRef.current = channel
+    // Живое наблюдение — необязательная надстройка поверх урока: если
+    // Supabase не сконфигурирован или недоступен, страница урока/наблюдения
+    // всё равно должна открываться и работать, просто без живой синхронизации
+    try {
+      const supabase = getSupabase()
+      const channel = supabase.channel(channelName)
+      channelRef.current = channel
 
-    for (const event of Object.keys(optionsRef.current.onBroadcast || {})) {
-      channel.on('broadcast', { event }, ({ payload }) => {
-        optionsRef.current.onBroadcast?.[event]?.(payload as Record<string, unknown>)
+      for (const event of Object.keys(optionsRef.current.onBroadcast || {})) {
+        channel.on('broadcast', { event }, ({ payload }) => {
+          optionsRef.current.onBroadcast?.[event]?.(payload as Record<string, unknown>)
+        })
+      }
+      if (optionsRef.current.onPresenceSync) {
+        channel.on('presence', { event: 'sync' }, () => {
+          const state = channel.presenceState()
+          optionsRef.current.onPresenceSync?.(Object.values(state).flat() as Record<string, unknown>[])
+        })
+      }
+
+      channel.subscribe(status => {
+        if (status === 'SUBSCRIBED') setReady(true)
       })
-    }
-    if (optionsRef.current.onPresenceSync) {
-      channel.on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState()
-        optionsRef.current.onPresenceSync?.(Object.values(state).flat() as Record<string, unknown>[])
-      })
-    }
 
-    channel.subscribe(status => {
-      if (status === 'SUBSCRIBED') setReady(true)
-    })
-
-    return () => {
-      supabase.removeChannel(channel)
-      channelRef.current = null
-      setReady(false)
+      return () => {
+        supabase.removeChannel(channel)
+        channelRef.current = null
+        setReady(false)
+      }
+    } catch (error) {
+      console.error('Не удалось подключиться к живому каналу:', error)
+      return undefined
     }
     // channelName — единственная зависимость: набор событий (ключи onBroadcast)
     // должен быть статичным между рендерами одного компонента, а сами
@@ -70,11 +78,19 @@ export function useLiveChannel(channelName: string | null, options: LiveChannelO
   }, [channelName])
 
   function broadcast(event: string, payload: Record<string, unknown>) {
-    channelRef.current?.send({ type: 'broadcast', event, payload })
+    try {
+      channelRef.current?.send({ type: 'broadcast', event, payload })
+    } catch (error) {
+      console.error('Не удалось отправить событие в живой канал:', error)
+    }
   }
 
   function track(state: Record<string, unknown>) {
-    channelRef.current?.track(state)
+    try {
+      channelRef.current?.track(state)
+    } catch (error) {
+      console.error('Не удалось обновить присутствие в живом канале:', error)
+    }
   }
 
   return { ready, broadcast, track }

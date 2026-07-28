@@ -1,5 +1,5 @@
 'use client'
-import { useState, type CSSProperties } from 'react'
+import { useState, useEffect, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { blockRegistry, blockTypes, type BlockType, type LessonBlockData } from '@/components/lesson-blocks'
 import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle } from '@/components/lesson-blocks/styles'
@@ -58,7 +58,7 @@ export function LessonBuilder({
   canPublishToLibrary?: boolean
   saving: boolean
   error: string
-  onSave: (meta: LessonMeta, blocks: LessonBlockData[]) => void
+  onSave: (meta: LessonMeta, blocks: LessonBlockData[]) => Promise<boolean>
   onDelete?: () => void
 }) {
   const router = useRouter()
@@ -70,6 +70,85 @@ export function LessonBuilder({
   const [isPublic, setIsPublic] = useState(initialIsPublic)
   const [blocks, setBlocks] = useState<LessonBlockData[]>(initialBlocks)
   const [previewing, setPreviewing] = useState(false)
+
+  // Автосохранение черновика в localStorage — если браузер перезагрузится
+  // или пропадёт питание посреди составления большого урока из кучи блоков,
+  // несохранённая работа не должна пропадать бесследно
+  const draftKey = `alienedu_lesson_draft_${lessonId || 'new'}`
+  const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null)
+  // Пока не решили, что делать с найденным черновиком (восстановить/не
+  // нужно), автосохранение выключено — иначе оно тут же затирает найденный
+  // черновик пустым состоянием формы ещё до того, как пользователь успеет
+  // нажать "Восстановить"
+  const [draftChecked, setDraftChecked] = useState(false)
+
+  useEffect(() => {
+    // Чтение localStorage вынесено в микротаск, а не вызывается прямо в теле
+    // эффекта — так же, как статус подписки у useLiveChannel приходит через
+    // callback, а не прямым вызовом setState в эффекте
+    queueMicrotask(() => {
+      if (locked) {
+        setDraftChecked(true)
+        return
+      }
+      try {
+        const raw = localStorage.getItem(draftKey)
+        if (raw) {
+          const draft = JSON.parse(raw)
+          if (draft && typeof draft.savedAt === 'number') {
+            setDraftSavedAt(draft.savedAt)
+            return
+          }
+        }
+      } catch {
+        // повреждённый черновик — просто игнорируем
+      }
+      setDraftChecked(true)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (locked || !draftChecked) return
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({ title, subject, grade, status, mode, isPublic, blocks, savedAt: Date.now() }))
+      } catch {
+        // например, localStorage переполнен или недоступен (приватный режим) — ничего страшного
+      }
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [locked, draftChecked, draftKey, title, subject, grade, status, mode, isPublic, blocks])
+
+  function restoreDraft() {
+    try {
+      const raw = localStorage.getItem(draftKey)
+      if (raw) {
+        const draft = JSON.parse(raw)
+        setTitle(draft.title ?? '')
+        setSubject(draft.subject ?? '')
+        setGrade(draft.grade ?? '')
+        setStatus(draft.status ?? 'draft')
+        setMode(draft.mode ?? 'quiz')
+        setIsPublic(draft.isPublic ?? false)
+        setBlocks(draft.blocks ?? [])
+      }
+    } catch {
+      // повреждённый черновик — просто игнорируем
+    }
+    setDraftSavedAt(null)
+    setDraftChecked(true)
+  }
+
+  function discardDraft() {
+    try {
+      localStorage.removeItem(draftKey)
+    } catch {
+      // недоступен localStorage — нечего и удалять
+    }
+    setDraftSavedAt(null)
+    setDraftChecked(true)
+  }
 
   if (locked) {
     return (
@@ -125,6 +204,32 @@ export function LessonBuilder({
           </button>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📚 Конструктор урока</h1>
         </div>
+
+        {draftSavedAt && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
+            background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.4)',
+            borderRadius: '12px', padding: '12px 16px', marginBottom: '1.5rem', fontSize: '13px', color: '#fbbf24',
+          }}>
+            <span>
+              Найден несохранённый черновик от {new Date(draftSavedAt).toLocaleString('ru-RU')} — восстановить?
+            </span>
+            <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+              <button onClick={restoreDraft} style={{
+                background: 'rgba(251,191,36,0.2)', border: '1px solid #fbbf24', color: '#fbbf24',
+                borderRadius: '6px', padding: '5px 12px', fontSize: '12px', cursor: 'pointer',
+              }}>
+                Восстановить
+              </button>
+              <button onClick={discardDraft} style={{
+                background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+                borderRadius: '6px', padding: '5px 12px', fontSize: '12px', cursor: 'pointer',
+              }}>
+                Не нужно
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Название/предмет/класс */}
         <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
@@ -270,7 +375,10 @@ export function LessonBuilder({
               👁 Предпросмотр
             </button>
             <button
-              onClick={() => onSave({ title, subject, grade, status, mode, isPublic }, blocks)}
+              onClick={async () => {
+                const ok = await onSave({ title, subject, grade, status, mode, isPublic }, blocks)
+                if (ok) discardDraft()
+              }}
               disabled={!canSave}
               style={canSave ? submitButtonStyle : submitButtonDisabledStyle}
             >

@@ -84,6 +84,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, lesson_id: lessonId })
   } catch (error) {
     console.error('Ошибка создания урока:', error)
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
+    // Временная диагностика: показываем текст реальной ошибки, чтобы понять,
+    // почему это падает на проде (убрать после того как разберёмся)
+    const detail = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: 'Ошибка сервера', detail }, { status: 500 })
   }
 }

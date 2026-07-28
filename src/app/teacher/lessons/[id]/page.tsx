@@ -31,7 +31,7 @@ export default function EditLessonPage() {
     fetch('/api/me').then(r => r.json()).then(data => setCanPublishToLibrary(data.plan === 'pro'))
   }, [id])
 
-  async function handleSave(meta: LessonMeta, newBlocks: LessonBlockData[]) {
+  async function handleSave(meta: LessonMeta, newBlocks: LessonBlockData[]): Promise<boolean> {
     setError('')
     setSaving(true)
     const res = await fetch(`/api/lessons/${id}`, {
@@ -46,8 +46,10 @@ export default function EditLessonPage() {
     setSaving(false)
     if (res.ok) {
       router.push('/teacher/lessons')
+      return true
     } else {
-      setError(data.error || 'Ошибка')
+      setError(data.detail ? `${data.error || 'Ошибка'}: ${data.detail}` : (data.error || 'Ошибка'))
+      return false
     }
   }
 
