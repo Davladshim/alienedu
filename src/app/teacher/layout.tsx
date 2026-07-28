@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { LogoutButton } from '@/components/LogoutButton'
 import { PlanWidget } from '@/components/PlanWidget'
+import { TimezoneWidget } from '@/components/TimezoneWidget'
 
 // Общая шапка для всех страниц кабинета репетитора — тариф/код, ссылка на
 // тарифы и выход видны везде, а не только на главном экране
@@ -13,6 +14,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
         padding: '10px 20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '18px',
       }}>
         <PlanWidget />
+        <TimezoneWidget />
         <Link href="/teacher/tariffs" style={{ color: '#6b7280', fontSize: '13px', textDecoration: 'none' }}>
           Тарифы
         </Link>

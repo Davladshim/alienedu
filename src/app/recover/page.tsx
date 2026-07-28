@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PasswordInput } from '@/components/PasswordInput'
 
 export default function RecoverPage() {
   const router = useRouter()
@@ -163,17 +164,17 @@ export default function RecoverPage() {
             </div>
 
             <div style={{ marginBottom: '1rem' }}>
-              <label style={labelStyle}>Новый код</label>
-              <input type="password" value={newCode}
+              <label style={labelStyle}>Новый пароль</label>
+              <PasswordInput value={newCode}
                 onChange={e => setNewCode(e.target.value)}
-                placeholder="Новый код" required style={inputStyle} />
+                placeholder="Новый пароль" required autoComplete="new-password" style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={labelStyle}>Повторите новый код</label>
-              <input type="password" value={newCodeConfirm}
+              <label style={labelStyle}>Повторите новый пароль</label>
+              <PasswordInput value={newCodeConfirm}
                 onChange={e => setNewCodeConfirm(e.target.value)}
-                placeholder="Повторите код" required style={inputStyle} />
+                placeholder="Повторите пароль" required autoComplete="new-password" style={inputStyle} />
             </div>
 
             {error && (
@@ -193,7 +194,7 @@ export default function RecoverPage() {
               cursor: loading ? 'not-allowed' : 'pointer',
               opacity: loading ? 0.7 : 1
             }}>
-              {loading ? 'Сохраняем...' : 'Сохранить новый код'}
+              {loading ? 'Сохраняем...' : 'Сохранить новый пароль'}
             </button>
           </form>
         )}

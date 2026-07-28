@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactElement } fr
 export interface Subject {
   label: string
   icon: (props: { size: number }) => ReactElement
+  color: string
 }
 
 function Triangle({ size }: { size: number }) {
@@ -80,23 +81,30 @@ function CodeBrackets({ size }: { size: number }) {
 }
 
 export const SUBJECTS: Subject[] = [
-  { label: 'Математика', icon: Triangle },
-  { label: 'Физика', icon: Atom },
-  { label: 'Химия', icon: Flask },
-  { label: 'Русский язык', icon: Pencil },
-  { label: 'Литература', icon: Book },
-  { label: 'Английский язык', icon: EnBadge },
-  { label: 'Биология', icon: Leaf },
-  { label: 'История', icon: Hourglass },
-  { label: 'География', icon: Globe },
-  { label: 'Информатика', icon: CodeBrackets },
+  { label: 'Математика', icon: Triangle, color: '#60a5fa' },
+  { label: 'Физика', icon: Atom, color: '#a78bfa' },
+  { label: 'Химия', icon: Flask, color: '#34d399' },
+  { label: 'Русский язык', icon: Pencil, color: '#f472b6' },
+  { label: 'Литература', icon: Book, color: '#fb923c' },
+  { label: 'Английский язык', icon: EnBadge, color: '#22d3ee' },
+  { label: 'Биология', icon: Leaf, color: '#84cc16' },
+  { label: 'История', icon: Hourglass, color: '#fbbf24' },
+  { label: 'География', icon: Globe, color: '#2dd4bf' },
+  { label: 'Информатика', icon: CodeBrackets, color: '#818cf8' },
 ]
+
+const DEFAULT_SUBJECT_COLOR = '#6b7280'
 
 export function SubjectIcon({ subject, size = 14 }: { subject?: string; size?: number }) {
   const found = SUBJECTS.find(s => s.label === subject)
   if (!found) return null
   const Icon = found.icon
   return <Icon size={size} />
+}
+
+export function subjectColor(subject?: string): string {
+  const found = SUBJECTS.find(s => s.label === subject)
+  return found ? found.color : DEFAULT_SUBJECT_COLOR
 }
 
 const pickerButtonStyle: CSSProperties = {

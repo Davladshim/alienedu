@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PasswordInput } from '@/components/PasswordInput'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -11,6 +12,7 @@ export default function RegisterPage() {
     code: '',
     code_confirm: '',
     role: 'student',
+    grade: '',
     secret_question: '',
     secret_answer: ''
   })
@@ -121,18 +123,32 @@ export default function RegisterPage() {
             </select>
           </div>
 
+          {formData.role === 'student' && (
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={labelStyle}>Класс</label>
+              <select name="grade" value={formData.grade}
+                onChange={handleChange}
+                required style={{ ...inputStyle, cursor: 'pointer' }}>
+                <option value="">Выберите класс</option>
+                {Array.from({ length: 11 }, (_, i) => i + 1).map(g => (
+                  <option key={g} value={g}>{g} класс</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div style={{ marginBottom: '1rem' }}>
-            <label style={labelStyle}>Код доступа</label>
-            <input name="code" type="password" value={formData.code}
-              onChange={handleChange} placeholder="Придумайте код"
-              required style={inputStyle} />
+            <label style={labelStyle}>Пароль</label>
+            <PasswordInput name="code" value={formData.code}
+              onChange={handleChange} placeholder="Придумайте пароль"
+              required style={inputStyle} autoComplete="new-password" />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label style={labelStyle}>Повторите код</label>
-            <input name="code_confirm" type="password" value={formData.code_confirm}
-              onChange={handleChange} placeholder="Повторите код"
-              required style={inputStyle} />
+            <label style={labelStyle}>Повторите пароль</label>
+            <PasswordInput name="code_confirm" value={formData.code_confirm}
+              onChange={handleChange} placeholder="Повторите пароль"
+              required style={inputStyle} autoComplete="new-password" />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
@@ -149,7 +165,7 @@ export default function RegisterPage() {
               onChange={handleChange} placeholder="Ваш ответ"
               required style={inputStyle} />
             <p style={{ color: '#6b7280', fontSize: '12px', marginTop: '6px' }}>
-              Запомните ответ — он понадобится для восстановления кода
+              Запомните ответ — он понадобится для восстановления пароля
             </p>
           </div>
 

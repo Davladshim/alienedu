@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { subjectColor } from '@/components/subjects'
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
@@ -103,13 +104,14 @@ export default function StudentSchedulePage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {dayLessons.map(lesson => {
                     const status = STATUS_LABEL[lesson.status] || STATUS_LABEL.scheduled
+                    const color = subjectColor(lesson.subject)
                     return (
                       <div key={lesson.id} style={{
-                        background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '12px',
-                        padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px',
+                        background: '#1a1d27', border: '1px solid #2a2d3d', borderLeft: `3px solid ${color}`, borderRadius: '12px',
+                        padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
                       }}>
                         <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                          <span style={{ fontWeight: 600, fontSize: '14px', width: '42px' }}>{lesson.time}</span>
+                          <span style={{ fontWeight: 600, fontSize: '14px', whiteSpace: 'nowrap' }}>{lesson.time} · {lesson.end_time}</span>
                           <div>
                             <div style={{ fontSize: '14px' }}>{lesson.teacher_name}</div>
                             <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>
@@ -118,9 +120,22 @@ export default function StudentSchedulePage() {
                             </div>
                           </div>
                         </div>
-                        <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', background: status.bg, color: status.color, flexShrink: 0 }}>
-                          {status.label}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          {lesson.call_link && (
+                            <a
+                              href={lesson.call_link} target="_blank" rel="noopener noreferrer"
+                              style={{
+                                fontSize: '12px', padding: '5px 12px', borderRadius: '8px', textDecoration: 'none',
+                                background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+                              }}
+                            >
+                              Перейти по ссылке урока
+                            </a>
+                          )}
+                          <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', background: status.bg, color: status.color, flexShrink: 0 }}>
+                            {status.label}
+                          </span>
+                        </div>
                       </div>
                     )
                   })}

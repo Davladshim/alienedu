@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PasswordInput } from '@/components/PasswordInput'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -91,14 +92,14 @@ export default function LoginPage() {
 
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ color: '#9ca3af', fontSize: '13px', display: 'block', marginBottom: '6px' }}>
-              Код доступа
+              Пароль
             </label>
-            <input
-              type="password"
+            <PasswordInput
               value={code}
               onChange={e => setCode(e.target.value)}
-              placeholder="Ваш код"
+              placeholder="Ваш пароль"
               required
+              autoComplete="current-password"
               style={{
                 width: '100%',
                 background: '#0f1117',
@@ -149,7 +150,7 @@ export default function LoginPage() {
 
         <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
           <Link href="/recover" style={{ color: '#4f8ef7', fontSize: '13px', textDecoration: 'none' }}>
-            Забыли код?
+            Забыли пароль?
           </Link>
           <span style={{ color: '#374151', margin: '0 10px' }}>·</span>
           <Link href="/register" style={{ color: '#4f8ef7', fontSize: '13px', textDecoration: 'none' }}>

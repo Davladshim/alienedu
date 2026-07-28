@@ -31,6 +31,7 @@ export default function StudentsPage() {
   const [familyDraft, setFamilyDraft] = useState('')
   const [gradeDraft, setGradeDraft] = useState('')
   const [parentNameDraft, setParentNameDraft] = useState('')
+  const [callLinkDraft, setCallLinkDraft] = useState('')
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentDescription, setPaymentDescription] = useState('')
   const [savingRow, setSavingRow] = useState(false)
@@ -157,6 +158,7 @@ export default function StudentsPage() {
     setFamilyDraft(student.family_id ?? '')
     setGradeDraft(student.grade ?? '')
     setParentNameDraft(student.parent_name ?? '')
+    setCallLinkDraft(student.call_link ?? '')
     setPaymentAmount('')
     setPaymentDescription('')
     setHistory(null)
@@ -172,6 +174,7 @@ export default function StudentsPage() {
         family_id: familyDraft === '' ? null : Number(familyDraft),
         grade: gradeDraft === '' ? null : Number(gradeDraft),
         parent_name: parentNameDraft === '' ? null : parentNameDraft,
+        call_link: callLinkDraft.trim() === '' ? null : callLinkDraft.trim(),
       }),
     })
     setSavingRow(false)
@@ -529,6 +532,10 @@ export default function StudentsPage() {
                           <option value="">Без семьи</option>
                           {families.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
                         </select>
+                      </div>
+                      <div style={{ flex: 1, minWidth: '220px' }}>
+                        <label style={labelStyle}>Ссылка на звонок (необязательно)</label>
+                        <input type="text" value={callLinkDraft} onChange={e => setCallLinkDraft(e.target.value)} style={inputStyle} placeholder="Zoom / Телемост / Telegram и т.д." />
                       </div>
                       <div style={{ alignSelf: 'flex-end' }}>
                         <button onClick={() => saveRowSettings(student.id)} disabled={savingRow} style={savingRow ? submitButtonDisabledStyle : smallButtonStyle}>

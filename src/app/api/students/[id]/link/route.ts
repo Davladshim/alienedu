@@ -39,7 +39,7 @@ export async function POST(
     }
 
     const realResult = await query(
-      `SELECT id, full_name, login, role, is_placeholder FROM users WHERE login = $1`,
+      `SELECT id, full_name, login, role, is_placeholder, grade FROM users WHERE login = $1`,
       [login.trim()]
     )
     if (realResult.rows.length === 0) {
@@ -87,7 +87,12 @@ export async function POST(
       [real.id, placeholderId]
     )
 
-    await query(`UPDATE teacher_students SET student_id = $1 WHERE id = $2`, [real.id, id])
+    // Класс подтягиваем из профиля привязываемого аккаунта, только если в
+    // карточке он ещё не был указан репетитором вручную
+    await query(
+      `UPDATE teacher_students SET student_id = $1, grade = COALESCE(grade, $2) WHERE id = $3`,
+      [real.id, real.grade ?? null, id]
+    )
     await query(`DELETE FROM users WHERE id = $1`, [placeholderId])
 
     return NextResponse.json({

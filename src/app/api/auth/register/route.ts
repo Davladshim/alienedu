@@ -4,11 +4,19 @@ import { query } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
-    const { full_name, login, code, secret_question, secret_answer, role } = await request.json()
+    const { full_name, login, code, secret_question, secret_answer, role, grade } = await request.json()
 
     if (!full_name || !login || !code || !secret_question || !secret_answer) {
       return NextResponse.json(
         { error: 'Заполните все поля' },
+        { status: 400 }
+      )
+    }
+
+    const userRole = role === 'teacher' ? 'teacher' : 'student'
+    if (userRole === 'student' && !grade) {
+      return NextResponse.json(
+        { error: 'Выберите класс' },
         { status: 400 }
       )
     }
@@ -31,14 +39,12 @@ export async function POST(request: NextRequest) {
       secret_answer.toLowerCase().trim(), 10
     )
 
-    const userRole = role === 'teacher' ? 'teacher' : 'student'
-
     const result = await query(
-      `INSERT INTO users 
-        (full_name, login, code_hash, role, secret_question, secret_answer_hash)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO users
+        (full_name, login, code_hash, role, secret_question, secret_answer_hash, grade)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, full_name, login, role`,
-      [full_name, login, code_hash, userRole, secret_question, secret_answer_hash]
+      [full_name, login, code_hash, userRole, secret_question, secret_answer_hash, userRole === 'student' ? Number(grade) : null]
     )
 
     return NextResponse.json({

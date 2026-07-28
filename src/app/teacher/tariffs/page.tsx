@@ -25,7 +25,7 @@ export default function TariffsPage() {
 
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '2rem' }}>
           <div style={cardStyle}>
-            <div style={{ fontSize: '18px', fontWeight: 700 }}>Бесплатный</div>
+            <div style={{ fontSize: '18px', fontWeight: 700 }}>Free — бесплатно</div>
             <div style={{ color: '#6b7280', fontSize: '13px', marginTop: '4px' }}>Чтобы попробовать платформу</div>
             <ul style={listStyle}>
               <li style={itemStyle}>✅ До 5 учеников</li>

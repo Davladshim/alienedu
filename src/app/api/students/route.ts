@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const result = await query(
       `SELECT ts.id, u.id as student_id, u.full_name, u.login, u.is_placeholder, ts.created_at,
          ts.lesson_price, ts.grade, ts.parent_name, ts.family_id, f.name as family_name,
-         ts.balance as balance,
+         ts.call_link, ts.balance as balance,
          COALESCE(prog.assigned_count, 0) as assigned_count,
          COALESCE(prog.completed_count, 0) as completed_count
        FROM teacher_students ts
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     const { login, full_name } = await request.json()
 
-    let student: { id: number; full_name: string; login: string; is_placeholder?: boolean }
+    let student: { id: number; full_name: string; login: string; is_placeholder?: boolean; grade?: number | null }
 
     if (full_name && full_name.trim()) {
       // Ученик ещё не зарегистрирован — заводим карточку-заглушку,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       student = created.rows[0]
     } else if (login && login.trim()) {
       const userResult = await query(
-        `SELECT id, full_name, login, role FROM users WHERE login = $1`,
+        `SELECT id, full_name, login, role, grade FROM users WHERE login = $1`,
         [login.trim()]
       )
       if (userResult.rows.length === 0) {
@@ -110,9 +110,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Этот ученик уже в списке' }, { status: 400 })
     }
 
+    // Класс ученика подтягивается из его профиля, если он указал его при регистрации
+    const initialGrade = student.grade ?? null
+
     const insertResult = await query(
-      `INSERT INTO teacher_students (teacher_id, student_id) VALUES ($1, $2) RETURNING id`,
-      [decoded.id, student.id]
+      `INSERT INTO teacher_students (teacher_id, student_id, grade) VALUES ($1, $2, $3) RETURNING id`,
+      [decoded.id, student.id, initialGrade]
     )
 
     return NextResponse.json({

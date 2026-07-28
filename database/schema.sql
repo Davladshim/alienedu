@@ -6,8 +6,8 @@
 -- Перед началом работы в любом из двух чатов — сверяйтесь с этим файлом
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
--- Последнее обновление: 27.07.2026
--- Обновлено модулем: platform (payments: пополнение баланса семьи)
+-- Последнее обновление: 28.07.2026
+-- Обновлено модулем: platform (users: класс+часовой пояс, teacher_students: ссылка на звонок)
 -- ============================================================================
 
 
@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) NOT NULL DEFAULT 'student',
     secret_question VARCHAR(255),
     secret_answer_hash VARCHAR(255),
+    grade INTEGER, -- класс ученика, указывается при регистрации (только role='student')
+    -- IANA-имя часового пояса пользователя (например 'Europe/Samara') — по
+    -- умолчанию МСК, дальше уточняется автоопределением в браузере или вручную
+    timezone VARCHAR(64) NOT NULL DEFAULT 'Europe/Moscow',
     -- заглушка вместо реального аккаунта: репетитор завёл карточку ученика
     -- в ростере до того, как тот сам зарегистрировался; login/code_hash —
     -- случайные и нерабочие, вход под таким аккаунтом всегда отклоняется
@@ -164,6 +168,7 @@ CREATE TABLE IF NOT EXISTS teacher_students (
     -- Без семьи — обычный личный баланс, может быть и + и -
     balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
     family_id INTEGER REFERENCES families(id),
+    call_link VARCHAR(500), -- необязательная ссылка на звонок (Zoom/Telemost/Telegram и т.д.)
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (teacher_id, student_id)
 );

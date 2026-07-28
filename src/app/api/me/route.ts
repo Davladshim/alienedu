@@ -14,14 +14,17 @@ export async function GET(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    const result = await query(`SELECT id, full_name, role FROM users WHERE id = $1`, [decoded.id])
+    const result = await query(`SELECT id, full_name, role, grade, timezone FROM users WHERE id = $1`, [decoded.id])
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Не найден' }, { status: 404 })
     }
     const user = result.rows[0]
     const plan = user.role === 'teacher' ? await getTeacherPlan(user.id) : 'free'
 
-    return NextResponse.json({ id: user.id, full_name: user.full_name, role: user.role, plan })
+    return NextResponse.json({
+      id: user.id, full_name: user.full_name, role: user.role, plan,
+      grade: user.grade, timezone: user.timezone,
+    })
   } catch (error) {
     console.error('Ошибка получения текущего пользователя:', error)
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
