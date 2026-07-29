@@ -37,6 +37,10 @@ function todayISO(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+function toISODateStr(value: unknown): string {
+  return String(value).slice(0, 10)
+}
+
 interface TemplateForm {
   student_id: string
   day_of_week: number
@@ -51,6 +55,34 @@ const emptyForm = (dayOfWeek: number): TemplateForm => ({
   student_id: '', day_of_week: dayOfWeek, time: '15:00', duration_minutes: 60, subject: '', price: '', start_date: todayISO(),
 })
 
+interface EditForm {
+  id: number
+  student_name: string
+  day_of_week: number
+  time: string
+  duration_minutes: number
+  subject: string
+  price: string
+  effective_date: string
+}
+
+interface TemplateRow {
+  id: number
+  student_name: string
+  day_of_week: number
+  time: string
+  duration_minutes: number
+  subject: string | null
+  price: number | string | null
+  start_date: string
+  end_date: string | null
+}
+
+function formatDateRu(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-')
+  return `${d}.${m}.${y}`
+}
+
 export default function TemplatePage() {
   const [roster, setRoster] = useState<any[]>([])
   const [templates, setTemplates] = useState<any[]>([])
@@ -60,6 +92,10 @@ export default function TemplatePage() {
   const [addForm, setAddForm] = useState<TemplateForm>(emptyForm(0))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  const [editForm, setEditForm] = useState<EditForm | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState('')
 
   const [weeks, setWeeks] = useState(4)
   const [generating, setGenerating] = useState(false)
@@ -81,6 +117,7 @@ export default function TemplatePage() {
     setAddingForDay(dayOfWeek)
     setAddForm(emptyForm(dayOfWeek))
     setError('')
+    setEditForm(null)
   }
 
   async function submitAdd() {
@@ -109,6 +146,47 @@ export default function TemplatePage() {
     if (!confirm('Удалить из шаблона?')) return
     const res = await fetch(`/api/templates/${id}`, { method: 'DELETE' })
     if (res.ok) setTemplates(t => t.filter(tpl => tpl.id !== id))
+  }
+
+  function openEditForm(tpl: TemplateRow) {
+    setAddingForDay(null)
+    setEditForm({
+      id: tpl.id,
+      student_name: tpl.student_name,
+      day_of_week: tpl.day_of_week,
+      time: tpl.time,
+      duration_minutes: tpl.duration_minutes,
+      subject: tpl.subject || '',
+      price: tpl.price === null || tpl.price === undefined ? '' : String(tpl.price),
+      effective_date: todayISO(),
+    })
+    setEditError('')
+  }
+
+  async function submitEdit() {
+    if (!editForm) return
+    setEditError('')
+    setEditSaving(true)
+    const res = await fetch(`/api/templates/${editForm.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        day_of_week: editForm.day_of_week,
+        time: editForm.time,
+        duration_minutes: editForm.duration_minutes,
+        subject: editForm.subject,
+        price: editForm.price === '' ? undefined : Number(editForm.price),
+        effective_date: editForm.effective_date,
+      }),
+    })
+    const data = await res.json()
+    setEditSaving(false)
+    if (res.ok) {
+      setEditForm(null)
+      loadTemplates()
+    } else {
+      setEditError(data.error || 'Ошибка')
+    }
   }
 
   async function handleGenerate() {
@@ -178,24 +256,41 @@ export default function TemplatePage() {
                   <button onClick={() => openAddForm(dow)} style={{ ...accentButtonStyle, fontSize: '11px', padding: '5px 8px' }}>+ Добавить</button>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {dayTemplates.map(tpl => (
-                      <div key={tpl.id} style={{
-                        position: 'relative', padding: '8px', background: '#0f1117',
-                        border: `2px solid ${ACCENT}`, borderRadius: '8px', textAlign: 'center',
-                      }}>
-                        <button
-                          onClick={() => handleDelete(tpl.id)}
-                          style={{ position: 'absolute', top: '2px', right: '6px', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '12px', padding: 0 }}
+                    {dayTemplates.map(tpl => {
+                      const startDateStr = toISODateStr(tpl.start_date)
+                      const endDateStr = tpl.end_date ? toISODateStr(tpl.end_date) : null
+                      const isUpcoming = startDateStr > todayISO()
+                      const isEnding = endDateStr !== null
+                      return (
+                        <div
+                          key={tpl.id}
+                          onClick={() => openEditForm(tpl)}
+                          style={{
+                            position: 'relative', padding: '8px', background: '#0f1117',
+                            border: `2px solid ${ACCENT}`, borderRadius: '8px', textAlign: 'center', cursor: 'pointer',
+                          }}
                         >
-                          ✕
-                        </button>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 600, fontSize: '12px' }}>
-                          <span>{formatTimeRange(tpl.time, tpl.duration_minutes)}</span>
-                          {tpl.subject && <SubjectIcon subject={tpl.subject} size={13} />}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDelete(tpl.id) }}
+                            style={{ position: 'absolute', top: '2px', right: '6px', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '12px', padding: 0 }}
+                          >
+                            ✕
+                          </button>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 600, fontSize: '12px' }}>
+                            <span>{formatTimeRange(tpl.time, tpl.duration_minutes)}</span>
+                            {tpl.subject && <SubjectIcon subject={tpl.subject} size={13} />}
+                          </div>
+                          <div style={{ color: '#9ca3af', fontSize: '11px', marginTop: '3px' }}>{tpl.student_name}</div>
+                          {(isUpcoming || isEnding) && (
+                            <div style={{ color: ACCENT, fontSize: '10px', marginTop: '3px' }}>
+                              {isUpcoming && `с ${formatDateRu(startDateStr)}`}
+                              {isUpcoming && isEnding && ' · '}
+                              {isEnding && `до ${formatDateRu(endDateStr!)}`}
+                            </div>
+                          )}
                         </div>
-                        <div style={{ color: '#9ca3af', fontSize: '11px', marginTop: '3px' }}>{tpl.student_name}</div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               )
@@ -247,6 +342,52 @@ export default function TemplatePage() {
               <button onClick={() => setAddingForDay(null)} style={{ ...accentButtonStyle, background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af' }}>Отмена</button>
               <button onClick={submitAdd} disabled={saving || roster.length === 0} style={saving || roster.length === 0 ? submitButtonDisabledStyle : accentSubmitStyle}>
                 {saving ? 'Сохраняем...' : 'Добавить в шаблон'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {editForm !== null && (
+          <div style={{ background: '#1a1d27', border: `1px solid ${ACCENT}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+            <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>
+              Изменить слот — {editForm.student_name}
+            </div>
+            <p style={{ color: '#6b7280', fontSize: '12px', marginBottom: '14px' }}>
+              Занятия по старому шаблону до даты вступления в силу останутся как есть. С указанной даты шаблон изменится на новый.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+              <div>
+                <label style={labelStyle}>День недели</label>
+                <select value={editForm.day_of_week} onChange={e => setEditForm({ ...editForm, day_of_week: Number(e.target.value) })} style={inputStyle}>
+                  {WEEKDAYS.map((w, i) => <option key={i} value={i}>{w}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Время</label>
+                <input type="time" value={editForm.time} onChange={e => setEditForm({ ...editForm, time: e.target.value })} style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Длительность (мин)</label>
+                <input type="number" value={editForm.duration_minutes} onChange={e => setEditForm({ ...editForm, duration_minutes: Number(e.target.value) })} style={{ ...inputStyle, width: '90px' }} />
+              </div>
+              <div style={{ minWidth: '200px' }}>
+                <label style={labelStyle}>Предмет</label>
+                <SubjectPicker value={editForm.subject} onChange={v => setEditForm({ ...editForm, subject: v })} />
+              </div>
+              <div>
+                <label style={labelStyle}>Цена, ₽</label>
+                <input type="number" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: e.target.value })} style={{ ...inputStyle, width: '100px' }} placeholder="по умолчанию" />
+              </div>
+              <div>
+                <label style={labelStyle}>Дата вступления в силу</label>
+                <input type="date" value={editForm.effective_date} onChange={e => setEditForm({ ...editForm, effective_date: e.target.value })} style={inputStyle} />
+              </div>
+            </div>
+            {editError && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '10px' }}>{editError}</p>}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button onClick={() => setEditForm(null)} style={{ ...accentButtonStyle, background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af' }}>Отмена</button>
+              <button onClick={submitEdit} disabled={editSaving} style={editSaving ? submitButtonDisabledStyle : accentSubmitStyle}>
+                {editSaving ? 'Сохраняем...' : 'Сохранить изменения'}
               </button>
             </div>
           </div>

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
        FROM lesson_templates lt
        JOIN users u ON u.id = lt.student_id
        LEFT JOIN teacher_students ts ON ts.teacher_id = lt.teacher_id AND ts.student_id = lt.student_id
-       WHERE lt.teacher_id = $1
+       WHERE lt.teacher_id = $1 AND (lt.end_date IS NULL OR lt.end_date >= CURRENT_DATE)
        ORDER BY lt.day_of_week, lt.time`,
       [decoded.id]
     )
