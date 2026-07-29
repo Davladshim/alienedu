@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 type RoomTemplate = {
@@ -38,6 +38,10 @@ const MOCK_TEMPLATES: RoomTemplate[] = [
 ]
 
 const VIEWS = ['center', 'left', 'right'] as const
+const ROOM_STYLES = [
+  { id: 1, name: 'Викторианский кабинет' },
+  { id: 2, name: 'Современная комната' },
+]
 
 export default function NewQuestPage() {
   const router = useRouter()
@@ -54,6 +58,8 @@ export default function NewQuestPage() {
   const [roomNumber, setRoomNumber] = useState(1)
   const [zones, setZones] = useState<ZoneData[]>([])
   const [selectedZone, setSelectedZone] = useState<ZoneData | null>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const [selectedItem, setSelectedItem] = useState<string>('envelope.png')
 
   function addRoom() {
       const newRoom: RoomRow = {
@@ -101,7 +107,7 @@ export default function NewQuestPage() {
     const newZone: ZoneData = {
       view: currentView, x: x - 4, y: y - 6,
       width: 8, height: 12,
-      item_image: 'envelope.png', zone_type: 'task'
+      item_image: selectedItem, zone_type: 'task'
     }
     setZones([...zones, newZone])
     setSelectedZone(newZone)
@@ -115,6 +121,11 @@ export default function NewQuestPage() {
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Delete' && selectedZone) {
+      setZones(zones.filter(z => z !== selectedZone))
+      setSelectedZone(null)
+      return
+    }
     if (!selectedZone) return
     const step = e.shiftKey ? 0.5 : 0.2
     let { x, y } = selectedZone
@@ -122,9 +133,15 @@ export default function NewQuestPage() {
     if (e.key === 'ArrowRight') x += step
     if (e.key === 'ArrowUp') y -= step
     if (e.key === 'ArrowDown') y += step
+    else return
     e.preventDefault()
-    updateZone('x', Math.max(0, Math.min(x, 100 - selectedZone.width)))
-    updateZone('y', Math.max(0, Math.min(y, 100 - selectedZone.height)))
+    const newX = Math.max(0, Math.min(x, 100 - selectedZone.width))
+    const newY = Math.max(0, Math.min(y, 100 - selectedZone.height))
+    const updated = zones.map(z => z === selectedZone ? { ...z, x: newX, y: newY } : z)
+    const newSelected = { ...selectedZone, x: newX, y: newY }
+    setZones(updated)
+    setSelectedZone(newSelected)
+    setTimeout(() => editorRef.current?.focus(), 0)
   }
 
   const canProceed = rooms.length > 0 && rooms.every(r => r.template_id !== null || r.is_edited)
@@ -165,9 +182,11 @@ export default function NewQuestPage() {
 
     return (
       <div
+        ref={editorRef}
         style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', padding: '1.5rem' }}
         onKeyDown={handleKeyDown}
         tabIndex={0}
+        autoFocus
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
           <button onClick={() => { setEditingRoom(null); setEditingIndex(null) }}
@@ -192,8 +211,8 @@ export default function NewQuestPage() {
                 onChange={e => setRoomNumber(Number(e.target.value))}
                 style={{ width: '100%', background: '#0f1117', border: '1px solid #2a2d3d', borderRadius: '6px', padding: '6px', color: '#fff', fontSize: '13px' }}
               >
-                {[1, 2, 3, 4, 5].map(n => (
-                  <option key={n} value={n}>Комната {n}</option>
+                {ROOM_STYLES.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
             </div>
@@ -216,19 +235,25 @@ export default function NewQuestPage() {
 
             {/* Предметы */}
             <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '12px', padding: '12px' }}>
-              <div style={{ color: '#6b7280', fontSize: '11px', marginBottom: '8px', textTransform: 'uppercase' }}>Добавить предмет</div>
+              <div style={{ color: '#6b7280', fontSize: '11px', marginBottom: '8px', textTransform: 'uppercase' }}>Выбери предмет</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {['envelope.png', 'paper-ball.png'].map(item => (
-                  <div key={item} style={{
-                    background: '#0f1117', border: '1px solid #2a2d3d', borderRadius: '8px',
-                    padding: '8px', display: 'flex', alignItems: 'center', gap: '8px',
-                    fontSize: '12px', color: '#9ca3af'
-                  }}>
+                  <div key={item}
+                    onClick={() => setSelectedItem(item)}
+                    style={{
+                      background: selectedItem === item ? 'rgba(79,142,247,0.15)' : '#0f1117',
+                      border: `1px solid ${selectedItem === item ? '#4f8ef7' : '#2a2d3d'}`,
+                      borderRadius: '8px', padding: '8px',
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      fontSize: '12px', color: '#9ca3af',
+                      cursor: 'pointer'
+                    }}>
                     <img src={`/rooms/items/${item}`} style={{ width: '24px', height: '24px', objectFit: 'contain' }} alt={item} />
                     {item === 'envelope.png' ? 'Конверт' : 'Комок бумаги'}
+                    {selectedItem === item && <span style={{ marginLeft: 'auto', color: '#4f8ef7', fontSize: '10px' }}>✓ выбран</span>}
                   </div>
                 ))}
-                <p style={{ color: '#4b5563', fontSize: '11px', marginTop: '4px' }}>Кликни на картинку чтобы добавить</p>
+                <p style={{ color: '#4b5563', fontSize: '11px', marginTop: '4px' }}>Кликни на комнату чтобы поставить</p>
               </div>
             </div>
 
@@ -289,8 +314,8 @@ export default function NewQuestPage() {
               style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', cursor: 'crosshair', userSelect: 'none' }}
               onClick={handleImageClick}
             >
-              <img src={imgSrc} alt="комната" style={{ width: '100%', display: 'block' }}
-                onError={e => (e.currentTarget.style.display = 'none')} />
+              <img key={imgSrc} src={imgSrc} alt="комната" style={{ width: '100%', display: 'block' }}
+                onError={e => (e.currentTarget.style.opacity = '0')} />
 
               {currentZones.map((zone, i) => (
                 <div key={i}
