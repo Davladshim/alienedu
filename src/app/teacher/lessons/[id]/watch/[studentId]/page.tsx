@@ -30,12 +30,12 @@ function blockPreview(block: LessonBlockData): string {
 }
 
 function statusBadge(status: BlockStatus): { text: string; color: string; bg: string } {
-  if (!status.attempts && !status.done) return { text: 'не начат', color: '#6b7280', bg: 'rgba(107,114,128,0.12)' }
-  if (status.skipped) return { text: 'пропущено', color: '#9ca3af', bg: 'rgba(107,114,128,0.15)' }
-  if (!status.done) return { text: 'в процессе', color: '#fbbf24', bg: 'rgba(251,191,36,0.15)' }
-  if (status.isCorrect === true) return { text: 'верно', color: '#34d399', bg: 'rgba(16,185,129,0.15)' }
-  if (status.isCorrect === false) return { text: 'неверно', color: '#f472b6', bg: 'rgba(244,114,182,0.15)' }
-  return { text: 'отправлено', color: '#60a5fa', bg: 'rgba(96,165,250,0.15)' }
+  if (!status.attempts && !status.done) return { text: 'не начат', color: 'var(--t-text-muted)', bg: 'rgba(107,114,128,0.12)' }
+  if (status.skipped) return { text: 'пропущено', color: 'var(--t-text-secondary)', bg: 'rgba(107,114,128,0.15)' }
+  if (!status.done) return { text: 'в процессе', color: 'var(--t-warning)', bg: 'rgba(var(--t-warning-rgb),0.15)' }
+  if (status.isCorrect === true) return { text: 'верно', color: 'var(--t-success)', bg: 'rgba(var(--t-success2-rgb),0.15)' }
+  if (status.isCorrect === false) return { text: 'неверно', color: 'var(--t-pink)', bg: 'rgba(var(--t-pink-rgb),0.15)' }
+  return { text: 'отправлено', color: 'var(--t-info)', bg: 'rgba(var(--t-info-rgb),0.15)' }
 }
 
 export default function WatchLessonPage() {
@@ -146,7 +146,7 @@ export default function WatchLessonPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0f1117', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         Загрузка...
       </div>
     )
@@ -154,17 +154,17 @@ export default function WatchLessonPage() {
 
   if (errorMsg) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0f1117', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
         <div>{errorMsg}</div>
-        <Link href={`/teacher/lessons/${lessonId}`} style={{ color: '#4f8ef7', fontSize: '14px' }}>← К уроку</Link>
+        <Link href={`/teacher/lessons/${lessonId}`} style={{ color: 'var(--t-accent)', fontSize: '14px' }}>← К уроку</Link>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', fontFamily: 'system-ui, sans-serif', color: '#fff', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
-        <Link href={`/teacher/lessons/${lessonId}`} style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
+        <Link href={`/teacher/lessons/${lessonId}`} style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>
           ← {lessonTitle}
         </Link>
 
@@ -172,20 +172,20 @@ export default function WatchLessonPage() {
           <h1 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>👁 {studentName}</h1>
           <span style={{
             display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px',
-            color: studentOnline ? '#34d399' : '#6b7280',
+            color: studentOnline ? 'var(--t-success)' : 'var(--t-text-muted)',
           }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: studentOnline ? '#34d399' : '#4b5563' }} />
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: studentOnline ? 'var(--t-success)' : 'var(--t-text-faint)' }} />
             {studentOnline ? 'ученик сейчас в уроке' : 'ученик офлайн'}
           </span>
         </div>
-        <div style={{ color: '#6b7280', fontSize: '13px', marginBottom: '1.25rem' }}>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '1.25rem' }}>
           Показ решения и доски видны только ученику прямо сейчас — ничего не сохраняется.
         </div>
 
         {liveTimedOut && !live.ready && (
           <div style={{
-            color: '#fbbf24', fontSize: '13px', marginBottom: '1.25rem', padding: '10px 14px',
-            background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px',
+            color: 'var(--t-warning)', fontSize: '13px', marginBottom: '1.25rem', padding: '10px 14px',
+            background: 'rgba(var(--t-warning-rgb),0.1)', border: '1px solid rgba(var(--t-warning-rgb),0.4)', borderRadius: '8px',
           }}>
             ⚠ Живое соединение не установилось — «Показать решение» и доска сейчас не дойдут до ученика.
             Прогресс тоже не обновляется. Обычно причина на стороне сервера (не настроен или недоступен Supabase) —
@@ -197,8 +197,8 @@ export default function WatchLessonPage() {
           <button
             onClick={toggleBoard}
             style={{
-              background: boardOpen ? 'rgba(124,58,237,0.25)' : 'rgba(79,142,247,0.15)',
-              border: `1px solid ${boardOpen ? '#7c3aed' : '#4f8ef7'}`, color: '#fff',
+              background: boardOpen ? 'rgba(var(--t-accent2-rgb),0.25)' : 'rgba(var(--t-accent-rgb),0.15)',
+              border: `1px solid ${boardOpen ? 'var(--t-accent2)' : 'var(--t-accent)'}`, color: 'var(--t-text)',
               borderRadius: '8px', padding: '10px 18px', fontSize: '14px', cursor: 'pointer', fontWeight: 600,
             }}
           >
@@ -221,7 +221,7 @@ export default function WatchLessonPage() {
               <div
                 key={b.id}
                 style={{
-                  background: '#1a1d27', border: `1px solid ${isCurrent ? '#4f8ef7' : '#2a2d3d'}`,
+                  background: 'var(--t-card)', border: `1px solid ${isCurrent ? 'var(--t-accent)' : 'var(--t-border)'}`,
                   borderRadius: '12px', padding: '14px 18px',
                 }}
               >
@@ -229,14 +229,14 @@ export default function WatchLessonPage() {
                   <span style={{
                     flexShrink: 0, width: '26px', height: '26px', borderRadius: '8px', display: 'flex',
                     alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700,
-                    background: isCurrent ? '#4f8ef7' : '#2a2d3d', color: isCurrent ? '#fff' : '#9ca3af',
+                    background: isCurrent ? 'var(--t-accent)' : 'var(--t-border)', color: isCurrent ? '#fff' : 'var(--t-text-secondary)',
                   }}>
                     {i + 1}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: '#6b7280', fontSize: '11px', textTransform: 'uppercase', marginBottom: '2px' }}>
+                    <div style={{ color: 'var(--t-text-muted)', fontSize: '11px', textTransform: 'uppercase', marginBottom: '2px' }}>
                       {blockRegistry[b.type].icon} {blockRegistry[b.type].label}
-                      {isCurrent && <span style={{ color: '#4f8ef7', marginLeft: '8px' }}>● сейчас здесь</span>}
+                      {isCurrent && <span style={{ color: 'var(--t-accent)', marginLeft: '8px' }}>● сейчас здесь</span>}
                     </div>
                     <div style={{ fontSize: '14px' }}>
                       <Formula text={blockPreview(b)} />
@@ -251,9 +251,9 @@ export default function WatchLessonPage() {
                     <button
                       onClick={() => toggleSolution(b.id)}
                       style={{
-                        background: revealed[b.id] ? 'rgba(251,191,36,0.2)' : 'transparent',
-                        border: `1px solid ${revealed[b.id] ? '#fbbf24' : '#2a2d3d'}`,
-                        color: revealed[b.id] ? '#fbbf24' : '#9ca3af',
+                        background: revealed[b.id] ? 'rgba(var(--t-warning-rgb),0.2)' : 'transparent',
+                        border: `1px solid ${revealed[b.id] ? 'var(--t-warning)' : 'var(--t-border)'}`,
+                        color: revealed[b.id] ? 'var(--t-warning)' : 'var(--t-text-secondary)',
                         borderRadius: '8px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer',
                       }}
                     >

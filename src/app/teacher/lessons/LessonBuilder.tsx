@@ -17,9 +17,9 @@ export interface LessonMeta {
 
 function iconBtnStyle(disabled: boolean, danger?: boolean): CSSProperties {
   return {
-    background: 'none', border: '1px solid #2a2d3d', borderRadius: '6px',
+    background: 'none', border: '1px solid var(--t-border)', borderRadius: '6px',
     width: '26px', height: '26px', fontSize: '12px',
-    color: disabled ? '#374151' : danger ? '#ef4444' : '#9ca3af',
+    color: disabled ? 'var(--t-text-faint)' : danger ? 'var(--t-danger)' : 'var(--t-text-secondary)',
     cursor: disabled ? 'not-allowed' : 'pointer',
   }
 }
@@ -195,11 +195,11 @@ export function LessonBuilder({
   const canSave = title.trim().length > 0 && blocks.length > 0 && !saving
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
-          <button onClick={() => router.push(backHref)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px' }}>
+          <button onClick={() => router.push(backHref)} style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '14px' }}>
             ← Мои уроки
           </button>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📚 Конструктор урока</h1>
@@ -208,21 +208,21 @@ export function LessonBuilder({
         {draftSavedAt && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
-            background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.4)',
-            borderRadius: '12px', padding: '12px 16px', marginBottom: '1.5rem', fontSize: '13px', color: '#fbbf24',
+            background: 'rgba(var(--t-warning-rgb),0.1)', border: '1px solid rgba(var(--t-warning-rgb),0.4)',
+            borderRadius: '12px', padding: '12px 16px', marginBottom: '1.5rem', fontSize: '13px', color: 'var(--t-warning)',
           }}>
             <span>
               Найден несохранённый черновик от {new Date(draftSavedAt).toLocaleString('ru-RU')} — восстановить?
             </span>
             <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
               <button onClick={restoreDraft} style={{
-                background: 'rgba(251,191,36,0.2)', border: '1px solid #fbbf24', color: '#fbbf24',
+                background: 'rgba(var(--t-warning-rgb),0.2)', border: '1px solid var(--t-warning)', color: 'var(--t-warning)',
                 borderRadius: '6px', padding: '5px 12px', fontSize: '12px', cursor: 'pointer',
               }}>
                 Восстановить
               </button>
               <button onClick={discardDraft} style={{
-                background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+                background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
                 borderRadius: '6px', padding: '5px 12px', fontSize: '12px', cursor: 'pointer',
               }}>
                 Не нужно
@@ -232,7 +232,7 @@ export function LessonBuilder({
         )}
 
         {/* Название/предмет/класс */}
-        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <div style={{ flex: 2, minWidth: '220px' }}>
               <label style={labelStyle}>Название урока</label>
@@ -254,7 +254,7 @@ export function LessonBuilder({
             </div>
           </div>
 
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px', cursor: 'pointer', fontSize: '14px', color: '#9ca3af' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px', cursor: 'pointer', fontSize: '14px', color: 'var(--t-text-secondary)' }}>
             <input
               type="checkbox"
               checked={status === 'published'}
@@ -264,7 +264,7 @@ export function LessonBuilder({
           </label>
 
           <label style={{
-            display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '14px', color: '#9ca3af',
+            display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px', fontSize: '14px', color: 'var(--t-text-secondary)',
             cursor: canPublishToLibrary ? 'pointer' : 'not-allowed',
           }}>
             <input
@@ -276,12 +276,12 @@ export function LessonBuilder({
             Опубликовать в библиотеке (виден другим репетиторам, они смогут добавить его себе)
           </label>
           {!canPublishToLibrary && (
-            <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
+            <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
               Публикация в библиотеке доступна на тарифе Pro
             </div>
           )}
           {canPublishToLibrary && isPublic && status !== 'published' && (
-            <div style={{ color: '#fbbf24', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
+            <div style={{ color: 'var(--t-warning)', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
               Появится в библиотеке только после публикации самого урока (галочка выше)
             </div>
           )}
@@ -305,9 +305,9 @@ export function LessonBuilder({
             const def = blockRegistry[block.type]
             const Editor = def.Editor
             return (
-              <div key={block.id} style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem' }}>
+              <div key={block.id} style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600 }}>{def.icon} {i + 1}. {def.label}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--t-text-muted)', fontWeight: 600 }}>{def.icon} {i + 1}. {def.label}</div>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button onClick={() => moveBlock(block.id, -1)} disabled={i === 0} style={iconBtnStyle(i === 0)}>↑</button>
                     <button onClick={() => moveBlock(block.id, 1)} disabled={i === blocks.length - 1} style={iconBtnStyle(i === blocks.length - 1)}>↓</button>
@@ -323,22 +323,22 @@ export function LessonBuilder({
           })}
 
           {blocks.length === 0 && (
-            <div style={{ background: '#1a1d27', border: '1px dashed #2a2d3d', borderRadius: '16px', padding: '2rem', textAlign: 'center', color: '#4b5563', fontSize: '14px' }}>
+            <div style={{ background: 'var(--t-card)', border: '1px dashed var(--t-border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', color: 'var(--t-text-faint)', fontSize: '14px' }}>
               Добавь первый блок урока ниже
             </div>
           )}
         </div>
 
         {/* Добавить блок */}
-        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-          <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '10px', fontWeight: 600 }}>Добавить блок</div>
+        <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem' }}>
+          <div style={{ fontSize: '13px', color: 'var(--t-text-muted)', marginBottom: '10px', fontWeight: 600 }}>Добавить блок</div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {blockTypes.map(t => (
               <button
                 key={t}
                 onClick={() => addBlock(t)}
                 style={{
-                  background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+                  background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)',
                   borderRadius: '8px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer',
                 }}
               >
@@ -348,13 +348,13 @@ export function LessonBuilder({
           </div>
         </div>
 
-        {error && <p style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</p>}
+        {error && <p style={{ color: 'var(--t-danger)', fontSize: '14px', marginBottom: '1rem' }}>{error}</p>}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
           <div>
             {onDelete && (
               <button onClick={onDelete} style={{
-                background: 'transparent', border: '1px solid #7f1d1d', color: '#fca5a5',
+                background: 'transparent', border: '1px solid var(--t-danger-bg)', color: 'var(--t-danger-soft)',
                 borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer',
               }}>
                 Удалить урок
@@ -366,8 +366,8 @@ export function LessonBuilder({
               onClick={() => setPreviewing(true)}
               disabled={blocks.length === 0}
               style={{
-                background: 'transparent', border: '1px solid #2a2d3d',
-                color: blocks.length === 0 ? '#4b5563' : '#9ca3af',
+                background: 'transparent', border: '1px solid var(--t-border)',
+                color: blocks.length === 0 ? 'var(--t-text-faint)' : 'var(--t-text-secondary)',
                 borderRadius: '8px', padding: '10px 20px', fontSize: '14px',
                 cursor: blocks.length === 0 ? 'not-allowed' : 'pointer',
               }}
@@ -425,28 +425,28 @@ function LockedLessonView({
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-          <button onClick={() => router.push(backHref)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px' }}>
+          <button onClick={() => router.push(backHref)} style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '14px' }}>
             ← Мои уроки
           </button>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📚 {title}</h1>
         </div>
 
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#93c5fd',
-          background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.35)',
+          display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--t-info)',
+          background: 'rgba(var(--t-info-rgb),0.12)', border: '1px solid rgba(var(--t-info-rgb),0.35)',
           borderRadius: '20px', padding: '4px 12px', marginBottom: '1.5rem',
         }}>
           📖 Из библиотеки{authorName ? ` · автор: ${authorName}` : ''}
         </div>
 
-        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem', color: '#9ca3af', fontSize: '14px' }}>
+        <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem', color: 'var(--t-text-secondary)', fontSize: '14px' }}>
           <div>{[subject, grade ? `${grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}</div>
           <div style={{ marginTop: '4px' }}>{mode === 'exam' ? 'Контрольная — без подсказок, разбор в конце' : 'Проверочная — сразу видно верно/неверно'}</div>
-          <div style={{ marginTop: '10px', color: '#6b7280', fontSize: '12px' }}>
+          <div style={{ marginTop: '10px', color: 'var(--t-text-muted)', fontSize: '12px' }}>
             Этот урок скопирован из библиотеки и доступен только для просмотра — менять его содержимое нельзя,
             но можно назначать своим ученикам.
           </div>
@@ -460,9 +460,9 @@ function LockedLessonView({
           {blocks.map((block, i) => {
             const def = blockRegistry[block.type]
             return (
-              <div key={block.id} style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem' }}>
-                <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, marginBottom: '6px' }}>{def.icon} {i + 1}. {def.label}</div>
-                <div style={{ fontSize: '14px', color: '#e5e7eb' }}>{blockPreviewText(block)}</div>
+              <div key={block.id} style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem' }}>
+                <div style={{ fontSize: '13px', color: 'var(--t-text-muted)', fontWeight: 600, marginBottom: '6px' }}>{def.icon} {i + 1}. {def.label}</div>
+                <div style={{ fontSize: '14px', color: 'var(--t-text-secondary)' }}>{blockPreviewText(block)}</div>
               </div>
             )
           })}
@@ -472,7 +472,7 @@ function LockedLessonView({
           <div>
             {onDelete && (
               <button onClick={onDelete} style={{
-                background: 'transparent', border: '1px solid #7f1d1d', color: '#fca5a5',
+                background: 'transparent', border: '1px solid var(--t-danger-bg)', color: 'var(--t-danger-soft)',
                 borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer',
               }}>
                 Убрать из своего списка
@@ -483,8 +483,8 @@ function LockedLessonView({
             onClick={() => setPreviewing(true)}
             disabled={blocks.length === 0}
             style={{
-              background: 'transparent', border: '1px solid #2a2d3d',
-              color: blocks.length === 0 ? '#4b5563' : '#9ca3af',
+              background: 'transparent', border: '1px solid var(--t-border)',
+              color: blocks.length === 0 ? 'var(--t-text-faint)' : 'var(--t-text-secondary)',
               borderRadius: '8px', padding: '10px 20px', fontSize: '14px',
               cursor: blocks.length === 0 ? 'not-allowed' : 'pointer',
             }}
@@ -507,14 +507,14 @@ function BlockRetrySettings({ content, onChange, mode }: { content: any; onChang
   const maxAttempts = content.maxAttempts ?? 2
 
   return (
-    <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid #2a2d3d' }}>
+    <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--t-border)' }}>
       {mode === 'exam' ? (
-        <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px' }}>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '10px' }}>
           В режиме «Контрольная» повторные попытки недоступны — ответ фиксируется сразу
         </div>
       ) : (
         <>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#9ca3af', marginBottom: retryable ? '10px' : 0 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--t-text-secondary)', marginBottom: retryable ? '10px' : 0 }}>
             <input
               type="checkbox"
               checked={retryable}

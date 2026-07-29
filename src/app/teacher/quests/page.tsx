@@ -40,19 +40,19 @@ export default function QuestsPage() {
 
   function getStatusLabel(status: string) {
     switch (status) {
-      case 'waiting': return { label: 'Ожидает', color: '#f59e0b' }
-      case 'active': return { label: 'Активен', color: '#10b981' }
-      case 'finished': return { label: 'Завершён', color: '#6b7280' }
-      default: return { label: status, color: '#6b7280' }
+      case 'waiting': return { label: 'Ожидает', color: 'var(--t-warning2)' }
+      case 'active': return { label: 'Активен', color: 'var(--t-success2)' }
+      case 'finished': return { label: 'Завершён', color: 'var(--t-text-muted)' }
+      default: return { label: status, color: 'var(--t-text-muted)' }
     }
   }
 
   return (
   <div style={{
     minHeight: '100vh',
-    background: '#0f1117',
+    background: 'var(--t-bg)',
     fontFamily: 'system-ui, sans-serif',
-    color: '#fff',
+    color: 'var(--t-text)',
     display: 'flex',
     justifyContent: 'center',
   }}>
@@ -60,7 +60,7 @@ export default function QuestsPage() {
 
       {/* Шапка */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
-        <Link href="/teacher" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
+        <Link href="/teacher" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>
           ← Кабинет
         </Link>
         <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>🎮 Мои квесты</h1>
@@ -110,24 +110,24 @@ function QuestBlock({ title, quests, loading, formatDate, getStatusLabel, placeh
 
   return (
     <div style={{
-      background: '#1a1d27', border: '1px solid #2a2d3d',
+      background: 'var(--t-card)', border: '1px solid var(--t-border)',
       borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0, color: '#fff' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0, color: 'var(--t-text)' }}>
           {title}
         </h2>
         {title === 'Квест "Комнаты"' && (
           <div style={{ display: 'flex', gap: '8px' }}>
             <Link href="/teacher/room-editor" style={{
-              background: 'transparent', color: '#9ca3af', border: '1px solid #2a2d3d',
+              background: 'transparent', color: 'var(--t-text-secondary)', border: '1px solid var(--t-border)',
               textDecoration: 'none', borderRadius: '8px',
               padding: '6px 14px', fontSize: '13px', fontWeight: 600
             }}>
               🗺️ Редактор комнат
             </Link>
             <Link href="/teacher/quest/new" style={{
-              background: '#4f8ef7', color: '#fff',
+              background: 'var(--t-accent)', color: '#fff',
               textDecoration: 'none', borderRadius: '8px',
               padding: '6px 14px', fontSize: '13px', fontWeight: 600
             }}>
@@ -138,16 +138,16 @@ function QuestBlock({ title, quests, loading, formatDate, getStatusLabel, placeh
       </div>
 
       {/* Вкладки */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', borderBottom: '1px solid #2a2d3d', paddingBottom: '1rem' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '1rem', borderBottom: '1px solid var(--t-border)', paddingBottom: '1rem' }}>
         {TABS.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             style={{
-              background: activeTab === tab.key ? 'rgba(79,142,247,0.15)' : 'transparent',
-              border: activeTab === tab.key ? '1px solid #4f8ef7' : '1px solid #2a2d3d',
+              background: activeTab === tab.key ? 'rgba(var(--t-accent-rgb),0.15)' : 'transparent',
+              border: activeTab === tab.key ? '1px solid var(--t-accent)' : '1px solid var(--t-border)',
               borderRadius: '8px', padding: '6px 14px',
-              color: activeTab === tab.key ? '#4f8ef7' : '#6b7280',
+              color: activeTab === tab.key ? 'var(--t-accent)' : 'var(--t-text-muted)',
               fontSize: '13px', cursor: 'pointer'
             }}
           >
@@ -158,14 +158,14 @@ function QuestBlock({ title, quests, loading, formatDate, getStatusLabel, placeh
 
       {/* Содержимое */}
       {placeholder ? (
-        <div style={{ textAlign: 'center', padding: '2rem', color: '#4b5563' }}>
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--t-text-faint)' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>🚧</div>
           <div style={{ fontSize: '14px' }}>Скоро</div>
         </div>
       ) : loading ? (
-        <p style={{ color: '#6b7280', fontSize: '14px' }}>Загружаем...</p>
+        <p style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Загружаем...</p>
       ) : filtered.length === 0 ? (
-        <p style={{ color: '#4b5563', fontSize: '14px', textAlign: 'center', padding: '1.5rem 0' }}>
+        <p style={{ color: 'var(--t-text-faint)', fontSize: '14px', textAlign: 'center', padding: '1.5rem 0' }}>
           Квестов пока нет
         </p>
       ) : (
@@ -175,19 +175,19 @@ function QuestBlock({ title, quests, loading, formatDate, getStatusLabel, placeh
             return (
               <Link key={q.id} href={`/teacher/quest/${q.id}`} style={{ textDecoration: 'none' }}>
                 <div style={{
-                  background: '#0f1117', border: '1px solid #2a2d3d',
+                  background: 'var(--t-bg)', border: '1px solid var(--t-border)',
                   borderRadius: '10px', padding: '12px 16px',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   transition: 'border-color 0.2s', cursor: 'pointer'
                 }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
                 >
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '14px', color: '#fff', marginBottom: '2px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--t-text)', marginBottom: '2px' }}>
                       {q.title}
                     </div>
-                    <div style={{ color: '#6b7280', fontSize: '12px' }}>
+                    <div style={{ color: 'var(--t-text-muted)', fontSize: '12px' }}>
                       {q.player_count} учеников · {formatDate(q.created_at)}
                     </div>
                   </div>

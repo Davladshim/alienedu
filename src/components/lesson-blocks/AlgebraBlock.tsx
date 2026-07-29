@@ -32,7 +32,7 @@ export function AlgebraEditor({ content, onChange }: {
         rows={3}
         placeholder="Например: Постройте график функции $y = x^2 - 2x$ на отрезке [-2; 4]"
       />
-      <div style={{ color: '#6b7280', fontSize: '12px' }}>
+      <div style={{ color: 'var(--t-text-muted)', fontSize: '12px' }}>
         Ученик может построить график в GeoGebra и/или записать решение текстом или фото из тетради.
         Ответ не проверяется автоматически — его нужно посмотреть вручную.
       </div>
@@ -105,17 +105,17 @@ export function AlgebraPlayer({ content, onSubmit, disabled }: {
       <label style={{ ...labelStyle, marginTop: '10px' }}>Или приложи фото решения из тетради</label>
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
         <label style={{
-          background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+          background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)',
           borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: disabled ? 'not-allowed' : 'pointer',
         }}>
           📷 {photoBusy ? 'Обработка...' : 'Выбрать фото'}
           <input type="file" accept="image/*" onChange={handlePhoto} disabled={disabled || photoBusy} style={{ display: 'none' }} />
         </label>
         {photo && (
-          <img src={photo} alt="Фото решения" style={{ maxHeight: '80px', borderRadius: '6px', border: '1px solid #2a2d3d' }} />
+          <img src={photo} alt="Фото решения" style={{ maxHeight: '80px', borderRadius: '6px', border: '1px solid var(--t-border)' }} />
         )}
         {photo && !disabled && (
-          <button type="button" onClick={() => setPhoto(null)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '13px' }}>
+          <button type="button" onClick={() => setPhoto(null)} style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '13px' }}>
             ✕ убрать фото
           </button>
         )}

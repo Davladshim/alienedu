@@ -57,7 +57,7 @@ export function OrderingEditor({ content, onChange }: {
       <label style={labelStyle}>Шаги в правильном порядке</label>
       {content.steps.map((step, i) => (
         <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ color: '#6b7280', fontSize: '13px', width: '18px' }}>{i + 1}.</span>
+          <span style={{ color: 'var(--t-text-muted)', fontSize: '13px', width: '18px' }}>{i + 1}.</span>
           <input
             value={step}
             onChange={e => updateStep(i, e.target.value)}
@@ -111,9 +111,9 @@ export function OrderingPlayer({ content, onSubmit, disabled }: {
         {order.map((originalIndex, position) => (
           <div key={originalIndex} style={{
             display: 'flex', gap: '10px', alignItems: 'center',
-            padding: '10px 14px', border: '1px solid #2a2d3d', borderRadius: '8px',
+            padding: '10px 14px', border: '1px solid var(--t-border)', borderRadius: '8px',
           }}>
-            <span style={{ color: '#6b7280', fontSize: '13px', width: '18px' }}>{position + 1}.</span>
+            <span style={{ color: 'var(--t-text-muted)', fontSize: '13px', width: '18px' }}>{position + 1}.</span>
             <div style={{ flex: 1 }}><Formula text={content.steps[originalIndex]} /></div>
             <button type="button" onClick={() => move(position, -1)} disabled={disabled || position === 0} style={removeButtonStyle}>↑</button>
             <button type="button" onClick={() => move(position, 1)} disabled={disabled || position === order.length - 1} style={removeButtonStyle}>↓</button>

@@ -85,9 +85,9 @@ export function SingleChoicePlayer({ content, onSubmit, disabled }: {
         {content.options.map((opt, i) => (
           <label key={i} style={{
             display: 'flex', gap: '10px', alignItems: 'center',
-            padding: '10px 14px', border: '1px solid #2a2d3d', borderRadius: '8px',
+            padding: '10px 14px', border: '1px solid var(--t-border)', borderRadius: '8px',
             cursor: disabled ? 'default' : 'pointer',
-            background: selected === i ? 'rgba(79,142,247,0.1)' : 'transparent',
+            background: selected === i ? 'rgba(var(--t-accent-rgb),0.1)' : 'transparent',
           }}>
             <input type="radio" name="single-choice" checked={selected === i} disabled={disabled} onChange={() => setSelected(i)} />
             <Formula text={opt} />

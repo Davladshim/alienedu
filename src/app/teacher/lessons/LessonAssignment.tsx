@@ -39,16 +39,16 @@ export function LessonAssignment({ lessonId, initialAssignedIds }: {
   }
 
   return (
-    <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
-      <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '10px', fontWeight: 600 }}>
+    <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+      <div style={{ fontSize: '13px', color: 'var(--t-text-muted)', marginBottom: '10px', fontWeight: 600 }}>
         Кому назначить урок
       </div>
 
-      {loading && <p style={{ color: '#6b7280', fontSize: '14px' }}>Загрузка...</p>}
+      {loading && <p style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Загрузка...</p>}
 
       {!loading && roster.length === 0 && (
-        <p style={{ color: '#6b7280', fontSize: '14px' }}>
-          В твоём списке пока нет учеников. <Link href="/teacher/students" style={{ color: '#4f8ef7' }}>Добавить учеников →</Link>
+        <p style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>
+          В твоём списке пока нет учеников. <Link href="/teacher/students" style={{ color: 'var(--t-accent)' }}>Добавить учеников →</Link>
         </p>
       )}
 
@@ -57,8 +57,8 @@ export function LessonAssignment({ lessonId, initialAssignedIds }: {
           {roster.map(student => (
             <label key={student.student_id} style={{
               display: 'flex', gap: '10px', alignItems: 'center',
-              padding: '8px 12px', border: '1px solid #2a2d3d', borderRadius: '8px', cursor: 'pointer',
-              background: selected.includes(student.student_id) ? 'rgba(79,142,247,0.1)' : 'transparent',
+              padding: '8px 12px', border: '1px solid var(--t-border)', borderRadius: '8px', cursor: 'pointer',
+              background: selected.includes(student.student_id) ? 'rgba(var(--t-accent-rgb),0.1)' : 'transparent',
             }}>
               <input
                 type="checkbox"
@@ -67,9 +67,9 @@ export function LessonAssignment({ lessonId, initialAssignedIds }: {
               />
               <span style={{ fontSize: '14px' }}>{student.full_name}</span>
               {student.is_placeholder ? (
-                <span style={{ color: '#fbbf24', fontSize: '12px' }}>не зарегистрирован</span>
+                <span style={{ color: 'var(--t-warning)', fontSize: '12px' }}>не зарегистрирован</span>
               ) : (
-                <span style={{ color: '#6b7280', fontSize: '12px' }}>@{student.login}</span>
+                <span style={{ color: 'var(--t-text-muted)', fontSize: '12px' }}>@{student.login}</span>
               )}
             </label>
           ))}
@@ -81,7 +81,7 @@ export function LessonAssignment({ lessonId, initialAssignedIds }: {
           <button onClick={handleSave} disabled={saving} style={saving ? submitButtonDisabledStyle : submitButtonStyle}>
             {saving ? 'Сохраняем...' : 'Сохранить назначение'}
           </button>
-          {saved && <span style={{ color: '#34d399', fontSize: '13px' }}>✅ Сохранено</span>}
+          {saved && <span style={{ color: 'var(--t-success)', fontSize: '13px' }}>✅ Сохранено</span>}
         </div>
       )}
     </div>

@@ -39,7 +39,7 @@ export default function QuestJoinPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0f1117',
+      background: 'var(--t-bg)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -47,8 +47,8 @@ export default function QuestJoinPage() {
       padding: '2rem'
     }}>
       <div style={{
-        background: '#1a1d27',
-        border: '0.5px solid #2a2d3d',
+        background: 'var(--t-card)',
+        border: '0.5px solid var(--t-border)',
         borderRadius: '16px',
         padding: '2.5rem',
         width: '100%',
@@ -56,10 +56,10 @@ export default function QuestJoinPage() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontSize: '48px', marginBottom: '8px' }}>🚪</div>
-          <h1 style={{ color: '#fff', fontSize: '22px', fontWeight: 500, margin: 0 }}>
+          <h1 style={{ color: 'var(--t-text)', fontSize: '22px', fontWeight: 500, margin: 0 }}>
             Войти в квест
           </h1>
-          <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '6px' }}>
+          <p style={{ color: 'var(--t-text-muted)', fontSize: '14px', marginTop: '6px' }}>
             Введи код от преподавателя
           </p>
         </div>
@@ -67,7 +67,7 @@ export default function QuestJoinPage() {
         <form onSubmit={handleJoin}>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{
-              color: '#9ca3af', fontSize: '13px',
+              color: 'var(--t-text-secondary)', fontSize: '13px',
               display: 'block', marginBottom: '6px'
             }}>
               Код доступа
@@ -80,11 +80,11 @@ export default function QuestJoinPage() {
               maxLength={10}
               style={{
                 width: '100%',
-                background: '#0f1117',
-                border: '0.5px solid #2a2d3d',
+                background: 'var(--t-bg)',
+                border: '0.5px solid var(--t-border)',
                 borderRadius: '8px',
                 padding: '12px 14px',
-                color: '#fff',
+                color: 'var(--t-text)',
                 fontSize: '20px',
                 fontWeight: 600,
                 letterSpacing: '4px',
@@ -97,7 +97,7 @@ export default function QuestJoinPage() {
 
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{
-              color: '#9ca3af', fontSize: '13px',
+              color: 'var(--t-text-secondary)', fontSize: '13px',
               display: 'block', marginBottom: '6px'
             }}>
               Твоё имя
@@ -109,11 +109,11 @@ export default function QuestJoinPage() {
               required
               style={{
                 width: '100%',
-                background: '#0f1117',
-                border: '0.5px solid #2a2d3d',
+                background: 'var(--t-bg)',
+                border: '0.5px solid var(--t-border)',
                 borderRadius: '8px',
                 padding: '10px 14px',
-                color: '#fff',
+                color: 'var(--t-text)',
                 fontSize: '14px',
                 outline: 'none',
                 boxSizing: 'border-box'
@@ -123,11 +123,11 @@ export default function QuestJoinPage() {
 
           {error && (
             <div style={{
-              background: '#2d1515',
-              border: '0.5px solid #ef4444',
+              background: 'var(--t-danger-bg)',
+              border: '0.5px solid var(--t-danger)',
               borderRadius: '8px',
               padding: '10px 14px',
-              color: '#ef4444',
+              color: 'var(--t-danger)',
               fontSize: '13px',
               marginBottom: '1rem'
             }}>
@@ -140,7 +140,7 @@ export default function QuestJoinPage() {
             disabled={loading}
             style={{
               width: '100%',
-              background: '#4f8ef7',
+              background: 'var(--t-accent)',
               color: '#fff',
               border: 'none',
               borderRadius: '8px',

@@ -67,9 +67,9 @@ export function InteractiveModelEditor({ content, onChange }: {
       </div>
 
       {!loadedOnce ? (
-        <div style={{ color: '#6b7280', fontSize: '13px' }}>Загрузка...</div>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Загрузка...</div>
       ) : models.length === 0 ? (
-        <div style={{ color: '#6b7280', fontSize: '13px' }}>Моделей пока нет — обратитесь к администратору, чтобы пополнить банк.</div>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Моделей пока нет — обратитесь к администратору, чтобы пополнить банк.</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', maxHeight: '320px', overflowY: 'auto', padding: '2px' }}>
           {models.map(m => {
@@ -80,8 +80,8 @@ export function InteractiveModelEditor({ content, onChange }: {
                 onClick={() => onChange({ ...content, modelId: m.id })}
                 style={{
                   cursor: 'pointer', borderRadius: '8px', padding: '8px',
-                  border: `1px solid ${isSelected ? '#4f8ef7' : '#2a2d3d'}`,
-                  background: isSelected ? 'rgba(79,142,247,0.1)' : '#1a1d27',
+                  border: `1px solid ${isSelected ? 'var(--t-accent)' : 'var(--t-border)'}`,
+                  background: isSelected ? 'rgba(var(--t-accent-rgb),0.1)' : 'var(--t-card)',
                 }}
               >
                 <div style={{ pointerEvents: 'none', overflow: 'hidden', borderRadius: '4px', marginBottom: '6px' }}>
@@ -93,7 +93,7 @@ export function InteractiveModelEditor({ content, onChange }: {
                   </div>
                 </div>
                 <div style={{ fontSize: '12px', fontWeight: 600, lineHeight: 1.3 }}>{m.title}</div>
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>{m.subject}{m.topic && ` · ${m.topic}`}</div>
+                <div style={{ fontSize: '11px', color: 'var(--t-text-muted)' }}>{m.subject}{m.topic && ` · ${m.topic}`}</div>
               </div>
             )
           })}
@@ -101,7 +101,7 @@ export function InteractiveModelEditor({ content, onChange }: {
       )}
 
       {selected && (
-        <div style={{ color: '#34d399', fontSize: '12px' }}>✓ Выбрана модель «{selected.title}»</div>
+        <div style={{ color: 'var(--t-success)', fontSize: '12px' }}>✓ Выбрана модель «{selected.title}»</div>
       )}
 
       <label style={{ ...labelStyle, marginTop: '4px' }}>Описание/пояснение к модели (необязательно)</label>
@@ -128,7 +128,7 @@ export function InteractiveModelPlayer({ content }: { content: InteractiveModelC
   }, [content.modelId])
 
   if (!content.modelId) {
-    return <div style={{ color: '#6b7280', fontSize: '13px' }}>Модель не выбрана</div>
+    return <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Модель не выбрана</div>
   }
 
   return (
@@ -137,10 +137,10 @@ export function InteractiveModelPlayer({ content }: { content: InteractiveModelC
         <div style={{ marginBottom: '12px', lineHeight: 1.6, fontSize: '15px' }}>{content.description}</div>
       )}
       {notFound && (
-        <div style={{ color: '#ef4444', fontSize: '13px' }}>Модель была удалена из банка администратором</div>
+        <div style={{ color: 'var(--t-danger)', fontSize: '13px' }}>Модель была удалена из банка администратором</div>
       )}
       {!notFound && !model && (
-        <div style={{ color: '#6b7280', fontSize: '13px' }}>Загрузка модели...</div>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Загрузка модели...</div>
       )}
       {model && (
         <InteractiveModelFrame

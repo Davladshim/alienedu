@@ -53,7 +53,7 @@ export function MatchingEditor({ content, onChange }: {
             style={{ ...inputStyle, flex: 1 }}
             placeholder="Термин"
           />
-          <span style={{ color: '#4b5563' }}>—</span>
+          <span style={{ color: 'var(--t-text-faint)' }}>—</span>
           <input
             value={pair.definition}
             onChange={e => updatePair(i, 'definition', e.target.value)}
@@ -98,10 +98,10 @@ export function MatchingPlayer({ content, onSubmit, disabled }: {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {content.pairs.map((pair, termIndex) => (
           <div key={termIndex} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <div style={{ flex: 1, padding: '10px 14px', border: '1px solid #2a2d3d', borderRadius: '8px', fontSize: '14px' }}>
+            <div style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--t-border)', borderRadius: '8px', fontSize: '14px' }}>
               <Formula text={pair.term} />
             </div>
-            <span style={{ color: '#4b5563' }}>→</span>
+            <span style={{ color: 'var(--t-text-faint)' }}>→</span>
             <select
               value={selected[termIndex] ?? ''}
               onChange={e => selectDefinition(termIndex, Number(e.target.value))}

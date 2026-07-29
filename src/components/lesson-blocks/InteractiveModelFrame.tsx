@@ -28,7 +28,7 @@ export function InteractiveModelFrame({ htmlCode, frameWidth, frameHeight, offse
         overflow: 'hidden', maxWidth: '100%',
         ...(bare
           ? { background: 'transparent', border: 'none' }
-          : { background: '#fff', border: '1px solid #2a2d3d', borderRadius: '8px' }),
+          : { background: '#fff', border: '1px solid var(--t-border)', borderRadius: '8px' }),
       }}
     >
       <div

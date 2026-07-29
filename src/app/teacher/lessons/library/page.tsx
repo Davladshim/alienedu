@@ -69,17 +69,17 @@ export default function LessonLibraryPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', fontFamily: 'system-ui, sans-serif', color: '#fff', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-          <Link href="/teacher/lessons" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
+          <Link href="/teacher/lessons" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>
             ← Мои уроки
           </Link>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📖 Библиотека уроков</h1>
         </div>
 
-        <div style={{ color: '#6b7280', fontSize: '13px', marginBottom: '1.25rem' }}>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '1.25rem' }}>
           Готовые уроки, которыми поделились репетиторы, включая твои собственные. Чужие можно добавить себе и
           назначить ученикам — менять содержимое нельзя, это может только автор. Свои можно редактировать
           и убирать из библиотеки.
@@ -90,19 +90,19 @@ export default function LessonLibraryPage() {
           onChange={e => setQ(e.target.value)}
           placeholder="Поиск по названию или предмету..."
           style={{
-            width: '100%', background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '8px',
-            padding: '12px 16px', color: '#fff', fontSize: '14px', marginBottom: '1.5rem', boxSizing: 'border-box',
+            width: '100%', background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '8px',
+            padding: '12px 16px', color: 'var(--t-text)', fontSize: '14px', marginBottom: '1.5rem', boxSizing: 'border-box',
           }}
         />
 
-        {addError && <p style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{addError}</p>}
+        {addError && <p style={{ color: 'var(--t-danger)', fontSize: '14px', marginBottom: '1rem' }}>{addError}</p>}
 
-        {loading && <p style={{ color: '#6b7280' }}>Загрузка...</p>}
+        {loading && <p style={{ color: 'var(--t-text-muted)' }}>Загрузка...</p>}
 
         {!loading && lessons.length === 0 && (
           <div style={{
-            background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px',
-            padding: '3rem', textAlign: 'center', color: '#6b7280',
+            background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px',
+            padding: '3rem', textAlign: 'center', color: 'var(--t-text-muted)',
           }}>
             {q ? 'Ничего не найдено' : 'В библиотеке пока нет ни одного урока'}
           </div>
@@ -111,7 +111,7 @@ export default function LessonLibraryPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {lessons.map(lesson => (
             <div key={lesson.id} style={{
-              background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '12px',
+              background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px',
               padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px',
             }}>
               <div style={{ minWidth: 0 }}>
@@ -120,13 +120,13 @@ export default function LessonLibraryPage() {
                   {lesson.is_own && (
                     <span style={{
                       marginLeft: '8px', fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
-                      background: 'rgba(79,142,247,0.15)', color: '#4f8ef7', whiteSpace: 'nowrap',
+                      background: 'rgba(var(--t-accent-rgb),0.15)', color: 'var(--t-accent)', whiteSpace: 'nowrap',
                     }}>
                       мой урок
                     </span>
                   )}
                 </div>
-                <div style={{ color: '#6b7280', fontSize: '13px', marginTop: '2px' }}>
+                <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
                   {[lesson.subject, lesson.grade ? `${lesson.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
                   {' · '}{lesson.block_count} {lesson.block_count === 1 ? 'блок' : 'блоков'}
                   {!lesson.is_own && <> · автор: {lesson.author_name}</>}
@@ -137,7 +137,7 @@ export default function LessonLibraryPage() {
                   <Link
                     href={`/teacher/lessons/${lesson.id}`}
                     style={{
-                      background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+                      background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)',
                       borderRadius: '8px', padding: '8px 16px', fontSize: '13px', textDecoration: 'none',
                     }}
                   >
@@ -147,10 +147,10 @@ export default function LessonLibraryPage() {
                     onClick={() => removeFromLibrary(lesson.id)}
                     disabled={removingId === lesson.id}
                     title="Убрать из библиотеки"
-                    onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
-                    onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--t-danger)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--t-text-secondary)')}
                     style={{
-                      background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+                      background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
                       borderRadius: '8px', padding: '8px 10px', cursor: removingId === lesson.id ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', transition: 'color 0.15s',
                     }}
@@ -167,7 +167,7 @@ export default function LessonLibraryPage() {
                   onClick={() => addToMyLessons(lesson.id)}
                   disabled={addingId === lesson.id}
                   style={{
-                    flexShrink: 0, background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+                    flexShrink: 0, background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)',
                     borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: addingId === lesson.id ? 'not-allowed' : 'pointer',
                   }}
                 >

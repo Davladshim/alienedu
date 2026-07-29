@@ -40,10 +40,10 @@ export function FormulaEditorModal({ onInsert, onClose }: {
     field.style.width = '100%'
     field.style.padding = '14px'
     field.style.fontSize = '20px'
-    field.style.background = '#0f1117'
-    field.style.border = '1px solid #2a2d3d'
+    field.style.background = 'var(--t-bg)'
+    field.style.border = '1px solid var(--t-border)'
     field.style.borderRadius = '8px'
-    field.style.color = '#fff'
+    field.style.color = 'var(--t-text)'
     container.appendChild(field)
     fieldRef.current = field
     field.focus()
@@ -73,7 +73,7 @@ export function FormulaEditorModal({ onInsert, onClose }: {
         // кнопки "Вставить"/"Отмена" физически оказываются под клавиатурой
         // и перестают ловить клики. Поэтому диалог держим у ВЕРХА экрана,
         // где клавиатура гарантированно не может его перекрыть.
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 90,
+        position: 'fixed', inset: 0, background: 'var(--t-overlay)', zIndex: 90,
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px',
         paddingBottom: keyboardHeight + 20,
         overflowY: 'auto',
@@ -81,7 +81,7 @@ export function FormulaEditorModal({ onInsert, onClose }: {
     >
       <div
         style={{
-          background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px',
+          background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px',
           padding: '1.5rem', width: '100%', maxWidth: '520px', zIndex: 91,
           marginTop: '32px', flexShrink: 0,
           maxHeight: `calc(100vh - ${keyboardHeight}px - 60px)`, overflowY: 'auto',
@@ -90,24 +90,24 @@ export function FormulaEditorModal({ onInsert, onClose }: {
         <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '12px' }}>Конструктор формулы</div>
 
         {!ready && (
-          <div style={{ color: '#6b7280', fontSize: '13px', padding: '20px 0' }}>Загрузка редактора...</div>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', padding: '20px 0' }}>Загрузка редактора...</div>
         )}
         <div ref={containerRef} style={{ display: ready ? 'block' : 'none' }} />
 
-        <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '10px' }}>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '10px' }}>
           Печатай формулу как обычно — дроби, степени и корни можно набрать прямо со стрелками на клавиатуре
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
           <button
             onClick={onClose}
-            style={{ background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af', borderRadius: '8px', padding: '8px 18px', fontSize: '14px', cursor: 'pointer' }}
+            style={{ background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)', borderRadius: '8px', padding: '8px 18px', fontSize: '14px', cursor: 'pointer' }}
           >
             Отмена
           </button>
           <button
             onClick={handleInsert}
-            style={{ background: 'linear-gradient(135deg, #4f8ef7, #7c3aed)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+            style={{ background: 'linear-gradient(135deg, var(--t-accent), var(--t-accent2))', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
           >
             Вставить
           </button>

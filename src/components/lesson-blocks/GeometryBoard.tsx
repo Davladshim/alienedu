@@ -19,7 +19,7 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
           position: 'relative',
           minHeight: '420px',
           borderRadius: '8px',
-          border: '1px solid #2a2d3d',
+          border: '1px solid var(--t-border)',
           background: '#fff',
           overflow: 'hidden',
           pointerEvents: disabled ? 'none' : 'auto',
@@ -31,12 +31,12 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
           <div id={containerId} />
         </div>
         {!ready && !loadError && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: '13px' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t-text-muted)', fontSize: '13px' }}>
             Загрузка чертежа...
           </div>
         )}
         {loadError && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '13px', padding: '0 20px', textAlign: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t-danger)', fontSize: '13px', padding: '0 20px', textAlign: 'center' }}>
             Не удалось загрузить GeoGebra. Проверьте интернет-соединение и обновите страницу.
           </div>
         )}

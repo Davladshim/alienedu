@@ -117,7 +117,7 @@ export default function QuestRoomPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#6b7280', fontSize: '16px' }}>Загружаем комнату...</div>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '16px' }}>Загружаем комнату...</div>
       </div>
     )
   }
@@ -148,11 +148,11 @@ export default function QuestRoomPage() {
         <div style={{
           width: '100%',
           aspectRatio: '16/9',
-          background: '#1a1d27',
+          background: 'var(--t-card)',
           borderRadius: '16px',
           overflow: 'hidden',
           position: 'relative',
-          border: '1px solid #2a2d3d'
+          border: '1px solid var(--t-border)'
         }}>
           <img
             src={imgSrc}
@@ -166,7 +166,7 @@ export default function QuestRoomPage() {
             onClick={() => setShowTask(true)}
             style={{
               position: 'absolute', bottom: '60px', left: '50%', transform: 'translateX(-50%)',
-              background: 'rgba(79,142,247,0.9)', color: '#fff',
+              background: 'rgba(var(--t-accent-rgb),0.9)', color: '#fff',
               border: 'none', borderRadius: '8px', padding: '10px 20px',
               fontSize: '14px', cursor: 'pointer', fontWeight: 600
             }}
@@ -199,17 +199,17 @@ export default function QuestRoomPage() {
         {/* Пояснение */}
         <div style={{ textAlign: 'center', marginTop: '12px' }}>
           {room.room_type === 'solo' && (
-            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
+            <p style={{ color: 'var(--t-text-secondary)', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
               👤 Ты в комнате один! Реши все задания, найди все кусочки ключа и открывай дверь!
             </p>
           )}
           {room.room_type === 'shared' && (
-            <p style={{ color: '#9ca3af', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
+            <p style={{ color: 'var(--t-text-secondary)', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
               👥 Ты в этой комнате с {waitingFor.length > 0 ? waitingFor.join(' и ') : 'другими учениками'}. Найди все свои кусочки ключа и дождись остальных — вместе вы сможете открыть дверь!
             </p>
           )}
           {room.room_type === 'final' && (
-            <p style={{ color: '#f59e0b', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
+            <p style={{ color: 'var(--t-warning2)', fontSize: '13px', margin: '8px auto 0', maxWidth: '500px' }}>
               ⚡️ Это босс-комната! Только совместными усилиями из неё можно выйти. Собери свои кусочки ключа, дождись всех остальных и победи босса!
             </p>
           )}
@@ -218,18 +218,18 @@ export default function QuestRoomPage() {
         {/* Ждём других */}
         {waitingFor.length > 0 && (
           <div style={{
-            marginTop: '12px', background: '#1a1d27',
-            border: '0.5px solid #f59e0b', borderRadius: '10px', padding: '12px 16px',
+            marginTop: '12px', background: 'var(--t-card)',
+            border: '0.5px solid var(--t-warning2)', borderRadius: '10px', padding: '12px 16px',
             textAlign: 'center'
           }}>
-            <p style={{ color: '#f59e0b', fontSize: '13px', margin: '0 0 4px' }}>
+            <p style={{ color: 'var(--t-warning2)', fontSize: '13px', margin: '0 0 4px' }}>
               ⏳ Ждём: {waitingFor.join(', ')}
             </p>
             {room.bonus_tasks && room.bonus_tasks.length > 0 && (
               <button onClick={() => setBonusVisible(true)} style={{
                 marginTop: '8px', background: 'transparent',
-                border: '0.5px solid #f59e0b', borderRadius: '8px',
-                padding: '6px 14px', color: '#f59e0b', fontSize: '13px', cursor: 'pointer'
+                border: '0.5px solid var(--t-warning2)', borderRadius: '8px',
+                padding: '6px 14px', color: 'var(--t-warning2)', fontSize: '13px', cursor: 'pointer'
               }}>✨ Украсить ключ</button>
             )}
           </div>
@@ -239,11 +239,11 @@ export default function QuestRoomPage() {
       {/* Окно ключа справа */}
       <div style={{
         width: '120px', flexShrink: 0,
-        background: '#1a1d27', border: '1px solid #2a2d3d',
+        background: 'var(--t-card)', border: '1px solid var(--t-border)',
         borderRadius: '16px', padding: '16px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'
       }}>
-        <div style={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <div style={{ color: 'var(--t-text-secondary)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           Твой ключ
         </div>
         <div style={{ fontSize: '36px' }}>🗝️</div>
@@ -251,16 +251,16 @@ export default function QuestRoomPage() {
           {Array.from({ length: totalPieces }).map((_, i) => (
             <div key={i} style={{
               height: '8px', borderRadius: '4px',
-              background: i < keyPieces ? '#4f8ef7' : '#2a2d3d',
+              background: i < keyPieces ? 'var(--t-accent)' : 'var(--t-border)',
               transition: 'background 0.3s ease'
             }} />
           ))}
         </div>
-        <div style={{ color: '#6b7280', fontSize: '11px' }}>{keyPieces}/{totalPieces}</div>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '11px' }}>{keyPieces}/{totalPieces}</div>
         {canOpenDoor && (
           <button onClick={handleOpenDoor} style={{
             width: '100%',
-            background: 'linear-gradient(135deg, #10b981, #059669)',
+            background: 'linear-gradient(135deg, var(--t-success2), var(--t-success))',
             color: '#fff', border: 'none', borderRadius: '8px',
             padding: '8px', fontSize: '12px', fontWeight: 600,
             cursor: 'pointer', marginTop: '4px'
@@ -275,14 +275,14 @@ export default function QuestRoomPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }}>
           <div style={{
-            background: '#1a1d27', border: '1px solid #2a2d3d',
+            background: 'var(--t-card)', border: '1px solid var(--t-border)',
             borderRadius: '16px', padding: '2rem', maxWidth: '480px', width: '90%'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <p style={{ color: '#4f8ef7', fontSize: '13px', margin: 0, fontWeight: 600 }}>🔑 Задание</p>
-              <button onClick={() => setShowTask(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+              <p style={{ color: 'var(--t-accent)', fontSize: '13px', margin: 0, fontWeight: 600 }}>🔑 Задание</p>
+              <button onClick={() => setShowTask(false)} style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '18px' }}>✕</button>
             </div>
-            <p style={{ color: '#fff', fontSize: '16px', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            <p style={{ color: 'var(--t-text)', fontSize: '16px', marginBottom: '1.5rem', lineHeight: 1.6 }}>
               {room.key_task}
             </p>
             {!isCompleted ? (
@@ -292,21 +292,21 @@ export default function QuestRoomPage() {
                   onChange={e => setAnswer(e.target.value)}
                   placeholder="Твой ответ..."
                   style={{
-                    background: '#0f1117', border: '0.5px solid #2a2d3d',
+                    background: 'var(--t-bg)', border: '0.5px solid var(--t-border)',
                     borderRadius: '8px', padding: '12px 14px',
-                    color: '#fff', fontSize: '14px', outline: 'none'
+                    color: 'var(--t-text)', fontSize: '14px', outline: 'none'
                   }}
                 />
-                {error && <p style={{ color: '#ef4444', fontSize: '13px', margin: 0 }}>{error}</p>}
-                {success && <p style={{ color: '#10b981', fontSize: '13px', margin: 0 }}>{success}</p>}
+                {error && <p style={{ color: 'var(--t-danger)', fontSize: '13px', margin: 0 }}>{error}</p>}
+                {success && <p style={{ color: 'var(--t-success2)', fontSize: '13px', margin: 0 }}>{success}</p>}
                 <button type="submit" style={{
-                  background: '#4f8ef7', color: '#fff', border: 'none',
+                  background: 'var(--t-accent)', color: '#fff', border: 'none',
                   borderRadius: '8px', padding: '12px', fontSize: '15px',
                   fontWeight: 600, cursor: 'pointer'
                 }}>Проверить</button>
               </form>
             ) : (
-              <p style={{ color: '#10b981', fontSize: '14px', textAlign: 'center' }}>✅ Задание выполнено!</p>
+              <p style={{ color: 'var(--t-success2)', fontSize: '14px', textAlign: 'center' }}>✅ Задание выполнено!</p>
             )}
           </div>
         </div>
@@ -319,11 +319,11 @@ export default function QuestRoomPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
         }}>
           <div style={{
-            background: '#1a1d27', border: '0.5px solid #f59e0b',
+            background: 'var(--t-card)', border: '0.5px solid var(--t-warning2)',
             borderRadius: '16px', padding: '2rem', maxWidth: '400px', width: '90%'
           }}>
-            <p style={{ color: '#f59e0b', fontSize: '13px', margin: '0 0 8px' }}>✨ Украсить ключ!</p>
-            <p style={{ color: '#fff', fontSize: '16px', margin: '0 0 1rem', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--t-warning2)', fontSize: '13px', margin: '0 0 8px' }}>✨ Украсить ключ!</p>
+            <p style={{ color: 'var(--t-text)', fontSize: '16px', margin: '0 0 1rem', lineHeight: 1.5 }}>
               {room.bonus_tasks[bonusIndex].task}
             </p>
             <form onSubmit={handleBonusAnswer} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -332,21 +332,21 @@ export default function QuestRoomPage() {
                 onChange={e => setBonusAnswer(e.target.value)}
                 placeholder="Твой ответ..."
                 style={{
-                  background: '#0f1117', border: '0.5px solid #2a2d3d',
+                  background: 'var(--t-bg)', border: '0.5px solid var(--t-border)',
                   borderRadius: '8px', padding: '10px 14px',
-                  color: '#fff', fontSize: '14px', outline: 'none'
+                  color: 'var(--t-text)', fontSize: '14px', outline: 'none'
                 }}
               />
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button type="submit" style={{
-                  flex: 1, background: '#f59e0b', color: '#000',
+                  flex: 1, background: 'var(--t-warning2)', color: '#000',
                   border: 'none', borderRadius: '8px', padding: '10px',
                   fontSize: '14px', fontWeight: 600, cursor: 'pointer'
                 }}>Проверить</button>
                 <button type="button" onClick={() => setBonusVisible(false)} style={{
-                  background: 'transparent', border: '0.5px solid #374151',
+                  background: 'transparent', border: '0.5px solid var(--t-text-faint)',
                   borderRadius: '8px', padding: '10px 16px',
-                  color: '#6b7280', fontSize: '14px', cursor: 'pointer'
+                  color: 'var(--t-text-muted)', fontSize: '14px', cursor: 'pointer'
                 }}>Выйти</button>
               </div>
             </form>

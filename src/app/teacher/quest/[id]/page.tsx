@@ -102,8 +102,8 @@ export default function QuestDashboardPage() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: '#6b7280' }}>Загружаем квест...</p>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: 'var(--t-text-muted)' }}>Загружаем квест...</p>
     </div>
   )
 
@@ -111,31 +111,31 @@ export default function QuestDashboardPage() {
   const excludedPlayers = players.filter(p => p.is_excluded)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
     <div style={{ width: '100%', maxWidth: '1200px', padding: '1.5rem' }}>
 
       {/* Шапка */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ color: '#fff', fontSize: '22px', margin: '0 0 4px' }}>
+          <h1 style={{ color: 'var(--t-text)', fontSize: '22px', margin: '0 0 4px' }}>
             🎮 {session?.title}
           </h1>
-          <p style={{ color: '#6b7280', fontSize: '13px', margin: 0 }}>
+          <p style={{ color: 'var(--t-text-muted)', fontSize: '13px', margin: 0 }}>
             {players.length} учеников · {rooms.length} комнат
           </p>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <div style={{
-            background: '#1a1d27', border: '0.5px solid #2a2d3d',
+            background: 'var(--t-card)', border: '0.5px solid var(--t-border)',
             borderRadius: '8px', padding: '8px 16px',
-            color: timerActive ? '#4f8ef7' : '#6b7280',
+            color: timerActive ? 'var(--t-accent)' : 'var(--t-text-muted)',
             fontSize: '20px', fontWeight: 700, fontVariantNumeric: 'tabular-nums'
           }}>
             ⏱ {formatTime(timer)}
           </div>
           {session?.status === 'waiting' && (
             <button onClick={startQuest} style={{
-              background: '#10b981', color: '#fff', border: 'none',
+              background: 'var(--t-success2)', color: '#fff', border: 'none',
               borderRadius: '8px', padding: '10px 20px',
               fontSize: '14px', fontWeight: 600, cursor: 'pointer'
             }}>
@@ -152,36 +152,36 @@ export default function QuestDashboardPage() {
             <tr>
               {/* Колонка комнат */}
               <th style={{
-                color: '#9ca3af', fontSize: '12px', textAlign: 'left',
-                padding: '8px 12px', borderBottom: '0.5px solid #2a2d3d',
+                color: 'var(--t-text-secondary)', fontSize: '12px', textAlign: 'left',
+                padding: '8px 12px', borderBottom: '0.5px solid var(--t-border)',
                 minWidth: '160px'
               }}>Комната</th>
 
               {/* Колонки игроков */}
               {players.map((player, idx) => (
                 <th key={player.id} style={{
-                  color: player.is_excluded ? '#374151' : '#fff',
+                  color: player.is_excluded ? 'var(--t-text-faint)' : 'var(--t-text)',
                   fontSize: '13px', textAlign: 'center',
-                  padding: '4px 8px', borderBottom: '0.5px solid #2a2d3d',
+                  padding: '4px 8px', borderBottom: '0.5px solid var(--t-border)',
                   minWidth: '90px'
                 }}>
                   {/* Код над именем */}
                   <div style={{
                     fontFamily: 'monospace', fontSize: '11px',
-                    color: '#4f8ef7', letterSpacing: '1px', marginBottom: '2px'
+                    color: 'var(--t-accent)', letterSpacing: '1px', marginBottom: '2px'
                   }}>
                     {codes[idx] || ''}
                   </div>
-                  <div style={{ color: player.is_excluded ? '#374151' : '#fff' }}>
+                  <div style={{ color: player.is_excluded ? 'var(--t-text-faint)' : 'var(--t-text)' }}>
                     {player.player_name || '...'}
                   </div>
                   {!player.is_excluded ? (
                     <button onClick={() => excludePlayer(player.id)} style={{
                       background: 'transparent', border: 'none',
-                      color: '#ef4444', fontSize: '10px', cursor: 'pointer', padding: '2px'
+                      color: 'var(--t-danger)', fontSize: '10px', cursor: 'pointer', padding: '2px'
                     }}>исключить</button>
                   ) : (
-                    <span style={{ color: '#ef4444', fontSize: '10px' }}>исключён</span>
+                    <span style={{ color: 'var(--t-danger)', fontSize: '10px' }}>исключён</span>
                   )}
                 </th>
               ))}
@@ -191,13 +191,13 @@ export default function QuestDashboardPage() {
             {rooms.map(room => (
               <tr key={room.id}>
                 <td style={{
-                  padding: '10px 12px', borderBottom: '0.5px solid #1a1d27',
-                  color: '#9ca3af', fontSize: '12px'
+                  padding: '10px 12px', borderBottom: '0.5px solid var(--t-card)',
+                  color: 'var(--t-text-secondary)', fontSize: '12px'
                 }}>
-                  <div style={{ fontWeight: 600, color: '#fff', fontSize: '13px' }}>
+                  <div style={{ fontWeight: 600, color: 'var(--t-text)', fontSize: '13px' }}>
                     {room.room_type === 'solo' ? '👤' : room.room_type === 'shared' ? '👥' : '🏆'} Комната {room.room_number}
                   </div>
-                  <div style={{ fontSize: '11px', marginTop: '2px', color: '#6b7280' }}>
+                  <div style={{ fontSize: '11px', marginTop: '2px', color: 'var(--t-text-muted)' }}>
                     {room.key_task?.substring(0, 35)}...
                   </div>
                 </td>
@@ -215,25 +215,25 @@ export default function QuestDashboardPage() {
                   return (
                     <td key={player.id} style={{
                       padding: '10px 8px',
-                      borderBottom: '0.5px solid #1a1d27',
+                      borderBottom: '0.5px solid var(--t-card)',
                       textAlign: 'center',
-                      background: isCurrentRoom ? 'rgba(79, 142, 247, 0.05)' : 'transparent',
+                      background: isCurrentRoom ? 'rgba(var(--t-accent-rgb), 0.05)' : 'transparent',
                       // Обводка группы
-                      borderLeft: (group && isGroupStart) ? '2px solid #4f8ef720' : undefined,
-                      borderRight: (group && isGroupEnd) ? '2px solid #4f8ef720' : undefined,
-                      borderTop: group ? '1px solid #4f8ef715' : undefined,
+                      borderLeft: (group && isGroupStart) ? '2px solid rgba(var(--t-accent-rgb),0.125)' : undefined,
+                      borderRight: (group && isGroupEnd) ? '2px solid rgba(var(--t-accent-rgb),0.125)' : undefined,
+                      borderTop: group ? '1px solid rgba(var(--t-accent-rgb),0.08)' : undefined,
                     }}>
                       {player.is_excluded ? (
-                        <span style={{ color: '#374151', fontSize: '16px' }}>—</span>
+                        <span style={{ color: 'var(--t-text-faint)', fontSize: '16px' }}>—</span>
                       ) : isDone ? (
                         <span style={{ fontSize: '18px' }}>✅</span>
                       ) : isCurrentRoom ? (
                         <div>
                           <span style={{ fontSize: '16px' }}>🗝️</span>
-                          <div style={{ color: '#4f8ef7', fontSize: '11px' }}>{pieces}/1</div>
+                          <div style={{ color: 'var(--t-accent)', fontSize: '11px' }}>{pieces}/1</div>
                         </div>
                       ) : (
-                        <span style={{ color: '#374151', fontSize: '16px' }}>○</span>
+                        <span style={{ color: 'var(--t-text-faint)', fontSize: '16px' }}>○</span>
                       )}
                     </td>
                   )

@@ -108,8 +108,8 @@ export function subjectColor(subject?: string): string {
 }
 
 const pickerButtonStyle: CSSProperties = {
-  width: '100%', background: '#0f1117', border: '1px solid #2a2d3d',
-  borderRadius: '8px', padding: '10px 14px', color: '#fff', fontSize: '14px',
+  width: '100%', background: 'var(--t-bg)', border: '1px solid var(--t-border)',
+  borderRadius: '8px', padding: '10px 14px', color: 'var(--t-text)', fontSize: '14px',
   outline: 'none', boxSizing: 'border-box', cursor: 'pointer',
   display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left',
 }
@@ -132,20 +132,20 @@ export function SubjectPicker({ value, onChange }: { value: string; onChange: (v
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <button type="button" onClick={() => setOpen(o => !o)} style={pickerButtonStyle}>
-        {value ? <SubjectIcon subject={value} /> : <span style={{ color: '#6b7280' }} />}
-        <span style={{ color: value ? '#fff' : '#6b7280' }}>{value || 'Выбери предмет'}</span>
+        {value ? <SubjectIcon subject={value} /> : <span style={{ color: 'var(--t-text-muted)' }} />}
+        <span style={{ color: value ? 'var(--t-text)' : 'var(--t-text-muted)' }}>{value || 'Выбери предмет'}</span>
       </button>
       {open && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 20,
-          background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '8px',
+          background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '8px',
           padding: '4px', maxHeight: '280px', overflowY: 'auto',
         }}>
           {value && (
             <button
               type="button"
               onClick={() => { onChange(''); setOpen(false) }}
-              style={{ ...pickerButtonStyle, background: 'transparent', border: 'none', color: '#6b7280', padding: '8px 10px' }}
+              style={{ ...pickerButtonStyle, background: 'transparent', border: 'none', color: 'var(--t-text-muted)', padding: '8px 10px' }}
             >
               Без предмета
             </button>
@@ -155,7 +155,7 @@ export function SubjectPicker({ value, onChange }: { value: string; onChange: (v
               key={s.label}
               type="button"
               onClick={() => { onChange(s.label); setOpen(false) }}
-              style={{ ...pickerButtonStyle, background: value === s.label ? 'rgba(79,142,247,0.15)' : 'transparent', border: 'none', padding: '8px 10px' }}
+              style={{ ...pickerButtonStyle, background: value === s.label ? 'rgba(var(--t-accent-rgb),0.15)' : 'transparent', border: 'none', padding: '8px 10px' }}
             >
               <s.icon size={16} />
               {s.label}

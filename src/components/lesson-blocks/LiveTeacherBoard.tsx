@@ -25,19 +25,19 @@ export function LiveTeacherBoard({ onBoardChange }: { onBoardChange: (base64: st
   return (
     <div style={{
       position: 'relative', width: `${size.width}px`, height: `${size.height}px`, maxWidth: '100%',
-      borderRadius: '8px', border: '1px solid #2a2d3d', background: '#fff', overflow: 'hidden',
+      borderRadius: '8px', border: '1px solid var(--t-border)', background: '#fff', overflow: 'hidden',
       ...GEOGEBRA_ZOOM_RESET,
     }}>
       <div ref={wrapperRef} style={{ width: '100%', height: '100%' }}>
         <div id={containerId} />
       </div>
       {!ready && !loadError && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: '13px' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t-text-muted)', fontSize: '13px' }}>
           Загрузка доски...
         </div>
       )}
       {loadError && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '13px', padding: '0 20px', textAlign: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t-danger)', fontSize: '13px', padding: '0 20px', textAlign: 'center' }}>
           Не удалось загрузить GeoGebra.
         </div>
       )}

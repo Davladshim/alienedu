@@ -31,7 +31,7 @@ export function TheoryEditor({ content, onChange }: {
         style={inputStyle}
         placeholder="https://... (прямая ссылка на файл картинки, не на страницу сайта)"
       />
-      <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '-4px' }}>
+      <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '-4px' }}>
         Нужна прямая ссылка на файл (заканчивается на .jpg, .png, .svg и т.п.), а не ссылка на страницу вроде статьи Википедии — иначе картинка не загрузится.
       </div>
     </div>
@@ -55,7 +55,7 @@ export function TheoryPlayer({ content }: { content: TheoryContent }) {
         />
       )}
       {content.imageUrl && imageFailed && (
-        <div style={{ color: '#9ca3af', fontSize: '13px', marginTop: '12px', padding: '10px 14px', background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '8px' }}>
+        <div style={{ color: 'var(--t-text-secondary)', fontSize: '13px', marginTop: '12px', padding: '10px 14px', background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '8px' }}>
           Не удалось загрузить картинку. Проверьте, что ссылка ведёт напрямую на файл изображения.
         </div>
       )}

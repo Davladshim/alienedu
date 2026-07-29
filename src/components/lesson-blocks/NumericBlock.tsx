@@ -111,7 +111,7 @@ export function NumericPlayer({ content, onSubmit, disabled }: {
           placeholder="Число"
           inputMode="decimal"
         />
-        {content.unit && <span style={{ color: '#6b7280', fontSize: '14px' }}>{content.unit}</span>}
+        {content.unit && <span style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>{content.unit}</span>}
       </div>
       <button
         disabled={!isValid || disabled}

@@ -37,16 +37,16 @@ export function LessonPreview({ blocks, onExit }: {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <button onClick={onExit} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px' }}>
+          <button onClick={onExit} style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '14px' }}>
             ✕ Выйти из предпросмотра
           </button>
-          <div style={{ color: '#6b7280', fontSize: '13px' }}>{index + 1} / {blocks.length}</div>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>{index + 1} / {blocks.length}</div>
         </div>
 
-        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.75rem' }}>
+        <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.75rem' }}>
           {def.checkAnswer === null ? (
             <Player content={block.content} />
           ) : (
@@ -56,8 +56,8 @@ export function LessonPreview({ blocks, onExit }: {
           {answered && lastCorrect !== null && (
             <div style={{
               marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
-              background: lastCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
-              color: lastCorrect ? '#34d399' : '#f87171',
+              background: lastCorrect ? 'rgba(var(--t-success2-rgb),0.15)' : 'rgba(var(--t-danger-rgb),0.15)',
+              color: lastCorrect ? 'var(--t-success)' : 'var(--t-danger-soft)',
             }}>
               {lastCorrect
                 ? '✅ Правильно!'
@@ -68,7 +68,7 @@ export function LessonPreview({ blocks, onExit }: {
           )}
 
           {done && lastCorrect === false && block.content.explanation && (
-            <div style={{ marginTop: '10px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(251,191,36,0.1)', color: '#fbbf24' }}>
+            <div style={{ marginTop: '10px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(var(--t-warning-rgb),0.1)', color: 'var(--t-warning)' }}>
               Объяснение: {block.content.explanation}
             </div>
           )}

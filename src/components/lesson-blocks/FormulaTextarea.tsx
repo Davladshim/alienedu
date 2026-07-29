@@ -4,7 +4,7 @@ import { textareaStyle } from './styles'
 import { FormulaEditorModal } from './FormulaEditorModal'
 
 const formatBtnStyle: React.CSSProperties = {
-  background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+  background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
   borderRadius: '6px', width: '28px', height: '26px', fontSize: '13px', cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
@@ -23,7 +23,7 @@ export function FormulaTextarea({ value, onChange, rows = 2, placeholder }: {
   const ref = useRef<HTMLTextAreaElement>(null)
   const [centered, setCentered] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
-  const [color, setColor] = useState('#f472b6')
+  const [color, setColor] = useState('var(--t-pink)')
 
   function insert(latex: string) {
     const wrap = centered ? '$$' : '$'
@@ -74,7 +74,7 @@ export function FormulaTextarea({ value, onChange, rows = 2, placeholder }: {
           type="button"
           onClick={() => setEditorOpen(true)}
           style={{
-            background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+            background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)',
             borderRadius: '6px', padding: '5px 12px', fontSize: '12px', cursor: 'pointer',
           }}
         >
@@ -108,7 +108,7 @@ export function FormulaTextarea({ value, onChange, rows = 2, placeholder }: {
           />
         </div>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#6b7280', cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--t-text-muted)', cursor: 'pointer' }}>
           <input type="checkbox" checked={centered} onChange={e => setCentered(e.target.checked)} />
           формула по центру
         </label>
