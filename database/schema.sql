@@ -360,6 +360,27 @@ CREATE TABLE IF NOT EXISTS plan_codes (
     created_at TIMESTAMP DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_plan_codes_code ON plan_codes(code);
+
+-- Банк интерактивных моделей — HTML-виджеты (обычно с перетаскиваемыми
+-- элементами), которые админ добавляет централизованно, а репетиторы
+-- вставляют в свои уроки блоком типа interactive-model. frame_width/height —
+-- размер окна показа модели, offset_x/y/scale — как расположен и
+-- масштабирован html_code внутри этого окна (чтобы обрезать пустой фон)
+CREATE TABLE IF NOT EXISTS interactive_models (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    topic VARCHAR(200) NOT NULL DEFAULT '',
+    html_code TEXT NOT NULL,
+    frame_width INTEGER NOT NULL DEFAULT 500,
+    frame_height INTEGER NOT NULL DEFAULT 400,
+    offset_x INTEGER NOT NULL DEFAULT 0,
+    offset_y INTEGER NOT NULL DEFAULT 0,
+    scale NUMERIC(4,2) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_interactive_models_subject ON interactive_models(subject);
+
 -- ============================================================================
 -- ЗАМЕТКИ НА БУДУЩЕЕ (не таблицы, просто план)
 -- ============================================================================

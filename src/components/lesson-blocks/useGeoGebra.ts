@@ -118,21 +118,15 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', options: UseGeoGeb
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    if (!ready) return
-    const wrapper = wrapperRef.current
-    if (!wrapper || typeof ResizeObserver === 'undefined') return
-    let lastWidth = wrapper.clientWidth
-    const observer = new ResizeObserver(() => {
-      const width = wrapper.clientWidth
-      if (Math.abs(width - lastWidth) > 8 && appRef.current) {
-        lastWidth = width
-        appRef.current.setSize(Math.max(320, width), height)
-      }
-    })
-    observer.observe(wrapper)
-    return () => observer.disconnect()
-  }, [ready, height])
+  // Апплет подгоняется под контейнер только явным вызовом setSize() ниже —
+  // раньше здесь был ResizeObserver, автоматически звавший setSize() при
+  // любом изменении ширины обёртки (в том числе от посторонних сдвигов
+  // разметки), из-за чего координаты клика на доске могли рассинхронизироваться
+  // с моделью GeoGebra. Теперь пересчёт размера — только по явному действию
+  // пользователя (ручной ресайз окна доски), см. setSize()
+  function setSize(width: number, height: number) {
+    appRef.current?.setSize(Math.max(280, width), Math.max(200, height))
+  }
 
   function exportSnapshot(): string | null {
     const app = appRef.current
@@ -185,5 +179,5 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', options: UseGeoGeb
     app.registerRemoveListener(fire)
   }
 
-  return { containerId, wrapperRef, ready, loadError, exportSnapshot, clear, getBase64, loadBase64, onChange }
+  return { containerId, wrapperRef, ready, loadError, exportSnapshot, clear, getBase64, loadBase64, onChange, setSize }
 }

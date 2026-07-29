@@ -1,6 +1,7 @@
 'use client'
 import { forwardRef, useImperativeHandle } from 'react'
 import { useGeoGebra } from './useGeoGebra'
+import { GEOGEBRA_ZOOM_RESET } from './styles'
 
 export interface GeometryBoardHandle {
   exportSnapshot: () => string | null
@@ -23,6 +24,7 @@ export const GeometryBoard = forwardRef<GeometryBoardHandle, { disabled?: boolea
           overflow: 'hidden',
           pointerEvents: disabled ? 'none' : 'auto',
           opacity: disabled ? 0.6 : 1,
+          ...GEOGEBRA_ZOOM_RESET,
         }}
       >
         <div ref={wrapperRef} style={{ width: '100%' }}>

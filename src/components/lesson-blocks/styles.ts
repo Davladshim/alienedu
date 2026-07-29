@@ -34,3 +34,28 @@ export const submitButtonStyle: CSSProperties = {
 export const submitButtonDisabledStyle: CSSProperties = {
   ...submitButtonStyle, background: '#2a2d3d', color: '#4b5563', cursor: 'not-allowed',
 }
+
+// Глобальный масштаб интерфейса (html { zoom: 1.25 } в globals.css) ломает
+// сопоставление координат клика в апплетах GeoGebra: canvas создаётся с
+// шириной, прочитанной из clientWidth (уже отмасштабированной зумом), а
+// затем рендерится ЕЩЁ РАЗ через тот же зум — размер клетки на экране и
+// внутренняя система координат апплета расходятся, и точка ставится не
+// там, где курсор. Проверено на собственном хуке ресайза доски: mouse-delta
+// в 100px превращалась в изменение размера на 125px — ровно на коэффициент
+// зума. Обнуляем зум для целого поддерева с доской (вложенный zoom
+// перемножается с родительским и гасит его — проверено эмпирически), чтобы
+// 1 CSS-пиксель внутри доски снова соответствовал 1 экранному пикселю
+export const GEOGEBRA_ZOOM_RESET: CSSProperties = { zoom: 1 / 1.25 }
+
+// Уголок для ручного ресайза окна доски — визуально диагональные штрихи,
+// как у нативного resize-грипа браузера
+export const resizeHandleStyle: CSSProperties = {
+  position: 'absolute', right: 0, bottom: 0, width: '18px', height: '18px',
+  cursor: 'nwse-resize', zIndex: 5,
+  background: `linear-gradient(135deg, transparent 0%, transparent 45%, #6b7280 45%, #6b7280 55%, transparent 55%, transparent 65%, #6b7280 65%, #6b7280 75%, transparent 75%)`,
+}
+
+// Шапка окна доски, за которую можно перетаскивать (drag handle)
+export const dragHandleStyle: CSSProperties = {
+  cursor: 'move', userSelect: 'none',
+}

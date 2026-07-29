@@ -1,7 +1,14 @@
 'use client'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 export default function TeacherPage() {
+  const [teacherName, setTeacherName] = useState('')
+
+  useEffect(() => {
+    fetch('/api/me').then(r => r.json()).then(data => setTeacherName(data.full_name || '')).catch(() => {})
+  }, [])
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -20,7 +27,7 @@ export default function TeacherPage() {
         {/* Шапка */}
         <div style={{ marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 4px' }}>
-            🪐 Кабинет преподавателя
+            🪐 Кабинет преподавателя{teacherName && ` ${teacherName}`}
           </h1>
           <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
             AlienEdu — платформа для интерактивных уроков

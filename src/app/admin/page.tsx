@@ -154,7 +154,7 @@ export default function AdminPage() {
   if (!isLoggedIn) {
     return (
       <div style={{
-        minHeight: '100vh', background: '#0f1117', display: 'flex', alignItems: 'center',
+        position: 'fixed', inset: 0, overflow: 'auto', background: '#0f1117', display: 'flex', alignItems: 'center',
         justifyContent: 'center', fontFamily: 'system-ui, sans-serif',
       }}>
         <div style={{ ...cardStyle, width: '100%', maxWidth: '380px' }}>
@@ -209,6 +209,12 @@ export default function AdminPage() {
             <div style={{ ...cardStyle, padding: '1rem 1.5rem', cursor: 'pointer', minWidth: '200px' }}>
               <div style={{ fontSize: '15px', fontWeight: 600 }}>🪐 Кабинет репетитора</div>
               <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>Основной кабинет</div>
+            </div>
+          </Link>
+          <Link href="/admin/models" target="_blank" style={{ textDecoration: 'none' }}>
+            <div style={{ ...cardStyle, padding: '1rem 1.5rem', cursor: 'pointer', minWidth: '200px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600 }}>🏦 Банк интерактивных моделей</div>
+              <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>Откроется в новой вкладке</div>
             </div>
           </Link>
         </div>

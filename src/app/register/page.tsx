@@ -72,7 +72,9 @@ export default function RegisterPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      position: 'fixed',
+      inset: 0,
+      overflow: 'auto',
       background: '#0f1117',
       display: 'flex',
       alignItems: 'center',

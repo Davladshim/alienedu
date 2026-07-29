@@ -1,35 +1,44 @@
 'use client'
-import { useEffect } from 'react'
+import { forwardRef, useEffect, useImperativeHandle } from 'react'
 import { useGeoGebra } from './useGeoGebra'
+
+export interface LiveStudentBoardViewerHandle {
+  setSize: (width: number, height: number) => void
+}
 
 // Доска ученика во время объяснения учителем — апплет GeoGebra без
 // тулбара и без возможности что-либо построить, только отображает то,
-// что прислал учитель (base64 всей конструкции)
-export function LiveStudentBoardViewer({ base64 }: { base64: string | null }) {
-  const { containerId, wrapperRef, ready, loadError, loadBase64 } = useGeoGebra('geometry', { height: 300, readOnly: true })
+// что прислал учитель (base64 всей конструкции). Размер задаёт родитель
+// (плавающее окно доски, которое ученик может сам растягивать) через ref
+export const LiveStudentBoardViewer = forwardRef<LiveStudentBoardViewerHandle, { base64: string | null; height?: number }>(
+  function LiveStudentBoardViewer({ base64, height = 300 }, ref) {
+    const { containerId, wrapperRef, ready, loadError, loadBase64, setSize } = useGeoGebra('geometry', { height, readOnly: true })
 
-  useEffect(() => {
-    if (ready && base64) loadBase64(base64)
-    // loadBase64 обращается к текущему апплету через ref — пересоздавать
-    // подписку не нужно, реагируем только на новые кадры от учителя
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, base64])
+    useImperativeHandle(ref, () => ({ setSize }))
 
-  return (
-    <div style={{ position: 'relative', minHeight: '300px', borderRadius: '8px', border: '1px solid #2a2d3d', background: '#fff', overflow: 'hidden', pointerEvents: 'none' }}>
-      <div ref={wrapperRef} style={{ width: '100%' }}>
-        <div id={containerId} />
+    useEffect(() => {
+      if (ready && base64) loadBase64(base64)
+      // loadBase64 обращается к текущему апплету через ref — пересоздавать
+      // подписку не нужно, реагируем только на новые кадры от учителя
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ready, base64])
+
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', border: '1px solid #2a2d3d', background: '#fff', overflow: 'hidden', pointerEvents: 'none' }}>
+        <div ref={wrapperRef} style={{ width: '100%', height: '100%' }}>
+          <div id={containerId} />
+        </div>
+        {!ready && !loadError && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: '13px' }}>
+            Загрузка доски...
+          </div>
+        )}
+        {loadError && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '13px', padding: '0 20px', textAlign: 'center' }}>
+            Не удалось загрузить GeoGebra.
+          </div>
+        )}
       </div>
-      {!ready && !loadError && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', fontSize: '13px' }}>
-          Загрузка доски...
-        </div>
-      )}
-      {loadError && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '13px', padding: '0 20px', textAlign: 'center' }}>
-          Не удалось загрузить GeoGebra.
-        </div>
-      )}
-    </div>
-  )
-}
+    )
+  }
+)

@@ -180,7 +180,7 @@ export default function StereoAdminPage() {
 
   if (!isLoggedIn) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0f1117" }}>
+      <div style={{ position: "fixed", inset: 0, overflow: "auto", display: "flex", alignItems: "center", justifyContent: "center", background: "#0f1117" }}>
         <div style={{ background: "#1e2029", border: "1px solid #2a2d3a", borderRadius: 16, padding: 48, width: 360, textAlign: "center" }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>💎</div>
           <div style={{ fontWeight: 700, fontSize: "1.2rem", marginBottom: 4, color: "#fff" }}>

@@ -1,11 +1,12 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { blockRegistry, Formula, type LessonBlockData } from '@/components/lesson-blocks'
-import { submitButtonStyle } from '@/components/lesson-blocks/styles'
+import { submitButtonStyle, resizeHandleStyle, dragHandleStyle, GEOGEBRA_ZOOM_RESET } from '@/components/lesson-blocks/styles'
 import { useLiveChannel } from '@/components/lesson-blocks/useLiveChannel'
-import { LiveStudentBoardViewer } from '@/components/lesson-blocks/LiveStudentBoardViewer'
+import { LiveStudentBoardViewer, type LiveStudentBoardViewerHandle } from '@/components/lesson-blocks/LiveStudentBoardViewer'
+import { useResizableBoard, useDraggableBoard } from '@/components/lesson-blocks/useResizableBoard'
 
 function promptFor(block: LessonBlockData): string {
   const c = block.content
@@ -57,6 +58,10 @@ export default function StudentLessonPage() {
   const [revealedSolutions, setRevealedSolutions] = useState<Record<string, boolean>>({})
   const [boardVisible, setBoardVisible] = useState(false)
   const [boardBase64, setBoardBase64] = useState<string | null>(null)
+  const boardViewerRef = useRef<LiveStudentBoardViewerHandle>(null)
+  const boardElementRef = useRef<HTMLDivElement>(null)
+  const boardResize = useResizableBoard({ width: 340, height: 260 }, ({ width, height }) => boardViewerRef.current?.setSize(width, height))
+  const boardDrag = useDraggableBoard(boardElementRef)
   const live = useLiveChannel(liveChannelId, {
     onBroadcast: {
       'show-solution': payload => setRevealedSolutions(s => ({ ...s, [String(payload.blockId)]: true })),
@@ -460,15 +465,29 @@ export default function StudentLessonPage() {
       </div>
 
       {boardVisible && (
-        <div style={{
-          position: 'fixed', bottom: '20px', right: '20px', width: '340px', zIndex: 200,
-          background: '#1a1d27', border: '1px solid #4f8ef7', borderRadius: '12px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '10px',
-        }}>
-          <div style={{ fontSize: '13px', color: '#4f8ef7', marginBottom: '8px', fontWeight: 600 }}>
+        <div
+          ref={boardElementRef}
+          style={{
+            position: 'fixed', zIndex: 200,
+            width: `${boardResize.size.width}px`,
+            ...(boardDrag.position
+              ? { left: `${boardDrag.position.left}px`, top: `${boardDrag.position.top}px` }
+              : { bottom: '20px', right: '20px' }),
+            background: '#1a1d27', border: '1px solid #4f8ef7', borderRadius: '12px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '10px',
+            ...GEOGEBRA_ZOOM_RESET,
+          }}
+        >
+          <div
+            onMouseDown={boardDrag.onHandleMouseDown}
+            style={{ fontSize: '13px', color: '#4f8ef7', marginBottom: '8px', fontWeight: 600, ...dragHandleStyle }}
+          >
             🧑‍🏫 Учитель объясняет на доске
           </div>
-          <LiveStudentBoardViewer base64={boardBase64} />
+          <div style={{ position: 'relative', width: '100%', height: `${boardResize.size.height}px` }}>
+            <LiveStudentBoardViewer ref={boardViewerRef} base64={boardBase64} height={boardResize.size.height} />
+            <div onMouseDown={boardResize.onHandleMouseDown} title="Изменить размер доски" style={resizeHandleStyle} />
+          </div>
         </div>
       )}
     </div>
