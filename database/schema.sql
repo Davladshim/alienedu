@@ -200,6 +200,10 @@ CREATE TABLE IF NOT EXISTS lesson_assignments (
     lesson_id INTEGER NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
     student_id INTEGER NOT NULL REFERENCES users(id),
     assigned_at TIMESTAMP DEFAULT NOW(),
+    -- Учитель нажал "Завершить" на странице "Назначенные уроки" — назначение
+    -- считается полностью проверенным и больше не показывается в активной
+    -- таблице. NULL — ещё активно
+    reviewed_at TIMESTAMP,
     UNIQUE (lesson_id, student_id)
 );
 

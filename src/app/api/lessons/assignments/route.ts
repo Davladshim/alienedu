@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
 
+// Список активных (ещё не завершённых учителем) назначений уроков —
+// одна строка на пару урок×ученик, для таблицы "Назначенные уроки"
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('token')?.value
@@ -11,7 +13,9 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const result = await query(
-      `SELECT la.student_id, u.full_name as student_name, la.lesson_id, l.title as lesson_title, l.mode as lesson_mode,
+      `SELECT la.id, la.lesson_id, l.title as lesson_title, l.mode as lesson_mode,
+              la.student_id, u.full_name as student_name, la.assigned_at,
+              started.started_at,
               CASE
                 WHEN tb.total_blocks = 0 OR ab.answered_blocks = 0 THEN 'not_started'
                 WHEN ab.answered_blocks < tb.total_blocks THEN 'in_progress'
@@ -25,25 +29,18 @@ export async function GET(request: NextRequest) {
          SELECT COUNT(DISTINCT block_id) as answered_blocks FROM lesson_attempts att
          WHERE att.lesson_id = la.lesson_id AND att.student_id = la.student_id
        ) ab
-       WHERE l.teacher_id = $1 AND l.status = 'published'
-       ORDER BY u.full_name, l.title`,
+       CROSS JOIN LATERAL (
+         SELECT MIN(completed_at) as started_at FROM lesson_attempts att
+         WHERE att.lesson_id = la.lesson_id AND att.student_id = la.student_id
+       ) started
+       WHERE l.teacher_id = $1 AND l.status = 'published' AND la.reviewed_at IS NULL
+       ORDER BY la.assigned_at DESC`,
       [decoded.id]
     )
 
-    const students = new Map<number, string>()
-    const lessons = new Map<number, { title: string; mode: string }>()
-    for (const row of result.rows) {
-      students.set(row.student_id, row.student_name)
-      lessons.set(row.lesson_id, { title: row.lesson_title, mode: row.lesson_mode })
-    }
-
-    return NextResponse.json({
-      students: Array.from(students, ([id, full_name]) => ({ id, full_name })),
-      lessons: Array.from(lessons, ([id, l]) => ({ id, title: l.title, mode: l.mode })),
-      cells: result.rows.map(r => ({ student_id: r.student_id, lesson_id: r.lesson_id, status: r.status })),
-    })
+    return NextResponse.json({ assignments: result.rows })
   } catch (error) {
-    console.error('Ошибка получения матрицы назначений:', error)
+    console.error('Ошибка получения назначенных уроков:', error)
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
   }
 }

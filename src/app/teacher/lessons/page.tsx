@@ -9,15 +9,22 @@ const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }>
   completed: { label: 'Пройден', color: 'var(--t-success)', bg: 'rgba(var(--t-success2-rgb),0.15)' },
 }
 
+function formatDateTimeRu(value: string | null): string {
+  if (!value) return '—'
+  const d = new Date(value)
+  const date = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+  const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  return `${date} ${time}`
+}
+
 export default function LessonsPage() {
   const router = useRouter()
   const [lessons, setLessons] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  const [matrixStudents, setMatrixStudents] = useState<any[]>([])
-  const [matrixLessons, setMatrixLessons] = useState<any[]>([])
-  const [matrixCells, setMatrixCells] = useState<any[]>([])
-  const [matrixLoading, setMatrixLoading] = useState(true)
+  const [assignments, setAssignments] = useState<any[]>([])
+  const [assignmentsLoading, setAssignmentsLoading] = useState(true)
+  const [finishingId, setFinishingId] = useState<number | null>(null)
   const [plan, setPlan] = useState<'free' | 'pro' | null>(null)
 
   useEffect(() => {
@@ -27,23 +34,25 @@ export default function LessonsPage() {
         setLessons(data.lessons || [])
         setLoading(false)
       })
-    fetch('/api/lessons/assignment-matrix')
+    fetch('/api/lessons/assignments')
       .then(r => r.json())
       .then(data => {
-        setMatrixStudents(data.students || [])
-        setMatrixLessons(data.lessons || [])
-        setMatrixCells(data.cells || [])
-        setMatrixLoading(false)
+        setAssignments(data.assignments || [])
+        setAssignmentsLoading(false)
       })
+      .catch(() => setAssignmentsLoading(false))
     fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free'))
   }, [])
 
   const ownLessonsCount = lessons.filter(l => !l.locked).length
   const libraryLessonsCount = lessons.filter(l => l.locked).length
 
-  function cellStatus(studentId: number, lessonId: number): string | null {
-    const cell = matrixCells.find(c => c.student_id === studentId && c.lesson_id === lessonId)
-    return cell ? cell.status : null
+  async function finishAssignment(a: any) {
+    if (!confirm(`Завершить урок «${a.lesson_title}» для ${a.student_name}?\n\nОн уйдёт из этой таблицы и будет считаться полностью пройденным и проверенным. Отменить это действие будет нельзя.`)) return
+    setFinishingId(a.id)
+    const res = await fetch(`/api/lessons/assignments/${a.id}/finish`, { method: 'POST' })
+    setFinishingId(null)
+    if (res.ok) setAssignments(list => list.filter(x => x.id !== a.id))
   }
 
   return (
@@ -60,64 +69,90 @@ export default function LessonsPage() {
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📚 Мои уроки</h1>
         </div>
 
-        {!matrixLoading && matrixStudents.length > 0 && matrixLessons.length > 0 && (
+        {!assignmentsLoading && assignments.length > 0 && (
           <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-            <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>Кто что прошёл</div>
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>Назначенные уроки</div>
+            <div style={{ overflowX: 'auto', maxHeight: '476px', overflowY: 'auto' }}>
               <table style={{ borderCollapse: 'collapse', fontSize: '13px', minWidth: '100%' }}>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left', padding: '6px 10px', color: 'var(--t-text-secondary)', position: 'sticky', left: 0, background: 'var(--t-card)' }}>Ученик</th>
-                    {matrixLessons.map(l => (
-                      <th key={l.id} title={l.title} style={{ padding: '6px 10px', color: 'var(--t-text-secondary)', fontWeight: 600, maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {l.title}
+                    {['Ученик', 'Название урока', 'Дата назначения', 'Дата начала', 'Статус', 'Реальное время', 'Результаты', ''].map(h => (
+                      <th key={h} style={{
+                        textAlign: 'left', padding: '6px 10px', color: 'var(--t-text-secondary)', fontWeight: 600,
+                        position: 'sticky', top: 0, background: 'var(--t-card)', whiteSpace: 'nowrap',
+                      }}>
+                        {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {matrixStudents.map(s => (
-                    <tr key={s.id}>
-                      <td style={{ padding: '6px 10px', whiteSpace: 'nowrap', position: 'sticky', left: 0, background: 'var(--t-card)' }}>{s.full_name}</td>
-                      {matrixLessons.map(l => {
-                        const status = cellStatus(s.id, l.id)
-                        const st = status ? STATUS_LABEL[status] : null
-                        const canWatch = status && status !== 'completed' && l.mode === 'quiz'
-                        return (
-                          <td key={l.id} style={{ padding: '6px 10px', textAlign: 'center' }}>
-                            {!st && <span style={{ color: 'var(--t-text-faint)' }}>—</span>}
-                            {st && !canWatch && (
-                              <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: st.color }} title={st.label} />
-                            )}
-                            {st && canWatch && (
-                              <Link
-                                href={`/teacher/lessons/${l.id}/watch/${s.id}`}
-                                title={`${st.label} · смотреть, как решает`}
-                                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', textDecoration: 'none' }}
-                              >
-                                <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: st.color, boxShadow: '0 0 0 2px rgba(var(--t-accent-rgb),0.4)' }} />
-                              </Link>
-                            )}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
+                  {assignments.map(a => {
+                    const st = STATUS_LABEL[a.status] || STATUS_LABEL.not_started
+                    const canWatchLive = a.lesson_mode === 'quiz' && a.status !== 'completed'
+                    const canViewResults = a.status === 'completed'
+                    return (
+                      <tr key={a.id} style={{ borderTop: '1px solid var(--t-border)' }}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>{a.student_name}</td>
+                        <td style={{ padding: '8px 10px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={a.lesson_title}>
+                          {a.lesson_title}
+                        </td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap', color: 'var(--t-text-secondary)' }}>{formatDateTimeRu(a.assigned_at)}</td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap', color: 'var(--t-text-secondary)' }}>{formatDateTimeRu(a.started_at)}</td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', color: st.color, background: st.bg }}>{st.label}</span>
+                        </td>
+                        <td style={{ padding: '8px 10px' }}>
+                          {canWatchLive ? (
+                            <Link href={`/teacher/lessons/${a.lesson_id}/watch/${a.student_id}`} style={{
+                              color: 'var(--t-accent)', border: '1px solid var(--t-accent)', borderRadius: '6px',
+                              padding: '4px 10px', fontSize: '12px', textDecoration: 'none', whiteSpace: 'nowrap',
+                            }}>
+                              Просмотр
+                            </Link>
+                          ) : (
+                            <span
+                              title={a.lesson_mode !== 'quiz' ? 'Недоступно для контрольных уроков' : 'Урок уже завершён'}
+                              style={{ color: 'var(--t-text-faint)', border: '1px solid var(--t-border)', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                            >
+                              Просмотр
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ padding: '8px 10px' }}>
+                          {canViewResults ? (
+                            <Link href={`/teacher/lessons/${a.lesson_id}/results/${a.student_id}`} style={{
+                              color: 'var(--t-accent)', border: '1px solid var(--t-accent)', borderRadius: '6px',
+                              padding: '4px 10px', fontSize: '12px', textDecoration: 'none', whiteSpace: 'nowrap',
+                            }}>
+                              Просмотр
+                            </Link>
+                          ) : (
+                            <span
+                              title="Доступно после завершения урока учеником"
+                              style={{ color: 'var(--t-text-faint)', border: '1px solid var(--t-border)', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                            >
+                              Просмотр
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ padding: '8px 10px' }}>
+                          <button
+                            onClick={() => finishAssignment(a)}
+                            disabled={finishingId === a.id}
+                            style={{
+                              background: 'rgba(var(--t-danger-rgb),0.12)', border: '1px solid var(--t-danger)', color: 'var(--t-danger-soft)',
+                              borderRadius: '6px', padding: '4px 10px', fontSize: '12px', cursor: finishingId === a.id ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {finishingId === a.id ? '...' : 'Завершить'}
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
-            </div>
-            <div style={{ display: 'flex', gap: '16px', marginTop: '12px', fontSize: '12px', color: 'var(--t-text-secondary)', flexWrap: 'wrap' }}>
-              {Object.values(STATUS_LABEL).map(st => (
-                <span key={st.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: st.color, display: 'inline-block' }} />
-                  {st.label}
-                </span>
-              ))}
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>— не назначен</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--t-text-faint)', boxShadow: '0 0 0 2px rgba(var(--t-accent-rgb),0.4)', display: 'inline-block' }} />
-                кружок с ободком — нажми, чтобы посмотреть процесс вживую
-              </span>
             </div>
           </div>
         )}

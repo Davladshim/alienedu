@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { blockRegistry, type LessonBlockData } from '@/components/lesson-blocks'
+import { blockRegistry, Formula, type LessonBlockData } from '@/components/lesson-blocks'
 import { submitButtonStyle } from '@/components/lesson-blocks/styles'
 
 export function LessonPreview({ blocks, onExit }: {
@@ -69,7 +69,7 @@ export function LessonPreview({ blocks, onExit }: {
 
           {done && lastCorrect === false && block.content.explanation && (
             <div style={{ marginTop: '10px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(var(--t-warning-rgb),0.1)', color: 'var(--t-warning)' }}>
-              Объяснение: {block.content.explanation}
+              Объяснение: <Formula text={block.content.explanation} />
             </div>
           )}
 

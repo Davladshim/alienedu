@@ -3,6 +3,7 @@ import { useState, useEffect, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { blockRegistry, blockTypes, type BlockType, type LessonBlockData } from '@/components/lesson-blocks'
 import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle } from '@/components/lesson-blocks/styles'
+import { FormulaTextarea } from '@/components/lesson-blocks/FormulaTextarea'
 import { LessonPreview } from './LessonPreview'
 import { LessonAssignment } from './LessonAssignment'
 
@@ -553,11 +554,10 @@ function BlockRetrySettings({ content, onChange, mode }: { content: any; onChang
         </>
       )}
       <label style={labelStyle}>Объяснение (необязательно, покажется ученику после попыток)</label>
-      <textarea
+      <FormulaTextarea
         value={content.explanation || ''}
-        onChange={e => onChange({ ...content, explanation: e.target.value })}
+        onChange={explanation => onChange({ ...content, explanation })}
         rows={2}
-        style={textareaStyle}
         placeholder="Почему ответ именно такой..."
       />
     </div>
