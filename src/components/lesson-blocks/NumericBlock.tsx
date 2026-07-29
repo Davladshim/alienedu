@@ -50,7 +50,7 @@ export function NumericEditor({ content, onChange }: {
       <FormulaTextarea
         value={content.question}
         onChange={question => onChange({ ...content, question })}
-        rows={2}
+        rows={3}
         placeholder="Например: Чему равно ускорение свободного падения на Земле, м/с²?"
       />
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>

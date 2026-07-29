@@ -1,6 +1,7 @@
 'use client'
 import { useState, useMemo } from 'react'
 import { Formula } from './Formula'
+import { FormulaTextarea } from './FormulaTextarea'
 import { labelStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface MatchingPair {
@@ -9,11 +10,12 @@ export interface MatchingPair {
 }
 
 export interface MatchingContent {
+  question: string
   pairs: MatchingPair[]
 }
 
 export const matchingDefault: MatchingContent = {
-  pairs: [{ term: '', definition: '' }, { term: '', definition: '' }],
+  question: '', pairs: [{ term: '', definition: '' }, { term: '', definition: '' }],
 }
 
 // answer — массив выбранных индексов исходного определения, по одному на каждый термин (в порядке content.pairs)
@@ -44,6 +46,13 @@ export function MatchingEditor({ content, onChange }: {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <label style={labelStyle}>Условие задания (необязательно)</label>
+      <FormulaTextarea
+        value={content.question || ''}
+        onChange={question => onChange({ ...content, question })}
+        rows={2}
+        placeholder="Например: Сопоставь термины с определениями"
+      />
       <label style={labelStyle}>Пары «термин — определение» (можно использовать формулы через $...$)</label>
       {content.pairs.map((pair, i) => (
         <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -95,6 +104,11 @@ export function MatchingPlayer({ content, onSubmit, disabled }: {
 
   return (
     <div>
+      {content.question && (
+        <div style={{ marginBottom: '14px', lineHeight: 1.6, fontSize: '15px' }}>
+          <Formula text={content.question} />
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {content.pairs.map((pair, termIndex) => (
           <div key={termIndex} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>

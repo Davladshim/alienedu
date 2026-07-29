@@ -46,7 +46,7 @@ export function ShortTextEditor({ content, onChange }: {
       <FormulaTextarea
         value={content.question}
         onChange={question => onChange({ ...content, question })}
-        rows={2}
+        rows={3}
         placeholder="Например: Как называется раздел физики, изучающий движение?"
       />
       <label style={labelStyle}>Правильные варианты ответа (регистр и пробелы не важны)</label>

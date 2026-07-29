@@ -54,7 +54,7 @@ export function MultiChoiceEditor({ content, onChange }: {
       <FormulaTextarea
         value={content.question}
         onChange={question => onChange({ ...content, question })}
-        rows={2}
+        rows={3}
         placeholder="Например: Какие из чисел — простые?"
       />
       <label style={labelStyle}>Варианты ответа (отметь все правильные)</label>

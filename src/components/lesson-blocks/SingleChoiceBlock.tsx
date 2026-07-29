@@ -46,7 +46,7 @@ export function SingleChoiceEditor({ content, onChange }: {
       <FormulaTextarea
         value={content.question}
         onChange={question => onChange({ ...content, question })}
-        rows={2}
+        rows={3}
         placeholder="Например: Чему равен $2+2$?"
       />
       <label style={labelStyle}>Варианты ответа (отметь правильный кружком)</label>
