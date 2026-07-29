@@ -384,7 +384,7 @@ export default function StudentLessonPage() {
                   : state.isCorrect
                     ? '✅ Правильно!'
                     : awaitingRetry
-                      ? `❌ Неверно — попытка ${state.attempts} из ${maxAttempts}`
+                      ? `❌ Неверно — осталось попыток: ${maxAttempts - state.attempts} (из ${maxAttempts})`
                       : '❌ Неверно'}
               </span>
               {awaitingRetry && (

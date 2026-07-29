@@ -12,6 +12,16 @@ interface PlanCode {
   created_at: string
 }
 
+interface ModerationLesson {
+  id: number
+  title: string
+  subject: string | null
+  grade: number | null
+  mode: 'quiz' | 'exam'
+  author_name: string
+  block_count: number
+}
+
 const DURATION_LABELS: Record<string, string> = { '30': '1 месяц (30 дней)', '365': '1 год (365 дней)' }
 const PLAN_LABELS: Record<string, string> = { pro: 'Pro' }
 
@@ -42,15 +52,39 @@ export default function AdminPage() {
 
   const [codes, setCodes] = useState<PlanCode[]>([])
 
+  const [moderationLessons, setModerationLessons] = useState<ModerationLesson[]>([])
+  const [moderationLoading, setModerationLoading] = useState(false)
+  const [deletingLessonId, setDeletingLessonId] = useState<number | null>(null)
+
   useEffect(() => {
     fetch('/api/admin/check')
-      .then(r => { if (r.ok) { setIsLoggedIn(true); loadCodes() } })
+      .then(r => { if (r.ok) { setIsLoggedIn(true); loadCodes(); loadModerationLessons() } })
       .catch(() => {})
       .finally(() => setChecked(true))
   }, [])
 
   function loadCodes() {
     fetch('/api/admin/plan-codes').then(r => r.json()).then(data => setCodes(data.codes || []))
+  }
+
+  function loadModerationLessons() {
+    setModerationLoading(true)
+    fetch('/api/admin/lessons')
+      .then(r => r.json())
+      .then(data => setModerationLessons(data.lessons || []))
+      .finally(() => setModerationLoading(false))
+  }
+
+  async function deleteLesson(id: number, title: string) {
+    if (!confirm(`Полностью удалить урок «${title}»? Это затронет всех репетиторов, которые его себе добавили, и нельзя отменить.`)) return
+    setDeletingLessonId(id)
+    const res = await fetch(`/api/admin/lessons/${id}`, { method: 'DELETE' })
+    setDeletingLessonId(null)
+    if (res.ok) {
+      setModerationLessons(ls => ls.filter(l => l.id !== id))
+    } else {
+      alert('Не удалось удалить урок')
+    }
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -64,6 +98,7 @@ export default function AdminPage() {
     if (res.ok) {
       setIsLoggedIn(true)
       loadCodes()
+      loadModerationLessons()
     } else {
       setLoginError('Неверный пароль')
     }
@@ -250,6 +285,46 @@ export default function AdminPage() {
                 <span style={{ color: c.status === 'active' ? (c.first_used_at ? '#34d399' : '#60a5fa') : '#6b7280' }}>
                   {c.status !== 'active' ? 'отозван' : c.first_used_at ? 'активирован' : 'не использован'}
                 </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={cardStyle}>
+          <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '4px' }}>Модерация библиотеки</div>
+          <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '14px' }}>
+            Все уроки, опубликованные в общую библиотеку. Удаление — полное, для случаев жалоб на содержимое.
+          </div>
+
+          {moderationLoading && <p style={{ color: '#6b7280', fontSize: '13px' }}>Загрузка...</p>}
+          {!moderationLoading && moderationLessons.length === 0 && (
+            <div style={{ color: '#4b5563', fontSize: '13px' }}>В библиотеке пока пусто</div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '400px', overflowY: 'auto' }}>
+            {moderationLessons.map(l => (
+              <div key={l.id} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px',
+                fontSize: '13px', padding: '8px 0', borderBottom: '1px solid #2a2d3d',
+              }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600 }}>{l.title}</div>
+                  <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>
+                    {[l.subject, l.grade ? `${l.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
+                    {' · '}{l.block_count} {l.block_count === 1 ? 'блок' : 'блоков'}
+                    {' · '}автор: {l.author_name}
+                  </div>
+                </div>
+                <button
+                  onClick={() => deleteLesson(l.id, l.title)}
+                  disabled={deletingLessonId === l.id}
+                  style={{
+                    flexShrink: 0, background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', color: '#ef4444',
+                    borderRadius: '8px', padding: '6px 14px', fontSize: '12px',
+                    cursor: deletingLessonId === l.id ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {deletingLessonId === l.id ? 'Удаляем...' : '🗑 Удалить'}
+                </button>
               </div>
             ))}
           </div>

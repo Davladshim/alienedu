@@ -11,6 +11,7 @@ interface LibraryLesson {
   mode: 'quiz' | 'exam'
   author_name: string
   block_count: number
+  is_own: boolean
 }
 
 export default function LessonLibraryPage() {
@@ -20,6 +21,7 @@ export default function LessonLibraryPage() {
   const [q, setQ] = useState('')
   const [addingId, setAddingId] = useState<number | null>(null)
   const [addError, setAddError] = useState('')
+  const [removingId, setRemovingId] = useState<number | null>(null)
 
   const load = useCallback((query: string) => {
     setLoading(true)
@@ -52,6 +54,20 @@ export default function LessonLibraryPage() {
     }
   }
 
+  async function removeFromLibrary(id: number) {
+    if (!confirm('Убрать урок из библиотеки? Сам урок в твоём списке останется, просто перестанет быть виден другим репетиторам.')) return
+    setAddError('')
+    setRemovingId(id)
+    const res = await fetch(`/api/lessons/library/${id}`, { method: 'DELETE' })
+    setRemovingId(null)
+    if (res.ok) {
+      setLessons(ls => ls.filter(l => l.id !== id))
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setAddError(data.error || 'Не удалось убрать урок из библиотеки')
+    }
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#0f1117', fontFamily: 'system-ui, sans-serif', color: '#fff', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
@@ -64,8 +80,9 @@ export default function LessonLibraryPage() {
         </div>
 
         <div style={{ color: '#6b7280', fontSize: '13px', marginBottom: '1.25rem' }}>
-          Готовые уроки, которыми поделились другие репетиторы. Можно добавить себе и назначить ученикам —
-          менять содержимое нельзя, это может только автор.
+          Готовые уроки, которыми поделились репетиторы, включая твои собственные. Чужие можно добавить себе и
+          назначить ученикам — менять содержимое нельзя, это может только автор. Свои можно редактировать
+          и убирать из библиотеки.
         </div>
 
         <input
@@ -98,23 +115,65 @@ export default function LessonLibraryPage() {
               padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px',
             }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 600, fontSize: '15px' }}>{lesson.title}</div>
+                <div style={{ fontWeight: 600, fontSize: '15px' }}>
+                  {lesson.title}
+                  {lesson.is_own && (
+                    <span style={{
+                      marginLeft: '8px', fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(79,142,247,0.15)', color: '#4f8ef7', whiteSpace: 'nowrap',
+                    }}>
+                      мой урок
+                    </span>
+                  )}
+                </div>
                 <div style={{ color: '#6b7280', fontSize: '13px', marginTop: '2px' }}>
                   {[lesson.subject, lesson.grade ? `${lesson.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
                   {' · '}{lesson.block_count} {lesson.block_count === 1 ? 'блок' : 'блоков'}
-                  {' · '}автор: {lesson.author_name}
+                  {!lesson.is_own && <> · автор: {lesson.author_name}</>}
                 </div>
               </div>
-              <button
-                onClick={() => addToMyLessons(lesson.id)}
-                disabled={addingId === lesson.id}
-                style={{
-                  flexShrink: 0, background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
-                  borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: addingId === lesson.id ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {addingId === lesson.id ? 'Добавляем...' : '➕ Добавить себе'}
-              </button>
+              {lesson.is_own ? (
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+                  <Link
+                    href={`/teacher/lessons/${lesson.id}`}
+                    style={{
+                      background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+                      borderRadius: '8px', padding: '8px 16px', fontSize: '13px', textDecoration: 'none',
+                    }}
+                  >
+                    ✏️ Редактировать
+                  </Link>
+                  <button
+                    onClick={() => removeFromLibrary(lesson.id)}
+                    disabled={removingId === lesson.id}
+                    title="Убрать из библиотеки"
+                    onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
+                    onMouseLeave={e => (e.currentTarget.style.color = '#9ca3af')}
+                    style={{
+                      background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+                      borderRadius: '8px', padding: '8px 10px', cursor: removingId === lesson.id ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', transition: 'color 0.15s',
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 7 H20 M9 7 V4 A1 1 0 0 1 10 3 H14 A1 1 0 0 1 15 4 V7 M6 7 L7 20 A2 2 0 0 0 9 22 H15 A2 2 0 0 0 17 20 L18 7" />
+                      <line x1="10" y1="11" x2="10" y2="17" />
+                      <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => addToMyLessons(lesson.id)}
+                  disabled={addingId === lesson.id}
+                  style={{
+                    flexShrink: 0, background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+                    borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: addingId === lesson.id ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {addingId === lesson.id ? 'Добавляем...' : '➕ Добавить себе'}
+                </button>
+              )}
             </div>
           ))}
         </div>

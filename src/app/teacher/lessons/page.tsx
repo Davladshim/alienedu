@@ -183,12 +183,20 @@ export default function LessonsPage() {
                       📖 Из библиотеки{lesson.author_name ? ` · ${lesson.author_name}` : ''}
                     </span>
                   )}
-                  {!lesson.locked && lesson.is_public && (
+                  {!lesson.locked && lesson.is_public && lesson.status === 'published' && (
                     <span style={{
                       fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
                       background: 'rgba(52,211,153,0.15)', color: '#34d399', whiteSpace: 'nowrap',
                     }}>
                       🌐 В библиотеке
+                    </span>
+                  )}
+                  {!lesson.locked && lesson.is_public && lesson.status !== 'published' && (
+                    <span style={{
+                      fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(251,191,36,0.15)', color: '#fbbf24', whiteSpace: 'nowrap',
+                    }}>
+                      ⏳ Появится в библиотеке после публикации
                     </span>
                   )}
                 </div>
