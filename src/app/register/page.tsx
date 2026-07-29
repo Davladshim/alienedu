@@ -53,18 +53,18 @@ export default function RegisterPage() {
 
   const inputStyle = {
     width: '100%',
-    background: '#0f1117',
-    border: '0.5px solid #2a2d3d',
+    background: 'var(--t-bg)',
+    border: '0.5px solid var(--t-border)',
     borderRadius: '8px',
     padding: '10px 14px',
-    color: '#fff',
+    color: 'var(--t-text)',
     fontSize: '14px',
     outline: 'none',
     boxSizing: 'border-box' as const
   }
 
   const labelStyle = {
-    color: '#9ca3af',
+    color: 'var(--t-text-secondary)',
     fontSize: '13px',
     display: 'block',
     marginBottom: '6px'
@@ -75,14 +75,14 @@ export default function RegisterPage() {
       position: 'fixed',
       inset: 0,
       overflow: 'auto',
-      background: '#0f1117',
+      background: 'var(--t-bg)',
       display: 'flex',
       fontFamily: 'system-ui, sans-serif',
       padding: '2rem'
     }}>
       <div style={{
-        background: '#1a1d27',
-        border: '0.5px solid #2a2d3d',
+        background: 'var(--t-card)',
+        border: '0.5px solid var(--t-border)',
         borderRadius: '16px',
         padding: '2.5rem',
         width: '100%',
@@ -91,10 +91,10 @@ export default function RegisterPage() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontSize: '28px', marginBottom: '8px' }}>🪐</div>
-          <h1 style={{ color: '#fff', fontSize: '22px', fontWeight: 500, margin: 0 }}>
-            Alien<span style={{ color: '#4f8ef7' }}>Edu</span>
+          <h1 style={{ color: 'var(--t-text)', fontSize: '22px', fontWeight: 500, margin: 0 }}>
+            Alien<span style={{ color: 'var(--t-accent)' }}>Edu</span>
           </h1>
-          <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '6px' }}>
+          <p style={{ color: 'var(--t-text-muted)', fontSize: '14px', marginTop: '6px' }}>
             Создайте аккаунт
           </p>
         </div>
@@ -165,18 +165,18 @@ export default function RegisterPage() {
             <input name="secret_answer" value={formData.secret_answer}
               onChange={handleChange} placeholder="Ваш ответ"
               required style={inputStyle} />
-            <p style={{ color: '#6b7280', fontSize: '12px', marginTop: '6px' }}>
+            <p style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '6px' }}>
               Запомните ответ — он понадобится для восстановления пароля
             </p>
           </div>
 
           {error && (
             <div style={{
-              background: '#2d1515',
-              border: '0.5px solid #ef4444',
+              background: 'var(--t-danger-bg)',
+              border: '0.5px solid var(--t-danger)',
               borderRadius: '8px',
               padding: '10px 14px',
-              color: '#ef4444',
+              color: 'var(--t-danger)',
               fontSize: '13px',
               marginBottom: '1rem'
             }}>
@@ -186,7 +186,7 @@ export default function RegisterPage() {
 
           <button type="submit" disabled={loading} style={{
             width: '100%',
-            background: '#4f8ef7',
+            background: 'var(--t-accent)',
             color: '#fff',
             border: 'none',
             borderRadius: '8px',
@@ -201,7 +201,7 @@ export default function RegisterPage() {
         </form>
 
         <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <Link href="/login" style={{ color: '#4f8ef7', fontSize: '13px', textDecoration: 'none' }}>
+          <Link href="/login" style={{ color: 'var(--t-accent)', fontSize: '13px', textDecoration: 'none' }}>
             Уже есть аккаунт? Войти
           </Link>
         </div>

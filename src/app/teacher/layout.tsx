@@ -10,12 +10,12 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   return (
     <div>
       <div style={{
-        position: 'sticky', top: 0, zIndex: 100, background: '#0f1117', borderBottom: '1px solid #1a1d27',
+        position: 'sticky', top: 0, zIndex: 100, background: 'var(--t-bg)', borderBottom: '1px solid var(--t-card)',
         padding: '10px 20px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '18px',
       }}>
         <PlanWidget />
         <TimezoneWidget />
-        <Link href="/teacher/tariffs" style={{ color: '#6b7280', fontSize: '13px', textDecoration: 'none' }}>
+        <Link href="/teacher/tariffs" style={{ color: 'var(--t-text-muted)', fontSize: '13px', textDecoration: 'none' }}>
           Тарифы
         </Link>
         <LogoutButton />

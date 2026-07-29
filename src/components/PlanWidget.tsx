@@ -57,7 +57,7 @@ export function PlanWidget() {
   if (plan === null) return null
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#6b7280' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--t-text-muted)' }}>
       <span>
         Тариф: {plan === 'pro' ? 'Pro' : 'Free'}
         {plan === 'pro' && daysLeft !== null && ` (осталось ${daysLeft} ${daysWord(daysLeft)})`}
@@ -68,22 +68,22 @@ export function PlanWidget() {
         onKeyDown={e => e.key === 'Enter' && redeem()}
         placeholder="Код"
         style={{
-          width: '80px', background: '#161822', border: '1px solid #2a2d3d', borderRadius: '6px',
-          padding: '4px 8px', color: '#9ca3af', fontSize: '12px',
+          width: '80px', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '6px',
+          padding: '4px 8px', color: 'var(--t-text-secondary)', fontSize: '12px',
         }}
       />
       <button
         onClick={redeem}
         disabled={busy || !code.trim()}
         style={{
-          background: 'none', border: '1px solid #2a2d3d', borderRadius: '6px', padding: '4px 10px',
-          color: busy || !code.trim() ? '#4b5563' : '#9ca3af', fontSize: '12px',
+          background: 'none', border: '1px solid var(--t-border)', borderRadius: '6px', padding: '4px 10px',
+          color: busy || !code.trim() ? 'var(--t-text-faint)' : 'var(--t-text-secondary)', fontSize: '12px',
           cursor: busy || !code.trim() ? 'not-allowed' : 'pointer',
         }}
       >
         Ввести
       </button>
-      {msg && <span style={{ color: msg.ok ? '#34d399' : '#f87171' }}>{msg.text}</span>}
+      {msg && <span style={{ color: msg.ok ? 'var(--t-success)' : 'var(--t-danger-soft)' }}>{msg.text}</span>}
     </div>
   )
 }

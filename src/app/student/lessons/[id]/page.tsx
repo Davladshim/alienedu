@@ -161,7 +161,7 @@ export default function StudentLessonPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0f1117', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         Загрузка...
       </div>
     )
@@ -169,9 +169,9 @@ export default function StudentLessonPage() {
 
   if (notFound || blocks.length === 0) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0f1117', color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
         <div>Урок недоступен</div>
-        <Link href="/student/lessons" style={{ color: '#4f8ef7', fontSize: '14px' }}>← Мои уроки</Link>
+        <Link href="/student/lessons" style={{ color: 'var(--t-accent)', fontSize: '14px' }}>← Мои уроки</Link>
       </div>
     )
   }
@@ -223,9 +223,9 @@ export default function StudentLessonPage() {
     const percent = gradableCount > 0 ? Math.round((correctCount / gradableCount) * 100) : 0
 
     return (
-      <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
         <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
-          <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎉</div>
             <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '20px' }}>Урок пройден!</div>
 
@@ -236,19 +236,19 @@ export default function StudentLessonPage() {
               }}>
                 <div>
                   <div style={{ fontSize: '20px', fontWeight: 700 }}>{gradableCount}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>всего</div>
+                  <div style={{ color: 'var(--t-text-muted)', fontSize: '12px' }}>всего</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#34d399' }}>{correctCount}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>верно</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--t-success)' }}>{correctCount}</div>
+                  <div style={{ color: 'var(--t-text-muted)', fontSize: '12px' }}>верно</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#9ca3af' }}>{skippedCount}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>пропущено</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--t-text-secondary)' }}>{skippedCount}</div>
+                  <div style={{ color: 'var(--t-text-muted)', fontSize: '12px' }}>пропущено</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '20px', fontWeight: 700 }}>{percent}%</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>верных</div>
+                  <div style={{ color: 'var(--t-text-muted)', fontSize: '12px' }}>верных</div>
                 </div>
               </div>
             )}
@@ -259,14 +259,14 @@ export default function StudentLessonPage() {
 
           {gradableResults.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ color: '#6b7280', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase' }}>Разбор ответов</div>
+              <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase' }}>Разбор ответов</div>
               {gradableResults.map((r, i) => {
                 const def = blockRegistry[r.block.type]
                 const icon = r.state.skipped ? '⏭' : r.state.isCorrect ? '✅' : '❌'
                 const wrong = !r.state.isCorrect
                 return (
                   <div key={i} style={{
-                    background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '12px', padding: '14px 18px',
+                    background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px', padding: '14px 18px',
                   }}>
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
                       <span style={{ fontSize: '16px' }}>{icon}</span>
@@ -275,12 +275,12 @@ export default function StudentLessonPage() {
                           <Formula text={promptFor(r.block)} />
                         </div>
                         {wrong && def.describeAnswer && (
-                          <div style={{ color: '#9ca3af', fontSize: '13px', marginTop: '6px' }}>
+                          <div style={{ color: 'var(--t-text-secondary)', fontSize: '13px', marginTop: '6px' }}>
                             Правильный ответ: <Formula text={def.describeAnswer(r.block.content)} />
                           </div>
                         )}
                         {wrong && r.block.content.explanation && (
-                          <div style={{ color: '#fbbf24', fontSize: '13px', marginTop: '6px' }}>
+                          <div style={{ color: 'var(--t-warning)', fontSize: '13px', marginTop: '6px' }}>
                             Объяснение: <Formula text={r.block.content.explanation} />
                           </div>
                         )}
@@ -329,24 +329,24 @@ export default function StudentLessonPage() {
   }
 
   function dotStatus(b: LessonBlockData, i: number): { bg: string; color: string } {
-    if (i === index) return { bg: '#4f8ef7', color: '#fff' }
+    if (i === index) return { bg: 'var(--t-accent)', color: 'var(--t-text)' }
     const st = blockStates[b.id]
-    if (!st?.done && !(st && st.attempts > 0)) return { bg: '#1a1d27', color: '#6b7280' }
-    if (mode === 'exam') return { bg: '#2a2d3d', color: '#9ca3af' } // не выдаём правильность заранее
-    if (blockRegistry[b.type].checkAnswer === null) return { bg: '#2a2d3d', color: '#9ca3af' }
-    if (st?.skipped) return { bg: 'rgba(107,114,128,0.3)', color: '#9ca3af' }
-    if (st?.isCorrect) return { bg: 'rgba(16,185,129,0.25)', color: '#34d399' }
-    return { bg: 'rgba(244,114,182,0.25)', color: '#f472b6' }
+    if (!st?.done && !(st && st.attempts > 0)) return { bg: 'var(--t-card)', color: 'var(--t-text-muted)' }
+    if (mode === 'exam') return { bg: 'var(--t-border)', color: 'var(--t-text-secondary)' } // не выдаём правильность заранее
+    if (blockRegistry[b.type].checkAnswer === null) return { bg: 'var(--t-border)', color: 'var(--t-text-secondary)' }
+    if (st?.skipped) return { bg: 'rgba(107,114,128,0.3)', color: 'var(--t-text-secondary)' }
+    if (st?.isCorrect) return { bg: 'rgba(16,185,129,0.25)', color: 'var(--t-success)' }
+    return { bg: 'rgba(244,114,182,0.25)', color: 'var(--t-pink)' }
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <Link href="/student/lessons" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>
+          <Link href="/student/lessons" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>
             ← Мои уроки
           </Link>
-          <div style={{ color: '#6b7280', fontSize: '13px' }}>{index + 1} / {blocks.length}{mode === 'exam' && ' · Контрольная'}</div>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>{index + 1} / {blocks.length}{mode === 'exam' && ' · Контрольная'}</div>
         </div>
 
         <h1 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '1rem' }}>{lessonTitle}</h1>
@@ -369,7 +369,7 @@ export default function StudentLessonPage() {
           })}
         </div>
 
-        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.75rem' }}>
+        <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.75rem' }}>
           {!interactive ? (
             <Player content={block.content} />
           ) : (
@@ -381,7 +381,7 @@ export default function StudentLessonPage() {
               marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap',
               background: state.skipped ? 'rgba(107,114,128,0.15)' : state.isCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(244,114,182,0.15)',
-              color: state.skipped ? '#9ca3af' : state.isCorrect ? '#34d399' : '#f472b6',
+              color: state.skipped ? 'var(--t-text-secondary)' : state.isCorrect ? 'var(--t-success)' : 'var(--t-pink)',
             }}>
               <span>
                 {state.skipped
@@ -396,7 +396,7 @@ export default function StudentLessonPage() {
                 <button
                   onClick={retryBlock}
                   style={{
-                    background: 'rgba(244,114,182,0.2)', border: '1px solid #f472b6', color: '#f472b6',
+                    background: 'rgba(244,114,182,0.2)', border: '1px solid var(--t-pink)', color: 'var(--t-pink)',
                     borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer', flexShrink: 0,
                   }}
                 >
@@ -409,7 +409,7 @@ export default function StudentLessonPage() {
           {isGradable && mode === 'quiz' && state.done && state.isCorrect === false && !state.skipped && block.content.explanation && (
             <div style={{
               marginTop: '14px', padding: '12px 16px', borderRadius: '8px', fontSize: '14px',
-              background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa',
+              background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.4)', color: 'var(--t-info)',
             }}>
               💡 Решение:<br />
               <Formula text={block.content.explanation} />
@@ -417,7 +417,7 @@ export default function StudentLessonPage() {
           )}
 
           {isGradable && mode === 'exam' && state.attempts > 0 && (
-            <div style={{ marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(96,165,250,0.15)', color: '#60a5fa' }}>
+            <div style={{ marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(96,165,250,0.15)', color: 'var(--t-info)' }}>
               Ответ сохранён
             </div>
           )}
@@ -426,7 +426,7 @@ export default function StudentLessonPage() {
             <div style={{
               marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
               background: state.skipped ? 'rgba(107,114,128,0.15)' : 'rgba(96,165,250,0.15)',
-              color: state.skipped ? '#9ca3af' : '#60a5fa',
+              color: state.skipped ? 'var(--t-text-secondary)' : 'var(--t-info)',
             }}>
               {state.skipped ? '⏭ Пропущено' : '✅ Решение отправлено — учитель проверит вручную'}
             </div>
@@ -435,7 +435,7 @@ export default function StudentLessonPage() {
           {revealedSolutions[block.id] && block.content.explanation && (
             <div style={{
               marginTop: '14px', padding: '12px 16px', borderRadius: '8px', fontSize: '14px',
-              background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#fbbf24',
+              background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: 'var(--t-warning)',
             }}>
               💡 Учитель показал решение:<br />
               <Formula text={block.content.explanation} />
@@ -446,13 +446,13 @@ export default function StudentLessonPage() {
             {interactive && !state.done && (
               <button
                 onClick={skipBlock}
-                style={{ background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}
               >
                 Пропустить
               </button>
             )}
             <button onClick={() => goTo(index - 1)} disabled={index === 0} style={{
-              background: 'transparent', border: '1px solid #2a2d3d', color: index === 0 ? '#374151' : '#9ca3af',
+              background: 'transparent', border: '1px solid var(--t-border)', color: index === 0 ? 'var(--t-border)' : 'var(--t-text-secondary)',
               borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: index === 0 ? 'not-allowed' : 'pointer',
             }}>
               ← Назад
@@ -473,14 +473,14 @@ export default function StudentLessonPage() {
             ...(boardDrag.position
               ? { left: `${boardDrag.position.left}px`, top: `${boardDrag.position.top}px` }
               : { bottom: '20px', right: '20px' }),
-            background: '#1a1d27', border: '1px solid #4f8ef7', borderRadius: '12px',
+            background: 'var(--t-card)', border: '1px solid var(--t-accent)', borderRadius: '12px',
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '10px',
             ...GEOGEBRA_ZOOM_RESET,
           }}
         >
           <div
             onMouseDown={boardDrag.onHandleMouseDown}
-            style={{ fontSize: '13px', color: '#4f8ef7', marginBottom: '8px', fontWeight: 600, ...dragHandleStyle }}
+            style={{ fontSize: '13px', color: 'var(--t-accent)', marginBottom: '8px', fontWeight: 600, ...dragHandleStyle }}
           >
             🧑‍🏫 Учитель объясняет на доске
           </div>

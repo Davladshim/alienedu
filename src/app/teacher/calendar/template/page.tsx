@@ -9,14 +9,14 @@ const WEEKDAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 // Отдельная цветовая схема (фиолетовая), чтобы план недели визуально
 // не путался с настоящим расписанием (там синяя)
-const ACCENT = '#a78bfa'
+const ACCENT = 'var(--t-template-accent)'
 const accentButtonStyle = {
-  background: `rgba(167,139,250,0.15)`, border: `1px solid ${ACCENT}`,
+  background: `rgba(var(--t-template-accent-rgb),0.15)`, border: `1px solid ${ACCENT}`,
   color: ACCENT, borderRadius: '8px', padding: '6px 14px',
   fontSize: '13px', cursor: 'pointer',
 }
 const accentSubmitStyle = {
-  background: `linear-gradient(135deg, ${ACCENT}, #c026d3)`,
+  background: `linear-gradient(135deg, ${ACCENT}, var(--t-template-gradient-end))`,
   color: '#fff', border: 'none', borderRadius: '8px',
   padding: '10px 20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
 }
@@ -209,34 +209,34 @@ export default function TemplatePage() {
   const todayDow = (new Date().getDay() + 6) % 7 // 0=понедельник
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '95%', maxWidth: '1600px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-          <Link href="/teacher" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>← Кабинет</Link>
+          <Link href="/teacher" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>← Кабинет</Link>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>🔁 Шаблон недели</h1>
         </div>
 
         <div style={{ display: 'flex', gap: '6px', marginBottom: '1.5rem' }}>
           <Link href="/teacher/calendar" style={{
             padding: '6px 16px', borderRadius: '8px', fontSize: '13px', textDecoration: 'none',
-            background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+            background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
           }}>
             📅 Расписание
           </Link>
           <span style={{
             padding: '6px 16px', borderRadius: '8px', fontSize: '13px',
-            background: `rgba(167,139,250,0.15)`, border: `1px solid ${ACCENT}`, color: ACCENT, fontWeight: 600,
+            background: `rgba(var(--t-template-accent-rgb),0.15)`, border: `1px solid ${ACCENT}`, color: ACCENT, fontWeight: 600,
           }}>
             🔁 Шаблон
           </span>
         </div>
 
-        <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '1.5rem' }}>
+        <p style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '1.5rem' }}>
           Это план — повторяющиеся занятия по дням недели, без привязки к конкретным датам. Чтобы план стал реальным расписанием, нажми «Добавить в расписание» внизу.
         </p>
 
-        {loading && <p style={{ color: '#6b7280' }}>Загрузка...</p>}
+        {loading && <p style={{ color: 'var(--t-text-muted)' }}>Загрузка...</p>}
 
         <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(160px, 1fr))', gap: '10px', minWidth: '1120px' }}>
@@ -246,10 +246,10 @@ export default function TemplatePage() {
 
               return (
                 <div key={dow} style={{
-                  background: '#1a1d27', border: `1px solid ${isToday ? ACCENT : '#2a2d3d'}`,
+                  background: 'var(--t-card)', border: `1px solid ${isToday ? ACCENT : 'var(--t-border)'}`,
                   borderRadius: '12px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px',
                 }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? ACCENT : '#fff', textAlign: 'center' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? ACCENT : 'var(--t-text)', textAlign: 'center' }}>
                     {WEEKDAYS_SHORT[dow]}
                   </div>
 
@@ -266,13 +266,13 @@ export default function TemplatePage() {
                           key={tpl.id}
                           onClick={() => openEditForm(tpl)}
                           style={{
-                            position: 'relative', padding: '8px', background: '#0f1117',
+                            position: 'relative', padding: '8px', background: 'var(--t-bg)',
                             border: `2px solid ${ACCENT}`, borderRadius: '8px', textAlign: 'center', cursor: 'pointer',
                           }}
                         >
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDelete(tpl.id) }}
-                            style={{ position: 'absolute', top: '2px', right: '6px', background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '12px', padding: 0 }}
+                            style={{ position: 'absolute', top: '2px', right: '6px', background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '12px', padding: 0 }}
                           >
                             ✕
                           </button>
@@ -280,7 +280,7 @@ export default function TemplatePage() {
                             <span>{formatTimeRange(tpl.time, tpl.duration_minutes)}</span>
                             {tpl.subject && <SubjectIcon subject={tpl.subject} size={13} />}
                           </div>
-                          <div style={{ color: '#9ca3af', fontSize: '11px', marginTop: '3px' }}>{tpl.student_name}</div>
+                          <div style={{ color: 'var(--t-text-secondary)', fontSize: '11px', marginTop: '3px' }}>{tpl.student_name}</div>
                           {(isUpcoming || isEnding) && (
                             <div style={{ color: ACCENT, fontSize: '10px', marginTop: '3px' }}>
                               {isUpcoming && `с ${formatDateRu(startDateStr)}`}
@@ -299,7 +299,7 @@ export default function TemplatePage() {
         </div>
 
         {addingForDay !== null && (
-          <div style={{ background: '#1a1d27', border: `1px solid ${ACCENT}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'var(--t-card)', border: `1px solid ${ACCENT}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
             <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '14px' }}>
               Новый слот — {WEEKDAYS[addingForDay]}
             </div>
@@ -333,13 +333,13 @@ export default function TemplatePage() {
               </div>
             </div>
             {roster.length === 0 && (
-              <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '10px' }}>
+              <p style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '10px' }}>
                 В твоём списке пока нет учеников. <Link href="/teacher/students" style={{ color: ACCENT }}>Добавить учеников →</Link>
               </p>
             )}
-            {error && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '10px' }}>{error}</p>}
+            {error && <p style={{ color: 'var(--t-danger)', fontSize: '13px', marginBottom: '10px' }}>{error}</p>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              <button onClick={() => setAddingForDay(null)} style={{ ...accentButtonStyle, background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af' }}>Отмена</button>
+              <button onClick={() => setAddingForDay(null)} style={{ ...accentButtonStyle, background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)' }}>Отмена</button>
               <button onClick={submitAdd} disabled={saving || roster.length === 0} style={saving || roster.length === 0 ? submitButtonDisabledStyle : accentSubmitStyle}>
                 {saving ? 'Сохраняем...' : 'Добавить в шаблон'}
               </button>
@@ -348,11 +348,11 @@ export default function TemplatePage() {
         )}
 
         {editForm !== null && (
-          <div style={{ background: '#1a1d27', border: `1px solid ${ACCENT}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'var(--t-card)', border: `1px solid ${ACCENT}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
             <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px' }}>
               Изменить слот — {editForm.student_name}
             </div>
-            <p style={{ color: '#6b7280', fontSize: '12px', marginBottom: '14px' }}>
+            <p style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '14px' }}>
               Занятия по старому шаблону до даты вступления в силу останутся как есть. С указанной даты шаблон изменится на новый.
             </p>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
@@ -383,9 +383,9 @@ export default function TemplatePage() {
                 <input type="date" value={editForm.effective_date} onChange={e => setEditForm({ ...editForm, effective_date: e.target.value })} style={inputStyle} />
               </div>
             </div>
-            {editError && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '10px' }}>{editError}</p>}
+            {editError && <p style={{ color: 'var(--t-danger)', fontSize: '13px', marginBottom: '10px' }}>{editError}</p>}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-              <button onClick={() => setEditForm(null)} style={{ ...accentButtonStyle, background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af' }}>Отмена</button>
+              <button onClick={() => setEditForm(null)} style={{ ...accentButtonStyle, background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)' }}>Отмена</button>
               <button onClick={submitEdit} disabled={editSaving} style={editSaving ? submitButtonDisabledStyle : accentSubmitStyle}>
                 {editSaving ? 'Сохраняем...' : 'Сохранить изменения'}
               </button>
@@ -393,14 +393,14 @@ export default function TemplatePage() {
           </div>
         )}
 
-        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.25rem', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <label style={labelStyle}>Добавить в расписание на</label>
           <input type="number" value={weeks} onChange={e => setWeeks(Number(e.target.value))} style={{ ...inputStyle, width: '70px' }} min={1} max={12} />
-          <span style={{ color: '#9ca3af', fontSize: '13px' }}>недель вперёд</span>
+          <span style={{ color: 'var(--t-text-secondary)', fontSize: '13px' }}>недель вперёд</span>
           <button onClick={handleGenerate} disabled={generating || templates.length === 0} style={generating || templates.length === 0 ? submitButtonDisabledStyle : accentSubmitStyle}>
             {generating ? 'Добавляем...' : '⚡ Добавить в расписание'}
           </button>
-          {resultMsg && <span style={{ color: '#9ca3af', fontSize: '13px' }}>{resultMsg}</span>}
+          {resultMsg && <span style={{ color: 'var(--t-text-secondary)', fontSize: '13px' }}>{resultMsg}</span>}
         </div>
 
       </div>

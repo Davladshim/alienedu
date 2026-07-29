@@ -1,12 +1,12 @@
 import type { CSSProperties } from 'react'
 
 export const labelStyle: CSSProperties = {
-  color: '#9ca3af', fontSize: '13px', display: 'block', marginBottom: '2px',
+  color: 'var(--t-text-secondary)', fontSize: '13px', display: 'block', marginBottom: '2px',
 }
 
 export const inputStyle: CSSProperties = {
-  width: '100%', background: '#0f1117', border: '1px solid #2a2d3d',
-  borderRadius: '8px', padding: '10px 14px', color: '#fff', fontSize: '14px',
+  width: '100%', background: 'var(--t-bg)', border: '1px solid var(--t-border)',
+  borderRadius: '8px', padding: '10px 14px', color: 'var(--t-text)', fontSize: '14px',
   outline: 'none', boxSizing: 'border-box',
 }
 
@@ -15,24 +15,24 @@ export const textareaStyle: CSSProperties = {
 }
 
 export const smallButtonStyle: CSSProperties = {
-  background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7',
-  color: '#4f8ef7', borderRadius: '8px', padding: '6px 14px',
+  background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)',
+  color: 'var(--t-accent)', borderRadius: '8px', padding: '6px 14px',
   fontSize: '13px', cursor: 'pointer',
 }
 
 export const removeButtonStyle: CSSProperties = {
-  background: 'none', border: 'none', color: '#6b7280',
+  background: 'none', border: 'none', color: 'var(--t-text-muted)',
   cursor: 'pointer', fontSize: '14px', padding: '0 4px',
 }
 
 export const submitButtonStyle: CSSProperties = {
-  background: 'linear-gradient(135deg, #4f8ef7, #7c3aed)',
+  background: 'linear-gradient(135deg, var(--t-accent), var(--t-accent2))',
   color: '#fff', border: 'none', borderRadius: '8px',
   padding: '10px 24px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
 }
 
 export const submitButtonDisabledStyle: CSSProperties = {
-  ...submitButtonStyle, background: '#2a2d3d', color: '#4b5563', cursor: 'not-allowed',
+  ...submitButtonStyle, background: 'var(--t-border)', color: 'var(--t-text-faint)', cursor: 'not-allowed',
 }
 
 // Глобальный масштаб интерфейса (html { zoom: 1.25 } в globals.css) ломает
@@ -52,7 +52,7 @@ export const GEOGEBRA_ZOOM_RESET: CSSProperties = { zoom: 1 / 1.25 }
 export const resizeHandleStyle: CSSProperties = {
   position: 'absolute', right: 0, bottom: 0, width: '18px', height: '18px',
   cursor: 'nwse-resize', zIndex: 5,
-  background: `linear-gradient(135deg, transparent 0%, transparent 45%, #6b7280 45%, #6b7280 55%, transparent 55%, transparent 65%, #6b7280 65%, #6b7280 75%, transparent 75%)`,
+  background: `linear-gradient(135deg, transparent 0%, transparent 45%, var(--t-text-muted) 45%, var(--t-text-muted) 55%, transparent 55%, transparent 65%, var(--t-text-muted) 65%, var(--t-text-muted) 75%, transparent 75%)`,
 }
 
 // Шапка окна доски, за которую можно перетаскивать (drag handle)

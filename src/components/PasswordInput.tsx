@@ -44,7 +44,7 @@ export function PasswordInput({
         aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'}
         style={{
           position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
-          background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer',
+          background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer',
           padding: 0, display: 'flex', alignItems: 'center',
         }}
       >

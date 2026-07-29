@@ -60,13 +60,13 @@ function hasConflict(lesson: any, dayLessons: any[]): boolean {
 
 // Цвет рамки карточки целиком — состояние занятия
 function lessonColor(lesson: any, dayLessons: any[]): string {
-  if (lesson.status === 'cancelled') return '#6b7280'
-  if (hasConflict(lesson, dayLessons)) return '#f472b6'
-  if (lesson.is_trial) return '#e5e7eb'
+  if (lesson.status === 'cancelled') return 'var(--t-text-muted)'
+  if (hasConflict(lesson, dayLessons)) return 'var(--t-pink)'
+  if (lesson.is_trial) return 'var(--t-trial)'
   // Урок из шаблона, но перенесённый (original_date заполняется при первом
   // переносе) — визуально как обычный внеплановый урок, для наглядности
-  if (lesson.template_id && !lesson.original_date) return '#4f8ef7'
-  return '#34d399'
+  if (lesson.template_id && !lesson.original_date) return 'var(--t-accent)'
+  return 'var(--t-success)'
 }
 
 interface LessonForm {
@@ -273,24 +273,24 @@ export default function CalendarPage() {
   const today = new Date()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '95%', maxWidth: '1600px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-          <Link href="/teacher" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px' }}>← Кабинет</Link>
+          <Link href="/teacher" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>← Кабинет</Link>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📅 Расписание</h1>
         </div>
 
         <div style={{ display: 'flex', gap: '6px', marginBottom: '1.5rem' }}>
           <span style={{
             padding: '6px 16px', borderRadius: '8px', fontSize: '13px',
-            background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7', fontWeight: 600,
+            background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)', fontWeight: 600,
           }}>
             📅 Расписание
           </span>
           <Link href="/teacher/calendar/template" style={{
             padding: '6px 16px', borderRadius: '8px', fontSize: '13px', textDecoration: 'none',
-            background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+            background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
           }}>
             🔁 Шаблон
           </Link>
@@ -302,36 +302,36 @@ export default function CalendarPage() {
             <button onClick={() => setWeekStart(startOfWeek(new Date()))} style={smallButtonStyle}>Сегодня</button>
             <button onClick={() => setWeekStart(w => addDays(w, 7))} style={smallButtonStyle}>След. неделя →</button>
           </div>
-          <div style={{ color: '#6b7280', fontSize: '14px' }}>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>
             {weekStart.getDate()} {MONTHS[weekStart.getMonth()]} – {weekEnd.getDate()} {MONTHS[weekEnd.getMonth()]}
           </div>
         </div>
 
         {/* Легенда цветов */}
-        <div style={{ display: 'flex', gap: '18px', alignItems: 'center', marginBottom: '1rem', fontSize: '12px', color: '#9ca3af', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '18px', alignItems: 'center', marginBottom: '1rem', fontSize: '12px', color: 'var(--t-text-secondary)', flexWrap: 'wrap' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid #e5e7eb', display: 'inline-block' }} />
+            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid var(--t-trial)', display: 'inline-block' }} />
             Пробный
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid #4f8ef7', display: 'inline-block' }} />
+            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid var(--t-accent)', display: 'inline-block' }} />
             По шаблону
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid #34d399', display: 'inline-block' }} />
+            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid var(--t-success)', display: 'inline-block' }} />
             Не по шаблону
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid #6b7280', display: 'inline-block' }} />
+            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid var(--t-text-muted)', display: 'inline-block' }} />
             Отменено
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid #f472b6', display: 'inline-block' }} />
+            <span style={{ width: '12px', height: '12px', borderRadius: '3px', border: '2px solid var(--t-pink)', display: 'inline-block' }} />
             Пересечение по времени
           </span>
         </div>
 
-        {loading && <p style={{ color: '#6b7280' }}>Загрузка...</p>}
+        {loading && <p style={{ color: 'var(--t-text-muted)' }}>Загрузка...</p>}
 
         <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(160px, 1fr))', gap: '10px', minWidth: '1120px' }}>
@@ -342,10 +342,10 @@ export default function CalendarPage() {
 
               return (
                 <div key={dateStr} style={{
-                  background: '#1a1d27', border: `1px solid ${isToday ? '#4f8ef7' : '#2a2d3d'}`,
+                  background: 'var(--t-card)', border: `1px solid ${isToday ? 'var(--t-accent)' : 'var(--t-border)'}`,
                   borderRadius: '12px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px',
                 }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? '#4f8ef7' : '#fff', textAlign: 'center' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? 'var(--t-accent)' : 'var(--t-text)', textAlign: 'center' }}>
                     {WEEKDAYS_SHORT[i]}, {day.getDate()} {MONTHS[day.getMonth()].slice(0, 3)}
                   </div>
 
@@ -354,7 +354,7 @@ export default function CalendarPage() {
                     <button
                       onClick={() => openTrialForm(dateStr)}
                       style={{
-                        background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+                        background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
                         borderRadius: '8px', fontSize: '11px', padding: '5px 6px', cursor: 'pointer',
                       }}
                     >
@@ -372,14 +372,14 @@ export default function CalendarPage() {
                           onClick={() => (isSelected ? closePanel() : openEdit(lesson))}
                           style={{
                             position: 'relative',
-                            padding: '8px', background: '#0f1117',
+                            padding: '8px', background: 'var(--t-bg)',
                             border: `2px solid ${color}`,
                             boxShadow: isSelected ? `0 0 0 3px ${color}4D` : 'none',
                             borderRadius: '8px', cursor: 'pointer', textAlign: 'center',
                           }}
                         >
                           {lesson.status !== 'scheduled' && (
-                            <span style={{ position: 'absolute', top: '4px', right: '6px', fontSize: '9px', color: '#6b7280' }}>
+                            <span style={{ position: 'absolute', top: '4px', right: '6px', fontSize: '9px', color: 'var(--t-text-muted)' }}>
                               {STATUS_SHORT[lesson.status]}
                             </span>
                           )}
@@ -390,7 +390,7 @@ export default function CalendarPage() {
                               rel="noopener noreferrer"
                               onClick={e => e.stopPropagation()}
                               title="Перейти по ссылке урока"
-                              style={{ position: 'absolute', top: '3px', left: '5px', color: '#4f8ef7', display: 'flex', lineHeight: 0 }}
+                              style={{ position: 'absolute', top: '3px', left: '5px', color: 'var(--t-accent)', display: 'flex', lineHeight: 0 }}
                             >
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
                                 <path d="M9 15 L15 9" />
@@ -403,7 +403,7 @@ export default function CalendarPage() {
                             <span>{formatTimeRange(lesson.time, lesson.duration_minutes)}</span>
                             {lesson.subject && <SubjectIcon subject={lesson.subject} size={13} />}
                           </div>
-                          <div style={{ color: '#9ca3af', fontSize: '11px', marginTop: '3px' }}>
+                          <div style={{ color: 'var(--t-text-secondary)', fontSize: '11px', marginTop: '3px' }}>
                             {lesson.is_trial ? `Пробный${lesson.student_name && lesson.student_name !== 'Пробный урок' ? ` · ${lesson.student_name}` : ''}` : lesson.student_name}
                           </div>
                         </div>
@@ -417,7 +417,7 @@ export default function CalendarPage() {
         </div>
 
         {(addingForDate || addingTrialForDate || (editingId && editForm)) && (
-          <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
             {addingForDate && (
               <>
                 <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '14px' }}>
@@ -449,12 +449,12 @@ export default function CalendarPage() {
                   </div>
                 </div>
                 {roster.length === 0 && (
-                  <p style={{ color: '#6b7280', fontSize: '13px', marginBottom: '10px' }}>
-                    В твоём списке пока нет учеников. <Link href="/teacher/students" style={{ color: '#4f8ef7' }}>Добавить учеников →</Link>
+                  <p style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '10px' }}>
+                    В твоём списке пока нет учеников. <Link href="/teacher/students" style={{ color: 'var(--t-accent)' }}>Добавить учеников →</Link>
                   </p>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                  <button onClick={closePanel} style={{ ...smallButtonStyle, background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af' }}>Отмена</button>
+                  <button onClick={closePanel} style={{ ...smallButtonStyle, background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)' }}>Отмена</button>
                   <button onClick={submitAdd} disabled={saving || roster.length === 0} style={saving || roster.length === 0 ? submitButtonDisabledStyle : submitButtonStyle}>
                     {saving ? 'Сохраняем...' : 'Добавить'}
                   </button>
@@ -482,7 +482,7 @@ export default function CalendarPage() {
                   <textarea value={trialForm.notes} onChange={e => setTrialForm({ ...trialForm, notes: e.target.value })} rows={2} style={textareaStyle} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                  <button onClick={closePanel} style={{ ...smallButtonStyle, background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af' }}>Отмена</button>
+                  <button onClick={closePanel} style={{ ...smallButtonStyle, background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)' }}>Отмена</button>
                   <button onClick={submitTrial} disabled={saving} style={saving ? submitButtonDisabledStyle : submitButtonStyle}>
                     {saving ? 'Сохраняем...' : 'Добавить'}
                   </button>
@@ -494,14 +494,14 @@ export default function CalendarPage() {
               <>
                 <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '14px' }}>
                   Занятие — {editForm.student_name}
-                  {editForm.is_trial && <span style={{ marginLeft: '8px', fontSize: '11px', color: '#e5e7eb', fontWeight: 400 }}>пробный</span>}
+                  {editForm.is_trial && <span style={{ marginLeft: '8px', fontSize: '11px', color: 'var(--t-trial)', fontWeight: 400 }}>пробный</span>}
                   {!editForm.is_trial && !editForm.template_id && (
-                    <span style={{ marginLeft: '8px', fontSize: '11px', color: '#34d399', fontWeight: 400 }}>не по шаблону</span>
+                    <span style={{ marginLeft: '8px', fontSize: '11px', color: 'var(--t-success)', fontWeight: 400 }}>не по шаблону</span>
                   )}
-                  <span style={{ marginLeft: '8px', fontSize: '11px', color: '#6b7280', fontWeight: 400 }}>{STATUS_SHORT[editForm.status]}</span>
+                  <span style={{ marginLeft: '8px', fontSize: '11px', color: 'var(--t-text-muted)', fontWeight: 400 }}>{STATUS_SHORT[editForm.status]}</span>
                 </div>
                 {editForm.isPastLesson && (
-                  <div style={{ color: '#fbbf24', fontSize: '12px', marginBottom: '10px', padding: '8px 12px', background: 'rgba(251,191,36,0.1)', borderRadius: '8px' }}>
+                  <div style={{ color: 'var(--t-warning)', fontSize: '12px', marginBottom: '10px', padding: '8px 12px', background: 'rgba(var(--t-warning-rgb),0.1)', borderRadius: '8px' }}>
                     Занятие уже прошло — дату и время менять нельзя, можно отменить или удалить
                   </div>
                 )}
@@ -541,14 +541,14 @@ export default function CalendarPage() {
                     {editForm.status === 'scheduled' && (
                       <button
                         onClick={handleCancel}
-                        style={{ background: 'transparent', border: '1px solid #6b7280', color: '#9ca3af', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer' }}
+                        style={{ background: 'transparent', border: '1px solid var(--t-text-muted)', color: 'var(--t-text-secondary)', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer' }}
                       >
                         Отменить занятие
                       </button>
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={closePanel} style={{ ...smallButtonStyle, background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af' }}>Отмена</button>
+                    <button onClick={closePanel} style={{ ...smallButtonStyle, background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)' }}>Отмена</button>
                     <button onClick={submitEdit} disabled={saving} style={saving ? submitButtonDisabledStyle : submitButtonStyle}>
                       {saving ? 'Сохраняем...' : 'Сохранить'}
                     </button>
@@ -557,7 +557,7 @@ export default function CalendarPage() {
               </>
             )}
 
-            {error && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '10px' }}>{error}</p>}
+            {error && <p style={{ color: 'var(--t-danger)', fontSize: '14px', marginTop: '10px' }}>{error}</p>}
           </div>
         )}
 

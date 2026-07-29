@@ -17,18 +17,18 @@ export default function RecoverPage() {
 
   const inputStyle = {
     width: '100%',
-    background: '#0f1117',
-    border: '0.5px solid #2a2d3d',
+    background: 'var(--t-bg)',
+    border: '0.5px solid var(--t-border)',
     borderRadius: '8px',
     padding: '10px 14px',
-    color: '#fff',
+    color: 'var(--t-text)',
     fontSize: '14px',
     outline: 'none',
     boxSizing: 'border-box' as const
   }
 
   const labelStyle = {
-    color: '#9ca3af',
+    color: 'var(--t-text-secondary)',
     fontSize: '13px',
     display: 'block',
     marginBottom: '6px'
@@ -89,14 +89,14 @@ export default function RecoverPage() {
       position: 'fixed',
       inset: 0,
       overflow: 'auto',
-      background: '#0f1117',
+      background: 'var(--t-bg)',
       display: 'flex',
       fontFamily: 'system-ui, sans-serif',
       padding: '2rem'
     }}>
       <div style={{
-        background: '#1a1d27',
-        border: '0.5px solid #2a2d3d',
+        background: 'var(--t-card)',
+        border: '0.5px solid var(--t-border)',
         borderRadius: '16px',
         padding: '2.5rem',
         width: '100%',
@@ -105,10 +105,10 @@ export default function RecoverPage() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontSize: '28px', marginBottom: '8px' }}>🪐</div>
-          <h1 style={{ color: '#fff', fontSize: '22px', fontWeight: 500, margin: 0 }}>
-            Alien<span style={{ color: '#4f8ef7' }}>Edu</span>
+          <h1 style={{ color: 'var(--t-text)', fontSize: '22px', fontWeight: 500, margin: 0 }}>
+            Alien<span style={{ color: 'var(--t-accent)' }}>Edu</span>
           </h1>
-          <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '6px' }}>
+          <p style={{ color: 'var(--t-text-muted)', fontSize: '14px', marginTop: '6px' }}>
             Восстановление доступа
           </p>
         </div>
@@ -123,16 +123,16 @@ export default function RecoverPage() {
 
             {error && (
               <div style={{
-                background: '#2d1515', border: '0.5px solid #ef4444',
+                background: 'var(--t-danger-bg)', border: '0.5px solid var(--t-danger)',
                 borderRadius: '8px', padding: '10px 14px',
-                color: '#ef4444', fontSize: '13px', marginBottom: '1rem'
+                color: 'var(--t-danger)', fontSize: '13px', marginBottom: '1rem'
               }}>
                 {error}
               </div>
             )}
 
             <button type="submit" disabled={loading} style={{
-              width: '100%', background: '#4f8ef7', color: '#fff',
+              width: '100%', background: 'var(--t-accent)', color: '#fff',
               border: 'none', borderRadius: '8px', padding: '11px',
               fontSize: '14px', fontWeight: 500,
               cursor: loading ? 'not-allowed' : 'pointer',
@@ -146,13 +146,13 @@ export default function RecoverPage() {
         {step === 2 && (
           <form onSubmit={handleRecover}>
             <div style={{
-              background: '#0f1117', borderRadius: '8px',
+              background: 'var(--t-bg)', borderRadius: '8px',
               padding: '12px 14px', marginBottom: '1.5rem'
             }}>
-              <p style={{ color: '#6b7280', fontSize: '12px', margin: '0 0 4px' }}>
+              <p style={{ color: 'var(--t-text-muted)', fontSize: '12px', margin: '0 0 4px' }}>
                 Секретный вопрос:
               </p>
-              <p style={{ color: '#fff', fontSize: '14px', margin: 0 }}>
+              <p style={{ color: 'var(--t-text)', fontSize: '14px', margin: 0 }}>
                 {secretQuestion}
               </p>
             </div>
@@ -180,16 +180,16 @@ export default function RecoverPage() {
 
             {error && (
               <div style={{
-                background: '#2d1515', border: '0.5px solid #ef4444',
+                background: 'var(--t-danger-bg)', border: '0.5px solid var(--t-danger)',
                 borderRadius: '8px', padding: '10px 14px',
-                color: '#ef4444', fontSize: '13px', marginBottom: '1rem'
+                color: 'var(--t-danger)', fontSize: '13px', marginBottom: '1rem'
               }}>
                 {error}
               </div>
             )}
 
             <button type="submit" disabled={loading} style={{
-              width: '100%', background: '#4f8ef7', color: '#fff',
+              width: '100%', background: 'var(--t-accent)', color: '#fff',
               border: 'none', borderRadius: '8px', padding: '11px',
               fontSize: '14px', fontWeight: 500,
               cursor: loading ? 'not-allowed' : 'pointer',
@@ -201,7 +201,7 @@ export default function RecoverPage() {
         )}
 
         <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <Link href="/login" style={{ color: '#4f8ef7', fontSize: '13px', textDecoration: 'none' }}>
+          <Link href="/login" style={{ color: 'var(--t-accent)', fontSize: '13px', textDecoration: 'none' }}>
             ← Вернуться ко входу
           </Link>
         </div>

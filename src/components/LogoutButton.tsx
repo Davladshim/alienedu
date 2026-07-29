@@ -13,7 +13,7 @@ export function LogoutButton() {
     <button
       onClick={handleLogout}
       style={{
-        background: 'transparent', border: '1px solid #2a2d3d', color: '#9ca3af',
+        background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
         borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer',
       }}
     >

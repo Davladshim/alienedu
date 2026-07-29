@@ -62,7 +62,7 @@ export function TimezoneWidget() {
         type="button"
         onClick={() => setOpen(o => !o)}
         style={{
-          background: 'none', border: 'none', color: '#6b7280', fontSize: '12px',
+          background: 'none', border: 'none', color: 'var(--t-text-muted)', fontSize: '12px',
           cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '4px',
         }}
       >
@@ -71,7 +71,7 @@ export function TimezoneWidget() {
       {open && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30,
-          background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '8px',
+          background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '8px',
           padding: '4px', minWidth: '220px', maxHeight: '300px', overflowY: 'auto',
         }}>
           {RUSSIAN_TIMEZONES.map(z => (
@@ -82,7 +82,7 @@ export function TimezoneWidget() {
               style={{
                 display: 'block', width: '100%', textAlign: 'left',
                 background: timezone === z.tz ? 'rgba(79,142,247,0.15)' : 'transparent',
-                border: 'none', color: timezone === z.tz ? '#4f8ef7' : '#e5e7eb',
+                border: 'none', color: timezone === z.tz ? 'var(--t-accent)' : 'var(--t-trial)',
                 borderRadius: '6px', padding: '8px 10px', fontSize: '13px', cursor: 'pointer',
               }}
             >

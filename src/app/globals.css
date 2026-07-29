@@ -3,6 +3,81 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Тёмная тема (по умолчанию) — единая палитра платформы */
+  --t-bg: #0f1117;
+  --t-bg-rgb: 15, 17, 23;
+  --t-card: #1a1d27;
+  --t-card-rgb: 26, 29, 39;
+  --t-border: #2a2d3d;
+  --t-text: #ffffff;
+  --t-text-secondary: #9ca3af;
+  --t-text-muted: #6b7280;
+  --t-text-faint: #4b5563;
+
+  --t-accent: #4f8ef7;
+  --t-accent-rgb: 79, 142, 247;
+  --t-accent2: #7c3aed;
+  --t-accent2-rgb: 124, 58, 237;
+  --t-danger: #ef4444;
+  --t-danger-rgb: 239, 68, 68;
+  --t-danger-soft: #f87171;
+  --t-success: #34d399;
+  --t-success-rgb: 52, 211, 153;
+  --t-success2: #10b981;
+  --t-success2-rgb: 16, 185, 129;
+  --t-warning: #fbbf24;
+  --t-warning-rgb: 251, 191, 36;
+  --t-warning2: #f59e0b;
+  --t-info: #60a5fa;
+  --t-info-rgb: 96, 165, 250;
+  --t-pink: #f472b6;
+  --t-pink-rgb: 244, 114, 182;
+  --t-trial: #e5e7eb;
+  --t-template-accent: #a78bfa;
+  --t-template-accent-rgb: 167, 139, 250;
+  --t-template-gradient-end: #c026d3;
+  --t-danger-bg: #2d1515;
+
+  --t-shadow: rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme='light'] {
+  --t-bg: #f3f5f9;
+  --t-bg-rgb: 243, 245, 249;
+  --t-card: #ffffff;
+  --t-card-rgb: 255, 255, 255;
+  --t-border: #dfe3ea;
+  --t-text: #16181f;
+  --t-text-secondary: #52586b;
+  --t-text-muted: #6b7280;
+  --t-text-faint: #8b93a7;
+
+  --t-accent: #2563eb;
+  --t-accent-rgb: 37, 99, 235;
+  --t-accent2: #7c3aed;
+  --t-accent2-rgb: 124, 58, 237;
+  --t-danger: #dc2626;
+  --t-danger-rgb: 220, 38, 38;
+  --t-danger-soft: #ef4444;
+  --t-success: #059669;
+  --t-success-rgb: 5, 150, 105;
+  --t-success2: #059669;
+  --t-success2-rgb: 5, 150, 105;
+  --t-warning: #b45309;
+  --t-warning-rgb: 180, 83, 9;
+  --t-warning2: #b45309;
+  --t-info: #2563eb;
+  --t-info-rgb: 37, 99, 235;
+  --t-pink: #db2777;
+  --t-pink-rgb: 219, 39, 119;
+  --t-trial: #94a3b8;
+  --t-template-accent: #9333ea;
+  --t-template-accent-rgb: 147, 51, 234;
+  --t-template-gradient-end: #a21caf;
+  --t-danger-bg: #fee2e2;
+
+  --t-shadow: rgba(15, 23, 42, 0.12);
 }
 
 @theme inline {
