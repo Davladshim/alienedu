@@ -42,9 +42,12 @@ export function useLiveChannel(channelName: string | null, options: LiveChannelO
     // Живое наблюдение — необязательная надстройка поверх урока: если
     // Supabase не сконфигурирован или недоступен, страница урока/наблюдения
     // всё равно должна открываться и работать, просто без живой синхронизации
-    try {
-      const supabase = getSupabase()
-      const channel = supabase.channel(channelName)
+    let cancelled = false
+    let channel: RealtimeChannel | null = null
+
+    getSupabase().then(supabase => {
+      if (cancelled) return
+      channel = supabase.channel(channelName)
       channelRef.current = channel
 
       for (const event of Object.keys(optionsRef.current.onBroadcast || {})) {
@@ -54,7 +57,7 @@ export function useLiveChannel(channelName: string | null, options: LiveChannelO
       }
       if (optionsRef.current.onPresenceSync) {
         channel.on('presence', { event: 'sync' }, () => {
-          const state = channel.presenceState()
+          const state = channel!.presenceState()
           optionsRef.current.onPresenceSync?.(Object.values(state).flat() as Record<string, unknown>[])
         })
       }
@@ -62,15 +65,18 @@ export function useLiveChannel(channelName: string | null, options: LiveChannelO
       channel.subscribe(status => {
         if (status === 'SUBSCRIBED') setReady(true)
       })
-
-      return () => {
-        supabase.removeChannel(channel)
-        channelRef.current = null
-        setReady(false)
-      }
-    } catch (error) {
+    }).catch(error => {
       console.error('Не удалось подключиться к живому каналу:', error)
-      return undefined
+    })
+
+    return () => {
+      cancelled = true
+      if (channel) {
+        const channelToRemove = channel
+        getSupabase().then(supabase => supabase.removeChannel(channelToRemove)).catch(() => {})
+      }
+      channelRef.current = null
+      setReady(false)
     }
     // channelName — единственная зависимость: набор событий (ключи onBroadcast)
     // должен быть статичным между рендерами одного компонента, а сами
