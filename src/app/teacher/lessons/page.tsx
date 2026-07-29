@@ -60,7 +60,7 @@ export default function LessonsPage() {
       minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif',
       color: 'var(--t-text)', display: 'flex', justifyContent: 'center',
     }}>
-      <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
+      <div style={{ width: '100%', maxWidth: '1200px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
           <Link href="/teacher" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>
@@ -78,7 +78,7 @@ export default function LessonsPage() {
                   <tr>
                     {['Ученик', 'Название урока', 'Дата назначения', 'Дата начала', 'Статус', 'Реальное время', 'Результаты', ''].map(h => (
                       <th key={h} style={{
-                        textAlign: 'left', padding: '6px 10px', color: 'var(--t-text-secondary)', fontWeight: 600,
+                        textAlign: 'center', padding: '6px 10px', color: 'var(--t-text-secondary)', fontWeight: 600,
                         position: 'sticky', top: 0, background: 'var(--t-card)', whiteSpace: 'nowrap',
                       }}>
                         {h}
@@ -93,16 +93,16 @@ export default function LessonsPage() {
                     const canViewResults = a.status === 'completed'
                     return (
                       <tr key={a.id} style={{ borderTop: '1px solid var(--t-border)' }}>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>{a.student_name}</td>
-                        <td style={{ padding: '8px 10px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={a.lesson_title}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap', textAlign: 'center' }}>{a.student_name}</td>
+                        <td style={{ padding: '8px 10px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }} title={a.lesson_title}>
                           {a.lesson_title}
                         </td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap', color: 'var(--t-text-secondary)' }}>{formatDateTimeRu(a.assigned_at)}</td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap', color: 'var(--t-text-secondary)' }}>{formatDateTimeRu(a.started_at)}</td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap', color: 'var(--t-text-secondary)', textAlign: 'center' }}>{formatDateTimeRu(a.assigned_at)}</td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap', color: 'var(--t-text-secondary)', textAlign: 'center' }}>{formatDateTimeRu(a.started_at)}</td>
+                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap', textAlign: 'center' }}>
                           <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', color: st.color, background: st.bg }}>{st.label}</span>
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                           {canWatchLive ? (
                             <Link href={`/teacher/lessons/${a.lesson_id}/watch/${a.student_id}`} style={{
                               color: 'var(--t-accent)', border: '1px solid var(--t-accent)', borderRadius: '6px',
@@ -119,7 +119,7 @@ export default function LessonsPage() {
                             </span>
                           )}
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                           {canViewResults ? (
                             <Link href={`/teacher/lessons/${a.lesson_id}/results/${a.student_id}`} style={{
                               color: 'var(--t-accent)', border: '1px solid var(--t-accent)', borderRadius: '6px',
@@ -136,7 +136,7 @@ export default function LessonsPage() {
                             </span>
                           )}
                         </td>
-                        <td style={{ padding: '8px 10px' }}>
+                        <td style={{ padding: '8px 10px', textAlign: 'center' }}>
                           <button
                             onClick={() => finishAssignment(a)}
                             disabled={finishingId === a.id}
