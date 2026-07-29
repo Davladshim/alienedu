@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
-  maxAge: 60 * 60 * 24 * 7,
-  path: '/',
-}
+import { setAllAdminCookies, clearAllAdminCookies } from '@/lib/adminSession'
 
 // Админка платформы AlienEdu — тот же пароль и та же схема сессии,
 // что у /shop/admin и /stereo/admin (общий ADMIN_SECRET). Вход сюда сразу
-// авторизует и в двух остальных админках — их cookie ставим тем же секретом,
-// чтобы не логиниться в три места отдельно
+// авторизует и в двух остальных админках, выход — разлогинивает везде
 export async function POST(req: NextRequest) {
   try {
     const { password } = await req.json()
@@ -21,9 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     const response = NextResponse.json({ ok: true })
-    response.cookies.set('platform_admin_session', process.env.ADMIN_SECRET!, COOKIE_OPTIONS)
-    response.cookies.set('admin_session', process.env.ADMIN_SECRET!, COOKIE_OPTIONS)
-    response.cookies.set('stereo_admin_session', process.env.ADMIN_SECRET!, COOKIE_OPTIONS)
+    setAllAdminCookies(response)
     return response
   } catch {
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
@@ -32,8 +22,6 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE() {
   const response = NextResponse.json({ ok: true })
-  response.cookies.delete('platform_admin_session')
-  response.cookies.delete('admin_session')
-  response.cookies.delete('stereo_admin_session')
+  clearAllAdminCookies(response)
   return response
 }

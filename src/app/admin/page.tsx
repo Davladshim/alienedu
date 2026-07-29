@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { daysWord, daysLeftFrom } from '@/lib/adminFormat'
 
 interface PlanCode {
   id: number
@@ -12,20 +13,6 @@ interface PlanCode {
   created_at: string
   used_by_login: string | null
   used_by_name: string | null
-}
-
-function daysWord(n: number): string {
-  const mod100 = n % 100
-  const mod10 = n % 10
-  if (mod100 >= 11 && mod100 <= 14) return 'дней'
-  if (mod10 === 1) return 'день'
-  if (mod10 >= 2 && mod10 <= 4) return 'дня'
-  return 'дней'
-}
-
-function daysLeftFrom(firstUsedAt: string, validDays: number): number {
-  const expiresAt = new Date(firstUsedAt).getTime() + validDays * 24 * 60 * 60 * 1000
-  return Math.max(0, Math.ceil((expiresAt - Date.now()) / (24 * 60 * 60 * 1000)))
 }
 
 interface ModerationLesson {
@@ -123,6 +110,7 @@ export default function AdminPage() {
   async function handleLogout() {
     await fetch('/api/admin/login', { method: 'DELETE' })
     setIsLoggedIn(false)
+    setPassword('')
   }
 
   async function handleGenerate() {
@@ -348,31 +336,50 @@ export default function AdminPage() {
             </div>
           )}
 
-          <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '4px' }}>История кодов</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '320px', overflowY: 'auto' }}>
-            {codes.length === 0 && <div style={{ color: '#4b5563', fontSize: '13px' }}>Кодов ещё не было</div>}
-            {codes.map(c => {
-              const daysLeft = c.first_used_at ? daysLeftFrom(c.first_used_at, c.valid_days) : null
-              return (
-                <div key={c.id} style={{ fontSize: '13px', padding: '6px 0', borderBottom: '1px solid #2a2d3d' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontFamily: 'monospace' }}>{c.code}</span>
-                    <span style={{ color: '#9ca3af' }}>{PLAN_LABELS[c.plan] || c.plan} · {c.valid_days} дн.</span>
-                    <span style={{ color: c.status === 'active' ? (c.first_used_at ? '#34d399' : '#60a5fa') : '#6b7280' }}>
-                      {c.status !== 'active' ? 'отозван' : c.first_used_at ? 'активирован' : 'не использован'}
-                    </span>
-                  </div>
-                  {c.first_used_at && (
-                    <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>
-                      {c.used_by_name || 'без имени'} ({c.used_by_login || 'аккаунт удалён'})
-                      {' · '}активирован {new Date(c.first_used_at).toLocaleDateString('ru-RU')}
-                      {' · '}{daysLeft !== null && (daysLeft > 0 ? `осталось ${daysLeft} ${daysWord(daysLeft)}` : 'истёк')}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+          <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '8px' }}>История кодов</div>
+          {codes.length === 0 ? (
+            <div style={{ color: '#4b5563', fontSize: '13px' }}>Кодов ещё не было</div>
+          ) : (
+            <div style={{ overflowX: 'auto', maxHeight: '360px', overflowY: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                <thead>
+                  <tr>
+                    {['Код', 'Дата активации', 'Логин', 'Имя', 'Тариф', 'Осталось', 'Статус'].map(h => (
+                      <th key={h} style={{
+                        position: 'sticky', top: 0, background: '#1a1d27', textAlign: 'left',
+                        color: '#6b7280', fontWeight: 500, fontSize: '11px', textTransform: 'uppercase',
+                        padding: '6px 10px', borderBottom: '1px solid #2a2d3d',
+                      }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {codes.map(c => {
+                    const daysLeft = c.first_used_at ? daysLeftFrom(c.first_used_at, c.valid_days) : null
+                    const statusColor = c.status !== 'active' ? '#6b7280' : c.first_used_at ? '#34d399' : '#60a5fa'
+                    const statusLabel = c.status !== 'active' ? 'отозван' : c.first_used_at ? 'активирован' : 'не использован'
+                    return (
+                      <tr key={c.id} style={{ borderBottom: '1px solid #2a2d3d' }}>
+                        <td style={{ padding: '8px 10px', fontFamily: 'monospace' }}>{c.code}</td>
+                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>
+                          {c.first_used_at ? new Date(c.first_used_at).toLocaleDateString('ru-RU') : '—'}
+                        </td>
+                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>{c.used_by_login || '—'}</td>
+                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>{c.used_by_name || '—'}</td>
+                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>{PLAN_LABELS[c.plan] || c.plan}</td>
+                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>
+                          {daysLeft === null ? '—' : daysLeft > 0 ? `${daysLeft} ${daysWord(daysLeft)}` : 'истёк'}
+                        </td>
+                        <td style={{ padding: '8px 10px', color: statusColor }}>{statusLabel}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <div style={cardStyle}>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { setAllAdminCookies, clearAllAdminCookies } from "@/lib/adminSession";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,15 +10,7 @@ export async function POST(req: NextRequest) {
     }
 
     const response = NextResponse.json({ ok: true });
-
-    response.cookies.set("admin_session_shop", process.env.ADMIN_SECRET!, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
-
+    setAllAdminCookies(response);
     return response;
   } catch {
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
@@ -26,6 +19,6 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE() {
   const response = NextResponse.json({ ok: true });
-  response.cookies.delete("admin_session_shop");
+  clearAllAdminCookies(response);
   return response;
 }
