@@ -135,7 +135,14 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <div style={{ width: "100vw", height: "100vh", overflow: "hidden", background: "#020610", position: "relative" }}>
+    <div style={{
+      width: "100vw", height: "100vh", overflow: "hidden", background: "#020610", position: "relative",
+      // Глобальный масштаб интерфейса (html { zoom: 1.25 } в globals.css) раздувает
+      // 100vw/100vh относительно реального экрана — слайд презентации (сам со своей
+      // фиксированной вёрсткой) обрезается. Обнуляем zoom только для показа
+      // презентации, сам магазин (список, фильтры) масштаб не трогаем
+      zoom: 1 / 1.25,
+    }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
 
       {/* Paywall overlay */}

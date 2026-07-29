@@ -8,6 +8,20 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get('token')?.value
 
+  // Корневая страница ничего не показывает сама по себе (это нетронутый
+  // шаблон Next.js) — сразу ведём в свой кабинет или на страницу входа
+  if (pathname === '/') {
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { role: string }
+        return NextResponse.redirect(new URL(getDashboardPath(decoded.role), request.url))
+      } catch {
+        // Невалидный токен — считаем неавторизованным
+      }
+    }
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
   // Пропускаем публичные страницы и API
   if (publicPaths.some(path => pathname.startsWith(path))) {
     // У этих разделов своя, отдельная авторизация (пароль ADMIN_SECRET) —
