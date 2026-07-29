@@ -29,11 +29,11 @@ type Code = {
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#0f1117",
-  border: "1px solid #2a2d3d",
+  background: "var(--t-bg)",
+  border: "1px solid var(--t-border)",
   borderRadius: "8px",
   padding: "10px 14px",
-  color: "#fff",
+  color: "var(--t-text)",
   fontSize: "14px",
   outline: "none",
   boxSizing: "border-box",
@@ -42,21 +42,21 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: "13px",
-  color: "#9ca3af",
+  color: "var(--t-text-secondary)",
   marginBottom: "4px",
 };
 
 const cardStyle: React.CSSProperties = {
-  background: "#1a1d27",
-  border: "1px solid #2a2d3d",
+  background: "var(--t-card)",
+  border: "1px solid var(--t-border)",
   borderRadius: "16px",
   padding: "1.5rem",
 };
 
 const btnGhostStyle: React.CSSProperties = {
   background: "none",
-  border: "1px solid #2a2d3d",
-  color: "#9ca3af",
+  border: "1px solid var(--t-border)",
+  color: "var(--t-text-secondary)",
   borderRadius: "8px",
   padding: "6px 14px",
   fontSize: "13px",
@@ -64,19 +64,19 @@ const btnGhostStyle: React.CSSProperties = {
 };
 
 const btnDangerStyle: React.CSSProperties = {
-  background: "rgba(239,68,68,0.12)",
-  color: "#f87171",
-  border: "1px solid rgba(239,68,68,0.3)",
+  background: "rgba(var(--t-danger-rgb),0.12)",
+  color: "var(--t-danger-soft)",
+  border: "1px solid rgba(var(--t-danger-rgb),0.3)",
   borderRadius: "6px",
   padding: "5px 12px",
   fontSize: "12px",
   cursor: "pointer",
 };
 
-function primaryBtnStyle(disabled: boolean, gradient = "linear-gradient(135deg, #4f8ef7, #7c3aed)"): React.CSSProperties {
+function primaryBtnStyle(disabled: boolean, gradient = "linear-gradient(135deg, var(--t-accent), var(--t-accent2))"): React.CSSProperties {
   return {
-    background: disabled ? "#2a2d3d" : gradient,
-    color: disabled ? "#6b7280" : "#fff",
+    background: disabled ? "var(--t-border)" : gradient,
+    color: disabled ? "var(--t-text-muted)" : "#fff",
     border: "none",
     borderRadius: "8px",
     padding: "10px 20px",
@@ -240,11 +240,11 @@ export default function ShopAdminPage() {
 
   if (!isLoggedIn) {
     return (
-      <div style={{ position: "fixed", inset: 0, overflow: "auto", display: "flex", background: "#0f1117", padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ position: "fixed", inset: 0, overflow: "auto", display: "flex", background: "var(--t-bg)", padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
         <div style={{ ...cardStyle, width: "100%", maxWidth: "380px", margin: "auto", textAlign: "center" }}>
           <div style={{ fontSize: "28px", marginBottom: "8px" }}>🛍️</div>
-          <h1 style={{ color: "#fff", fontSize: "20px", fontWeight: 600, margin: "0 0 4px" }}>Магазин</h1>
-          <div style={{ color: "#6b7280", fontSize: "13px", marginBottom: "1.5rem" }}>Панель управления</div>
+          <h1 style={{ color: "var(--t-text)", fontSize: "20px", fontWeight: 600, margin: "0 0 4px" }}>Магазин</h1>
+          <div style={{ color: "var(--t-text-muted)", fontSize: "13px", marginBottom: "1.5rem" }}>Панель управления</div>
           <form onSubmit={handleLogin}>
             <input
               type="password"
@@ -254,7 +254,7 @@ export default function ShopAdminPage() {
               style={{ ...inputStyle, marginBottom: "12px" }}
               autoFocus
             />
-            {loginError && <div style={{ color: "#ef4444", fontSize: "13px", marginBottom: "12px" }}>{loginError}</div>}
+            {loginError && <div style={{ color: "var(--t-danger)", fontSize: "13px", marginBottom: "12px" }}>{loginError}</div>}
             <button type="submit" style={{ width: "100%", ...primaryBtnStyle(false) }}>
               Войти
             </button>
@@ -265,13 +265,13 @@ export default function ShopAdminPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1117", fontFamily: "system-ui, sans-serif", color: "#fff", display: "flex", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "var(--t-bg)", fontFamily: "system-ui, sans-serif", color: "var(--t-text)", display: "flex", justifyContent: "center" }}>
       <div style={{ width: "100%", maxWidth: "900px", padding: "2rem" }}>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h1 style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>🛍️ Магазин — админка</h1>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <a href="/shop" target="_blank" rel="noopener noreferrer" style={{ color: "#6b7280", fontSize: "13px", textDecoration: "none" }}>← магазин</a>
+            <a href="/shop" target="_blank" rel="noopener noreferrer" style={{ color: "var(--t-text-muted)", fontSize: "13px", textDecoration: "none" }}>← магазин</a>
             <button onClick={handleLogout} style={btnGhostStyle}>Выйти</button>
           </div>
         </div>
@@ -287,9 +287,9 @@ export default function ShopAdminPage() {
               onClick={() => { setTab(key); if (key === "presentations") loadPresentations(); if (key === "codes") loadCodes(); }}
               style={{
                 padding: "8px 20px", borderRadius: "8px", cursor: "pointer", fontSize: "13px",
-                border: tab === key ? "1px solid #4f8ef7" : "1px solid #2a2d3d",
-                background: tab === key ? "rgba(79,142,247,0.15)" : "#1a1d27",
-                color: tab === key ? "#4f8ef7" : "#6b7280",
+                border: tab === key ? "1px solid var(--t-accent)" : "1px solid var(--t-border)",
+                background: tab === key ? "rgba(var(--t-accent-rgb),0.15)" : "var(--t-card)",
+                color: tab === key ? "var(--t-accent)" : "var(--t-text-muted)",
               }}
             >
               {label}
@@ -299,13 +299,13 @@ export default function ShopAdminPage() {
 
         {tab === "presentations" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {presentations.length === 0 && <div style={{ color: "#4b5563", fontSize: "13px" }}>Презентаций пока нет</div>}
+            {presentations.length === 0 && <div style={{ color: "var(--t-text-faint)", fontSize: "13px" }}>Презентаций пока нет</div>}
             {presentations.map((p) => (
               <div key={p.id} style={cardStyle}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                   <div>
                     <div style={{ fontWeight: 600, marginBottom: "4px" }}>{p.title}</div>
-                    <div style={{ color: "#6b7280", fontSize: "13px" }}>
+                    <div style={{ color: "var(--t-text-muted)", fontSize: "13px" }}>
                       {p.subject} · {p.grade} класс · {p.price} ₽
                     </div>
                   </div>
@@ -372,7 +372,7 @@ export default function ShopAdminPage() {
               />
 
               {message && (
-                <p style={{ marginBottom: "12px", color: message.startsWith("✅") ? "#34d399" : "#ef4444", fontSize: "13px" }}>
+                <p style={{ marginBottom: "12px", color: message.startsWith("✅") ? "var(--t-success)" : "var(--t-danger)", fontSize: "13px" }}>
                   {message}
                 </p>
               )}
@@ -388,7 +388,7 @@ export default function ShopAdminPage() {
           <div>
             <div style={{ ...cardStyle, marginBottom: "1.5rem" }}>
               <div style={{ fontWeight: 600, fontSize: "15px", marginBottom: "4px" }}>Сгенерировать коды на презентацию</div>
-              <p style={{ color: "#6b7280", fontSize: "12px", marginBottom: "14px" }}>
+              <p style={{ color: "var(--t-text-muted)", fontSize: "12px", marginBottom: "14px" }}>
                 Код открывает доступ к одной выбранной презентации на указанный срок.
               </p>
               <form onSubmit={handleGenerateCodes} style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "14px" }}>
@@ -414,8 +414,8 @@ export default function ShopAdminPage() {
                 </div>
               </form>
               {newCodes.length > 0 && (
-                <div style={{ background: "#0f1117", border: "1px solid #4f8ef7", borderRadius: "10px", padding: "14px 16px" }}>
-                  <div style={{ color: "#34d399", fontSize: "12px", marginBottom: "8px" }}>✓ Новые коды:</div>
+                <div style={{ background: "var(--t-bg)", border: "1px solid var(--t-accent)", borderRadius: "10px", padding: "14px 16px" }}>
+                  <div style={{ color: "var(--t-success)", fontSize: "12px", marginBottom: "8px" }}>✓ Новые коды:</div>
                   {newCodes.map((c) => (
                     <div key={c} style={{ fontFamily: "monospace", fontSize: "15px", letterSpacing: "1px", marginBottom: "4px" }}>{c}</div>
                   ))}
@@ -423,9 +423,9 @@ export default function ShopAdminPage() {
               )}
             </div>
 
-            <div style={{ ...cardStyle, marginBottom: "1.5rem", border: "1px solid #a16207" }}>
-              <div style={{ fontWeight: 600, fontSize: "15px", marginBottom: "4px", color: "#fbbf24" }}>⭐ Подписка на весь магазин</div>
-              <p style={{ color: "#d1a656", fontSize: "12px", marginBottom: "14px" }}>
+            <div style={{ ...cardStyle, marginBottom: "1.5rem", border: "1px solid var(--t-sub-border)" }}>
+              <div style={{ fontWeight: 600, fontSize: "15px", marginBottom: "4px", color: "var(--t-warning)" }}>⭐ Подписка на весь магазин</div>
+              <p style={{ color: "var(--t-sub-text)", fontSize: "12px", marginBottom: "14px" }}>
                 Один такой код открывает сразу все презентации магазина на указанный срок.
               </p>
               <form onSubmit={handleGenerateSubCodes} style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "14px" }}>
@@ -441,15 +441,15 @@ export default function ShopAdminPage() {
                   <button
                     type="submit"
                     disabled={subLoading}
-                    style={primaryBtnStyle(subLoading, "linear-gradient(135deg, #d97706, #b45309)")}
+                    style={primaryBtnStyle(subLoading, "linear-gradient(135deg, var(--t-sub-gradient-start), var(--t-sub-gradient-end))")}
                   >
                     {subLoading ? "Генерируем..." : "Сгенерировать подписку"}
                   </button>
                 </div>
               </form>
               {newSubCodes.length > 0 && (
-                <div style={{ background: "#0f1117", border: "1px solid #d97706", borderRadius: "10px", padding: "14px 16px" }}>
-                  <div style={{ color: "#fbbf24", fontSize: "12px", marginBottom: "8px" }}>⭐ Новые коды подписки:</div>
+                <div style={{ background: "var(--t-bg)", border: "1px solid var(--t-sub-gradient-start)", borderRadius: "10px", padding: "14px 16px" }}>
+                  <div style={{ color: "var(--t-warning)", fontSize: "12px", marginBottom: "8px" }}>⭐ Новые коды подписки:</div>
                   {newSubCodes.map((c) => (
                     <div key={c} style={{ fontFamily: "monospace", fontSize: "15px", letterSpacing: "1px", marginBottom: "4px" }}>{c}</div>
                   ))}
@@ -459,7 +459,7 @@ export default function ShopAdminPage() {
 
             <div style={cardStyle}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "8px" }}>
-                <div style={{ color: "#6b7280", fontSize: "12px" }}>История кодов</div>
+                <div style={{ color: "var(--t-text-muted)", fontSize: "12px" }}>История кодов</div>
                 <select
                   style={{ ...inputStyle, width: "auto", minWidth: "220px" }}
                   value={selectedPresId ?? ""}
@@ -470,7 +470,7 @@ export default function ShopAdminPage() {
                 </select>
               </div>
               {codes.length === 0 ? (
-                <div style={{ color: "#4b5563", fontSize: "13px" }}>Кодов пока нет</div>
+                <div style={{ color: "var(--t-text-faint)", fontSize: "13px" }}>Кодов пока нет</div>
               ) : (
                 <div style={{ overflowX: "auto", maxHeight: "360px", overflowY: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", whiteSpace: "nowrap" }}>
@@ -478,9 +478,9 @@ export default function ShopAdminPage() {
                       <tr>
                         {["Код", "Презентация", "Дата активации", "Срок", "Осталось", "Статус"].map((h) => (
                           <th key={h} style={{
-                            position: "sticky", top: 0, background: "#1a1d27", textAlign: "left",
-                            color: "#6b7280", fontWeight: 500, fontSize: "11px", textTransform: "uppercase",
-                            padding: "6px 10px", borderBottom: "1px solid #2a2d3d",
+                            position: "sticky", top: 0, background: "var(--t-card)", textAlign: "left",
+                            color: "var(--t-text-muted)", fontWeight: 500, fontSize: "11px", textTransform: "uppercase",
+                            padding: "6px 10px", borderBottom: "1px solid var(--t-border)",
                           }}>
                             {h}
                           </th>
@@ -491,19 +491,19 @@ export default function ShopAdminPage() {
                       {codes.map((c) => {
                         const isSub = c.presentation_title === null;
                         const daysLeft = c.first_used_at ? daysLeftFrom(c.first_used_at, c.valid_days) : null;
-                        const statusColor = c.status !== "active" ? "#6b7280" : c.first_used_at ? "#34d399" : "#60a5fa";
+                        const statusColor = c.status !== "active" ? "var(--t-text-muted)" : c.first_used_at ? "var(--t-success)" : "var(--t-info)";
                         const statusLabel = c.status !== "active" ? "отозван" : c.first_used_at ? "активирован" : "не использован";
                         return (
-                          <tr key={c.id} style={{ borderBottom: "1px solid #2a2d3d" }}>
+                          <tr key={c.id} style={{ borderBottom: "1px solid var(--t-border)" }}>
                             <td style={{ padding: "8px 10px", fontFamily: "monospace" }}>{c.code}</td>
-                            <td style={{ padding: "8px 10px", color: isSub ? "#fbbf24" : "#9ca3af" }}>
+                            <td style={{ padding: "8px 10px", color: isSub ? "var(--t-warning)" : "var(--t-text-secondary)" }}>
                               {isSub ? "⭐ Весь магазин" : c.presentation_title}
                             </td>
-                            <td style={{ padding: "8px 10px", color: "#9ca3af" }}>
+                            <td style={{ padding: "8px 10px", color: "var(--t-text-secondary)" }}>
                               {c.first_used_at ? new Date(c.first_used_at).toLocaleDateString("ru-RU") : "—"}
                             </td>
-                            <td style={{ padding: "8px 10px", color: "#9ca3af" }}>{c.valid_days} дн.</td>
-                            <td style={{ padding: "8px 10px", color: "#9ca3af" }}>
+                            <td style={{ padding: "8px 10px", color: "var(--t-text-secondary)" }}>{c.valid_days} дн.</td>
+                            <td style={{ padding: "8px 10px", color: "var(--t-text-secondary)" }}>
                               {daysLeft === null ? "—" : daysLeft > 0 ? `${daysLeft} ${daysWord(daysLeft)}` : "истёк"}
                             </td>
                             <td style={{ padding: "8px 10px" }}>
@@ -511,7 +511,7 @@ export default function ShopAdminPage() {
                               {c.status === "active" && (
                                 <button
                                   onClick={() => handleRevokeCode(c.id)}
-                                  style={{ marginLeft: "10px", background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: "12px", textDecoration: "underline" }}
+                                  style={{ marginLeft: "10px", background: "none", border: "none", color: "var(--t-text-muted)", cursor: "pointer", fontSize: "12px", textDecoration: "underline" }}
                                 >
                                   отозвать
                                 </button>
@@ -599,7 +599,7 @@ function EditPresentation({ presentation, onSave, onCancel }: {
 
       <label style={labelStyle}>Имя файла превью (например: preview-1.jpg)</label>
       <input style={{ ...inputStyle, marginBottom: "4px" }} value={form.preview_image ?? ""} onChange={(e) => setForm({ ...form, preview_image: e.target.value })} placeholder="preview_image" />
-      <div style={{ color: "#4b5563", fontSize: "12px", marginBottom: "12px" }}>Загрузи файл в Supabase Storage → бакет previews, потом укажи имя здесь</div>
+      <div style={{ color: "var(--t-text-faint)", fontSize: "12px", marginBottom: "12px" }}>Загрузи файл в Supabase Storage → бакет previews, потом укажи имя здесь</div>
 
       <div style={{ display: "flex", gap: "12px" }}>
         <div style={{ flex: 1 }}>
@@ -623,7 +623,7 @@ function EditPresentation({ presentation, onSave, onCancel }: {
         </div>
       </div>
 
-      <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px", fontSize: "14px", color: "#d1d5db" }}>
+      <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px", fontSize: "14px", color: "var(--t-text-secondary)" }}>
         <input
           type="checkbox"
           checked={form.is_active}

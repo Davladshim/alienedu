@@ -111,8 +111,8 @@ export default function TaskPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0f1117" }}>
-        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "48px 24px", color: "#9ca3af" }}>
+      <div style={{ minHeight: "100vh", background: "var(--t-bg)" }}>
+        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "48px 24px", color: "var(--t-text-secondary)" }}>
           Загрузка...
         </div>
       </div>
@@ -121,12 +121,12 @@ export default function TaskPage() {
 
   if (error === "Нужен код доступа" || error === "Код недействителен" || error === "Срок действия кода истёк") {
     return (
-      <div style={{ minHeight: "100vh", background: "#0f1117", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ background: "#1e293b", borderRadius: 12, padding: 32, maxWidth: 400, width: "90%" }}>
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#f1f5f9" }}>
+      <div style={{ minHeight: "100vh", background: "var(--t-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ background: "var(--t-card)", borderRadius: 12, padding: 32, maxWidth: 400, width: "90%" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "var(--t-text)" }}>
             🔒 Задача заблокирована
           </h2>
-          <p style={{ color: "#9ca3af", marginBottom: 20, fontSize: 14 }}>
+          <p style={{ color: "var(--t-text-secondary)", marginBottom: 20, fontSize: 14 }}>
             Чтобы открыть все задачи StereoSpace на 30 дней, купите код доступа:
           </p>
 
@@ -140,7 +140,7 @@ export default function TaskPage() {
                 textAlign: "center",
                 padding: "10px 12px",
                 borderRadius: 8,
-                background: "#3b82f6",
+                background: "var(--t-accent)",
                 color: "#fff",
                 fontSize: 14,
                 fontWeight: 600,
@@ -158,7 +158,7 @@ export default function TaskPage() {
                 textAlign: "center",
                 padding: "10px 12px",
                 borderRadius: 8,
-                background: "#3b82f6",
+                background: "var(--t-accent)",
                 color: "#fff",
                 fontSize: 14,
                 fontWeight: 600,
@@ -179,16 +179,16 @@ export default function TaskPage() {
                 width: "100%",
                 padding: "10px 14px",
                 borderRadius: 8,
-                border: "1px solid #374151",
-                background: "#111827",
-                color: "#fff",
+                border: "1px solid var(--t-border)",
+                background: "var(--t-bg)",
+                color: "var(--t-text)",
                 fontSize: 14,
                 marginBottom: 8,
                 boxSizing: "border-box",
               }}
             />
             {codeError && (
-              <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>
+              <p style={{ color: "var(--t-danger-soft)", fontSize: 13, marginBottom: 8 }}>
                 {codeError}
               </p>
             )}
@@ -200,7 +200,7 @@ export default function TaskPage() {
                 padding: "10px 14px",
                 borderRadius: 8,
                 border: "none",
-                background: "#22c55e",
+                background: "var(--t-success2)",
                 color: "#fff",
                 fontSize: 14,
                 fontWeight: 600,
@@ -217,7 +217,7 @@ export default function TaskPage() {
               display: "block",
               textAlign: "center",
               marginTop: 12,
-              color: "#9ca3af",
+              color: "var(--t-text-secondary)",
               fontSize: 13,
               textDecoration: "none",
             }}
@@ -231,8 +231,8 @@ export default function TaskPage() {
 
   if (error || !task) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0f1117" }}>
-        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "48px 24px", color: "#f87171" }}>
+      <div style={{ minHeight: "100vh", background: "var(--t-bg)" }}>
+        <div style={{ maxWidth: 1400, margin: "0 auto", padding: "48px 24px", color: "var(--t-danger-soft)" }}>
           {error || "Задача не найдена"}
         </div>
       </div>
@@ -281,16 +281,16 @@ export default function TaskPage() {
   const solutionSteps = task.solution.split("\n").filter((s) => s.trim().length > 0);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1117" }}>
+    <div style={{ minHeight: "100vh", background: "var(--t-bg)" }}>
     <div style={{ maxWidth: 1400, margin: "0 auto", padding: "48px 24px" }}>
-      <a href="/stereo" style={{ color: "#60a5fa", fontSize: 14, textDecoration: "none" }}>
+      <a href="/stereo" style={{ color: "var(--t-info)", fontSize: 14, textDecoration: "none" }}>
         ← Все задачи
       </a>
 
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginTop: 16, marginBottom: 4 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, marginTop: 16, marginBottom: 4, color: "var(--t-text)" }}>
         {task.title}
       </h1>
-      <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>
+      <p style={{ color: "var(--t-text-muted)", fontSize: 13, marginBottom: 24 }}>
         {[task.textbook, task.authors, task.year].filter(Boolean).join(" · ")}
       </p>
 
@@ -298,24 +298,24 @@ export default function TaskPage() {
         <div style={{ flexShrink: 0, width: 560 }}>
           <div
             style={{
-              border: "1px solid #374151",
+              border: "1px solid var(--t-border)",
               borderRadius: 12,
               padding: "12px 16px",
               marginBottom: 12,
             }}
           >
-            <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 10, fontWeight: 600, letterSpacing: 0.5 }}>
+            <p style={{ fontSize: 12, color: "var(--t-text-muted)", marginBottom: 10, fontWeight: 600, letterSpacing: 0.5 }}>
               ФИЛЬТРЫ
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px 20px", alignItems: "center" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#f87171", cursor: "pointer", fontWeight: 600 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--t-danger-soft)", cursor: "pointer", fontWeight: 600 }}>
                 <input type="checkbox" checked={hideAll} onChange={() => setHideAll(!hideAll)} />
                 Скрыть всё
               </label>
 
-              <span style={{ width: 1, height: 16, background: "#374151" }} />
+              <span style={{ width: 1, height: 16, background: "var(--t-border)" }} />
 
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: allOn ? "#60a5fa" : "#9ca3af", cursor: "pointer" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: allOn ? "var(--t-info)" : "var(--t-text-secondary)", cursor: "pointer" }}>
                 <input type="checkbox" checked={allOn} onChange={toggleAll} />
                 Всё
               </label>
@@ -328,7 +328,7 @@ export default function TaskPage() {
                     alignItems: "center",
                     gap: 6,
                     fontSize: 13,
-                    color: !hideAll && layers[key] ? "#60a5fa" : "#9ca3af",
+                    color: !hideAll && layers[key] ? "var(--t-info)" : "var(--t-text-secondary)",
                     cursor: "pointer",
                     opacity: key === "additional" && !hasAdditional ? 0.5 : 1,
                   }}
@@ -345,7 +345,7 @@ export default function TaskPage() {
           </div>
 
           {additionalNote && (
-            <p style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>
+            <p style={{ color: "var(--t-warning)", fontSize: 13, marginBottom: 8 }}>
               У этой задачи нет дополнительных построений
             </p>
           )}
@@ -356,7 +356,7 @@ export default function TaskPage() {
               height: 560,
               borderRadius: 20,
               overflow: "hidden",
-              border: "1px solid #334155",
+              border: "1px solid var(--t-border)",
               marginBottom: 12,
             }}
           >
@@ -370,17 +370,17 @@ export default function TaskPage() {
               gap: 20,
               padding: "16px 20px",
               borderRadius: 14,
-              background: "rgba(148, 163, 184, 0.08)",
-              border: "1px solid #334155",
+              background: "var(--t-card)",
+              border: "1px solid var(--t-border)",
             }}
           >
             <svg width="72" height="104" viewBox="0 0 36 52" fill="none" style={{ flexShrink: 0 }}>
-              <rect x="1" y="1" width="34" height="50" rx="17" stroke="#6b7280" strokeWidth="1.5" />
-              <path d="M18 1 V22 M2 20 Q2 1 18 1" stroke="#6b7280" strokeWidth="1.5" fill="none" />
-              <path d="M18 22 L18 1 Q18 1 18 1 Q34 1 34 20" stroke="#6b7280" strokeWidth="1.5" fill="none" />
+              <rect x="1" y="1" width="34" height="50" rx="17" stroke="var(--t-text-muted)" strokeWidth="1.5" />
+              <path d="M18 1 V22 M2 20 Q2 1 18 1" stroke="var(--t-text-muted)" strokeWidth="1.5" fill="none" />
+              <path d="M18 22 L18 1 Q18 1 18 1 Q34 1 34 20" stroke="var(--t-text-muted)" strokeWidth="1.5" fill="none" />
               <rect
                 x="2" y="2" width="15" height="19" rx="8"
-                fill={hoveredBtn === "left" ? "#3b82f6" : "transparent"}
+                fill={hoveredBtn === "left" ? "var(--t-accent)" : "transparent"}
                 opacity={hoveredBtn === "left" ? 0.3 : 0}
                 style={{ cursor: "pointer", transition: "opacity 0.25s ease" }}
                 onMouseEnter={() => setHoveredBtn("left")}
@@ -388,7 +388,7 @@ export default function TaskPage() {
               />
               <rect
                 x="19" y="2" width="15" height="19" rx="8"
-                fill={hoveredBtn === "right" ? "#3b82f6" : "transparent"}
+                fill={hoveredBtn === "right" ? "var(--t-accent)" : "transparent"}
                 opacity={hoveredBtn === "right" ? 0.3 : 0}
                 style={{ cursor: "pointer", transition: "opacity 0.25s ease" }}
                 onMouseEnter={() => setHoveredBtn("right")}
@@ -396,7 +396,7 @@ export default function TaskPage() {
               />
               <rect
                 x="16" y="6" width="4" height="12" rx="2"
-                fill={hoveredBtn === "wheel" ? "#3b82f6" : "#9ca3af"}
+                fill={hoveredBtn === "wheel" ? "var(--t-accent)" : "var(--t-text-secondary)"}
                 style={{ cursor: "pointer", transition: "fill 0.25s ease" }}
                 onMouseEnter={() => setHoveredBtn("wheel")}
                 onMouseLeave={() => setHoveredBtn(null)}
@@ -404,13 +404,13 @@ export default function TaskPage() {
             </svg>
 
             <div>
-              <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>
+              <p style={{ fontSize: 12, color: "var(--t-text-muted)", marginBottom: 6 }}>
                 Наведите на кнопки мышки, чтобы узнать управление
               </p>
               <p
                 style={{
                   fontSize: 14,
-                  color: "#e2e8f0",
+                  color: "var(--t-text-secondary)",
                   minHeight: 20,
                   opacity: hoveredBtn ? 1 : 0,
                   transition: "opacity 0.3s ease",
@@ -425,9 +425,9 @@ export default function TaskPage() {
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ background: "#1f2937", borderRadius: 12, padding: 20, marginBottom: 16 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Условие</h3>
-            <p style={{ color: "#cbd5e1", fontSize: 14, lineHeight: 1.6 }}>{task.condition}</p>
+          <div style={{ background: "var(--t-card)", borderRadius: 12, padding: 20, marginBottom: 16 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8, color: "var(--t-text)" }}>Условие</h3>
+            <p style={{ color: "var(--t-text-secondary)", fontSize: 14, lineHeight: 1.6 }}>{task.condition}</p>
           </div>
 
           <button
@@ -436,7 +436,7 @@ export default function TaskPage() {
               padding: "10px 20px",
               borderRadius: 8,
               border: "none",
-              background: "#3b82f6",
+              background: "var(--t-accent)",
               color: "#fff",
               fontSize: 14,
               fontWeight: 600,
@@ -448,13 +448,13 @@ export default function TaskPage() {
           </button>
 
           {showSolution && (
-            <div style={{ background: "#1f2937", borderRadius: 12, padding: 24 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>Решение</h3>
+            <div style={{ background: "var(--t-card)", borderRadius: 12, padding: 24 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "var(--t-text)" }}>Решение</h3>
               {solutionSteps.map((step, i) => (
                 <p
                   key={i}
                   style={{
-                    color: "#cbd5e1",
+                    color: "var(--t-text-secondary)",
                     fontSize: 14,
                     lineHeight: 1.7,
                     marginBottom: 20,
@@ -465,10 +465,10 @@ export default function TaskPage() {
               ))}
               <p
                 style={{
-                  color: "#4ade80",
+                  color: "var(--t-success)",
                   fontWeight: 700,
                   fontSize: 15,
-                  background: "rgba(74,222,128,0.1)",
+                  background: "rgba(var(--t-success-rgb),0.1)",
                   padding: "12px 16px",
                   borderRadius: 8,
                   marginTop: 8,

@@ -155,21 +155,21 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
           fontFamily: "'Inter', 'Segoe UI', sans-serif",
         }}>
           <div style={{
-            background: "#1e2029",
-            border: "1px solid #2a2d3a",
+            background: "var(--t-card)",
+            border: "1px solid var(--t-border)",
             borderRadius: 20, padding: 48,
             maxWidth: 400, width: "90%",
             textAlign: "center",
             boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
           }}>
-            <div style={{ width: 56, height: 56, background: "#12131a", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="2">
+            <div style={{ width: 56, height: 56, background: "var(--t-bg)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--t-text-secondary)" strokeWidth="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
             </div>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#fff", marginBottom: 8 }}>Доступ закрыт</h2>
-            <p style={{ color: "#6b7280", fontSize: "0.95rem", marginBottom: 32, lineHeight: 1.6 }}>
+            <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--t-text)", marginBottom: 8 }}>Доступ закрыт</h2>
+            <p style={{ color: "var(--t-text-muted)", fontSize: "0.95rem", marginBottom: 32, lineHeight: 1.6 }}>
               Первые {FREE_SLIDES} слайда доступны бесплатно.<br />Введи код чтобы открыть всю презентацию.
             </p>
             <form onSubmit={handleSubmit}>
@@ -180,23 +180,23 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
                 placeholder="XXXX-XXXX"
                 maxLength={20}
                 style={{
-                  width: "100%", background: "#0b0f19",
-                  border: "1px solid #3f3f46", borderRadius: 10,
-                  padding: 14, color: "#fff", fontSize: "1.1rem",
+                  width: "100%", background: "var(--t-bg)",
+                  border: "1px solid var(--t-border)", borderRadius: 10,
+                  padding: 14, color: "var(--t-text)", fontSize: "1.1rem",
                   textAlign: "center", letterSpacing: "0.15em",
                   fontFamily: "monospace", marginBottom: 12,
                   outline: "none", boxSizing: "border-box",
                 }}
               />
               {status === "error" && (
-                <p style={{ color: "#f87171", fontSize: "0.85rem", marginBottom: 12 }}>{errorMsg}</p>
+                <p style={{ color: "var(--t-danger-soft)", fontSize: "0.85rem", marginBottom: 12 }}>{errorMsg}</p>
               )}
               <button
                 type="submit"
                 disabled={status === "loading" || !code.trim()}
                 style={{
                   width: "100%",
-                  background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                  background: "linear-gradient(135deg, var(--t-accent), var(--t-accent2))",
                   color: "#fff", border: "none", borderRadius: 10,
                   padding: 14, fontSize: "1rem", fontWeight: 600,
                   cursor: "pointer", marginBottom: 16,
@@ -206,9 +206,9 @@ export default function PresentationPage({ params }: { params: Promise<{ id: str
                 {status === "loading" ? "Проверяем..." : "Открыть презентацию"}
               </button>
             </form>
-            <div style={{ fontSize: "0.8rem", color: "#4b5563" }}>
+            <div style={{ fontSize: "0.8rem", color: "var(--t-text-faint)" }}>
               Нет кода?{" "}
-              <a href="https://vk.com/alientutor_for_tutors" target="_blank" rel="noopener noreferrer" style={{ color: "#6b7280", textDecoration: "underline" }}>Группа ВКонтакте</a>
+              <a href="https://vk.com/alientutor_for_tutors" target="_blank" rel="noopener noreferrer" style={{ color: "var(--t-text-muted)", textDecoration: "underline" }}>Группа ВКонтакте</a>
             </div>
           </div>
         </div>

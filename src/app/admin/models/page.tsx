@@ -22,13 +22,13 @@ const EMPTY_FORM = {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '12px', padding: '20px',
+  background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px', padding: '20px',
 }
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#0f1117', border: '1px solid #2a2d3d', borderRadius: '8px',
-  padding: '9px 12px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
+  width: '100%', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '8px',
+  padding: '9px 12px', color: 'var(--t-text)', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
 }
-const labelStyle: React.CSSProperties = { color: '#9ca3af', fontSize: '12px', display: 'block', marginBottom: '4px' }
+const labelStyle: React.CSSProperties = { color: 'var(--t-text-secondary)', fontSize: '12px', display: 'block', marginBottom: '4px' }
 
 export default function ModelsAdminPage() {
   const [checked, setChecked] = useState(false)
@@ -135,20 +135,20 @@ export default function ModelsAdminPage() {
 
   if (!isLoggedIn) {
     return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'auto', background: '#0f1117', display: 'flex', fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
+      <div style={{ position: 'fixed', inset: 0, overflow: 'auto', background: 'var(--t-bg)', display: 'flex', fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
         <div style={{ ...cardStyle, width: '100%', maxWidth: '380px', margin: 'auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>🏦</div>
-            <h1 style={{ color: '#fff', fontSize: '20px', fontWeight: 600, margin: 0 }}>Банк интерактивных моделей</h1>
+            <h1 style={{ color: 'var(--t-text)', fontSize: '20px', fontWeight: 600, margin: 0 }}>Банк интерактивных моделей</h1>
           </div>
           <form onSubmit={handleLogin}>
             <input
               type="password" value={password} onChange={e => setPassword(e.target.value)}
               placeholder="Пароль админа" autoFocus style={{ ...inputStyle, marginBottom: '12px' }}
             />
-            {loginError && <div style={{ color: '#ef4444', fontSize: '13px', marginBottom: '12px' }}>{loginError}</div>}
+            {loginError && <div style={{ color: 'var(--t-danger)', fontSize: '13px', marginBottom: '12px' }}>{loginError}</div>}
             <button type="submit" style={{
-              width: '100%', background: '#4f8ef7', color: '#fff', border: 'none', borderRadius: '8px',
+              width: '100%', background: 'var(--t-accent)', color: '#fff', border: 'none', borderRadius: '8px',
               padding: '10px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
             }}>Войти</button>
           </form>
@@ -158,13 +158,13 @@ export default function ModelsAdminPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>🏦 Банк интерактивных моделей</h1>
           {editingId === null && (
             <button onClick={startCreate} style={{
-              background: '#4f8ef7', color: '#fff', border: 'none', borderRadius: '8px',
+              background: 'var(--t-accent)', color: '#fff', border: 'none', borderRadius: '8px',
               padding: '9px 18px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
             }}>+ Новая модель</button>
           )}
@@ -207,15 +207,15 @@ export default function ModelsAdminPage() {
                 style={{ width: '100%' }}
               />
 
-              {saveError && <div style={{ color: '#ef4444', fontSize: '13px', margin: '10px 0' }}>{saveError}</div>}
+              {saveError && <div style={{ color: 'var(--t-danger)', fontSize: '13px', margin: '10px 0' }}>{saveError}</div>}
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
                 <button onClick={handleSave} disabled={saving} style={{
-                  background: '#4f8ef7', color: '#fff', border: 'none', borderRadius: '8px',
+                  background: 'var(--t-accent)', color: '#fff', border: 'none', borderRadius: '8px',
                   padding: '9px 18px', fontSize: '14px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1,
                 }}>{saving ? 'Сохранение...' : 'Сохранить'}</button>
                 <button onClick={() => setEditingId(null)} style={{
-                  background: 'none', border: '1px solid #2a2d3d', color: '#9ca3af', borderRadius: '8px',
+                  background: 'none', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)', borderRadius: '8px',
                   padding: '9px 18px', fontSize: '14px', cursor: 'pointer',
                 }}>Отмена</button>
               </div>
@@ -246,8 +246,8 @@ export default function ModelsAdminPage() {
                 ) : (
                   <div style={{
                     width: `${form.frame_width || 500}px`, height: `${form.frame_height || 400}px`, maxWidth: '100%',
-                    background: '#0f1117', border: '1px dashed #2a2d3d', borderRadius: '8px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4b5563', fontSize: '13px',
+                    background: 'var(--t-bg)', border: '1px dashed var(--t-border)', borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--t-text-faint)', fontSize: '13px',
                   }}>
                     Вставь код, чтобы увидеть модель
                   </div>
@@ -258,7 +258,7 @@ export default function ModelsAdminPage() {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
             {models.length === 0 && (
-              <div style={{ color: '#6b7280', fontSize: '14px' }}>Пока нет ни одной модели — добавь первую.</div>
+              <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Пока нет ни одной модели — добавь первую.</div>
             )}
             {models.map(m => (
               <div key={m.id} style={cardStyle}>
@@ -271,19 +271,19 @@ export default function ModelsAdminPage() {
                   </div>
                 </div>
                 <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '2px' }}>{m.title}</div>
-                <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px' }}>
+                <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '10px' }}>
                   {m.subject}{m.topic && ` · ${m.topic}`}
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button onClick={() => startEdit(m)} style={{
-                    flex: 1, background: 'rgba(79,142,247,0.15)', border: '1px solid #4f8ef7', color: '#4f8ef7',
+                    flex: 1, background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)',
                     borderRadius: '8px', padding: '7px', fontSize: '13px', cursor: 'pointer',
                   }}>✏️ Редактировать</button>
                   <button
                     onClick={() => handleDelete(m.id, m.title)}
                     disabled={deletingId === m.id}
                     style={{
-                      background: 'rgba(239,68,68,0.1)', border: '1px solid #7f1d1d', color: '#ef4444',
+                      background: 'rgba(var(--t-danger-rgb),0.1)', border: '1px solid var(--t-danger)', color: 'var(--t-danger)',
                       borderRadius: '8px', padding: '7px 12px', fontSize: '13px', cursor: 'pointer',
                     }}
                   >🗑</button>

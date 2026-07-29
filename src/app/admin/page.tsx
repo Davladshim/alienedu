@@ -146,11 +146,11 @@ export default function AdminPage() {
   }
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', background: '#0f1117', border: '1px solid #2a2d3d', borderRadius: '8px',
-    padding: '10px 14px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
+    width: '100%', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '8px',
+    padding: '10px 14px', color: 'var(--t-text)', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
   }
   const cardStyle: React.CSSProperties = {
-    background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem',
+    background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem',
   }
 
   if (!checked) return null
@@ -158,13 +158,13 @@ export default function AdminPage() {
   if (!isLoggedIn) {
     return (
       <div style={{
-        position: 'fixed', inset: 0, overflow: 'auto', background: '#0f1117', display: 'flex',
+        position: 'fixed', inset: 0, overflow: 'auto', background: 'var(--t-bg)', display: 'flex',
         fontFamily: 'system-ui, sans-serif', padding: '2rem',
       }}>
         <div style={{ ...cardStyle, width: '100%', maxWidth: '380px', margin: 'auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>🛠</div>
-            <h1 style={{ color: '#fff', fontSize: '20px', fontWeight: 600, margin: 0 }}>Админка AlienEdu</h1>
+            <h1 style={{ color: 'var(--t-text)', fontSize: '20px', fontWeight: 600, margin: 0 }}>Админка AlienEdu</h1>
           </div>
           <form onSubmit={handleLogin}>
             <input
@@ -175,9 +175,9 @@ export default function AdminPage() {
               autoComplete="current-password"
               style={{ ...inputStyle, marginBottom: '1rem' }}
             />
-            {loginError && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '1rem' }}>{loginError}</p>}
+            {loginError && <p style={{ color: 'var(--t-danger)', fontSize: '13px', marginBottom: '1rem' }}>{loginError}</p>}
             <button type="submit" style={{
-              width: '100%', background: '#4f8ef7', color: '#fff', border: 'none', borderRadius: '8px',
+              width: '100%', background: 'var(--t-accent)', color: '#fff', border: 'none', borderRadius: '8px',
               padding: '11px', fontSize: '14px', fontWeight: 500, cursor: 'pointer',
             }}>
               Войти
@@ -189,14 +189,14 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f1117', fontFamily: 'system-ui, sans-serif', color: '#fff', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>🛠 Админка AlienEdu</h1>
           <button
             onClick={handleLogout}
-            style={{ background: 'none', border: '1px solid #2a2d3d', color: '#9ca3af', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer' }}
+            style={{ background: 'none', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)', borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer' }}
           >
             Выйти
           </button>
@@ -205,35 +205,35 @@ export default function AdminPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '16px' }}>
           <Link href="/teacher/quests" style={{ textDecoration: 'none' }}>
             <div
-              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#60a5fa')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-info)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>🧩</div>
               <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Мои квесты</div>
-              <div style={{ color: '#6b7280', fontSize: '13px' }}>Управление квестами</div>
+              <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Управление квестами</div>
             </div>
           </Link>
           <Link href="/teacher" style={{ textDecoration: 'none' }}>
             <div
-              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>🪐</div>
               <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Кабинет репетитора</div>
-              <div style={{ color: '#6b7280', fontSize: '13px' }}>Основной кабинет</div>
+              <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Основной кабинет</div>
             </div>
           </Link>
           <Link href="/admin/models" target="_blank" style={{ textDecoration: 'none' }}>
             <div
-              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>🏦</div>
               <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Банк интерактивных моделей</div>
-              <div style={{ color: '#6b7280', fontSize: '13px' }}>Откроется в новой вкладке</div>
+              <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Откроется в новой вкладке</div>
             </div>
           </Link>
         </div>
@@ -241,35 +241,35 @@ export default function AdminPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '1.5rem' }}>
           <Link href="/shop/admin" target="_blank" style={{ textDecoration: 'none' }}>
             <div
-              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#60a5fa')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-info)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>🛍️</div>
               <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Админка магазина</div>
-              <div style={{ color: '#6b7280', fontSize: '13px' }}>Презентации, коды доступа</div>
+              <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Презентации, коды доступа</div>
             </div>
           </Link>
           <Link href="/stereo/admin" target="_blank" style={{ textDecoration: 'none' }}>
             <div
-              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔷</div>
               <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Админка StereoSpace</div>
-              <div style={{ color: '#6b7280', fontSize: '13px' }}>Задачи, коды доступа</div>
+              <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Задачи, коды доступа</div>
             </div>
           </Link>
           <Link href="/stereo" target="_blank" style={{ textDecoration: 'none' }}>
             <div
-              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
               <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔷</div>
               <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>StereoSpace</div>
-              <div style={{ color: '#6b7280', fontSize: '13px' }}>Сам сервис — для проверки</div>
+              <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Сам сервис — для проверки</div>
             </div>
           </Link>
         </div>
@@ -279,7 +279,7 @@ export default function AdminPage() {
 
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
             <div style={{ flex: 1, minWidth: '180px' }}>
-              <label style={{ color: '#9ca3af', fontSize: '13px', display: 'block', marginBottom: '4px' }}>Срок</label>
+              <label style={{ color: 'var(--t-text-secondary)', fontSize: '13px', display: 'block', marginBottom: '4px' }}>Срок</label>
               <select value={duration} onChange={e => setDuration(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
                 <option value="">Выберите срок</option>
                 <option value="30">1 месяц (30 дней)</option>
@@ -287,7 +287,7 @@ export default function AdminPage() {
               </select>
             </div>
             <div style={{ flex: 1, minWidth: '180px' }}>
-              <label style={{ color: '#9ca3af', fontSize: '13px', display: 'block', marginBottom: '4px' }}>Тариф</label>
+              <label style={{ color: 'var(--t-text-secondary)', fontSize: '13px', display: 'block', marginBottom: '4px' }}>Тариф</label>
               <select value={plan} onChange={e => setPlan(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
                 <option value="">Выберите тариф</option>
                 <option value="pro">Pro</option>
@@ -298,8 +298,8 @@ export default function AdminPage() {
                 onClick={handleGenerate}
                 disabled={!duration || !plan || generating}
                 style={{
-                  background: !duration || !plan || generating ? '#2a2d3d' : 'linear-gradient(135deg, #4f8ef7, #7c3aed)',
-                  color: !duration || !plan || generating ? '#6b7280' : '#fff',
+                  background: !duration || !plan || generating ? 'var(--t-border)' : 'linear-gradient(135deg, var(--t-accent), var(--t-accent2))',
+                  color: !duration || !plan || generating ? 'var(--t-text-muted)' : '#fff',
                   border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 600,
                   cursor: !duration || !plan || generating ? 'not-allowed' : 'pointer',
                 }}
@@ -309,25 +309,25 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {genError && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '10px' }}>{genError}</p>}
+          {genError && <p style={{ color: 'var(--t-danger)', fontSize: '13px', marginBottom: '10px' }}>{genError}</p>}
 
           {lastGenerated && (
             <div style={{
-              background: '#0f1117', border: '1px solid #4f8ef7', borderRadius: '10px',
+              background: 'var(--t-bg)', border: '1px solid var(--t-accent)', borderRadius: '10px',
               padding: '14px 16px', marginBottom: '14px', display: 'flex', justifyContent: 'space-between',
               alignItems: 'center', gap: '10px', flexWrap: 'wrap',
             }}>
               <div>
                 <div style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '1px' }}>{lastGenerated.code}</div>
-                <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>
+                <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '2px' }}>
                   {PLAN_LABELS[lastGenerated.plan]} · {DURATION_LABELS[lastGenerated.valid_days]}
                 </div>
               </div>
               <button
                 onClick={copyMessage}
                 style={{
-                  background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(79,142,247,0.15)',
-                  border: `1px solid ${copied ? '#34d399' : '#4f8ef7'}`, color: copied ? '#34d399' : '#4f8ef7',
+                  background: copied ? 'rgba(var(--t-success-rgb),0.15)' : 'rgba(var(--t-accent-rgb),0.15)',
+                  border: `1px solid ${copied ? 'var(--t-success)' : 'var(--t-accent)'}`, color: copied ? 'var(--t-success)' : 'var(--t-accent)',
                   borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer', fontWeight: 600,
                 }}
               >
@@ -336,9 +336,9 @@ export default function AdminPage() {
             </div>
           )}
 
-          <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '8px' }}>История кодов</div>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '8px' }}>История кодов</div>
           {codes.length === 0 ? (
-            <div style={{ color: '#4b5563', fontSize: '13px' }}>Кодов ещё не было</div>
+            <div style={{ color: 'var(--t-text-faint)', fontSize: '13px' }}>Кодов ещё не было</div>
           ) : (
             <div style={{ overflowX: 'auto', maxHeight: '360px', overflowY: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', whiteSpace: 'nowrap' }}>
@@ -346,9 +346,9 @@ export default function AdminPage() {
                   <tr>
                     {['Код', 'Дата активации', 'Логин', 'Имя', 'Тариф', 'Осталось', 'Статус'].map(h => (
                       <th key={h} style={{
-                        position: 'sticky', top: 0, background: '#1a1d27', textAlign: 'left',
-                        color: '#6b7280', fontWeight: 500, fontSize: '11px', textTransform: 'uppercase',
-                        padding: '6px 10px', borderBottom: '1px solid #2a2d3d',
+                        position: 'sticky', top: 0, background: 'var(--t-card)', textAlign: 'left',
+                        color: 'var(--t-text-muted)', fontWeight: 500, fontSize: '11px', textTransform: 'uppercase',
+                        padding: '6px 10px', borderBottom: '1px solid var(--t-border)',
                       }}>
                         {h}
                       </th>
@@ -358,18 +358,18 @@ export default function AdminPage() {
                 <tbody>
                   {codes.map(c => {
                     const daysLeft = c.first_used_at ? daysLeftFrom(c.first_used_at, c.valid_days) : null
-                    const statusColor = c.status !== 'active' ? '#6b7280' : c.first_used_at ? '#34d399' : '#60a5fa'
+                    const statusColor = c.status !== 'active' ? 'var(--t-text-muted)' : c.first_used_at ? 'var(--t-success)' : 'var(--t-info)'
                     const statusLabel = c.status !== 'active' ? 'отозван' : c.first_used_at ? 'активирован' : 'не использован'
                     return (
-                      <tr key={c.id} style={{ borderBottom: '1px solid #2a2d3d' }}>
+                      <tr key={c.id} style={{ borderBottom: '1px solid var(--t-border)' }}>
                         <td style={{ padding: '8px 10px', fontFamily: 'monospace' }}>{c.code}</td>
-                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>
+                        <td style={{ padding: '8px 10px', color: 'var(--t-text-secondary)' }}>
                           {c.first_used_at ? new Date(c.first_used_at).toLocaleDateString('ru-RU') : '—'}
                         </td>
-                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>{c.used_by_login || '—'}</td>
-                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>{c.used_by_name || '—'}</td>
-                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>{PLAN_LABELS[c.plan] || c.plan}</td>
-                        <td style={{ padding: '8px 10px', color: '#9ca3af' }}>
+                        <td style={{ padding: '8px 10px', color: 'var(--t-text-secondary)' }}>{c.used_by_login || '—'}</td>
+                        <td style={{ padding: '8px 10px', color: 'var(--t-text-secondary)' }}>{c.used_by_name || '—'}</td>
+                        <td style={{ padding: '8px 10px', color: 'var(--t-text-secondary)' }}>{PLAN_LABELS[c.plan] || c.plan}</td>
+                        <td style={{ padding: '8px 10px', color: 'var(--t-text-secondary)' }}>
                           {daysLeft === null ? '—' : daysLeft > 0 ? `${daysLeft} ${daysWord(daysLeft)}` : 'истёк'}
                         </td>
                         <td style={{ padding: '8px 10px', color: statusColor }}>{statusLabel}</td>
@@ -384,23 +384,23 @@ export default function AdminPage() {
 
         <div style={cardStyle}>
           <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '4px' }}>Модерация библиотеки</div>
-          <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '14px' }}>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '14px' }}>
             Все уроки, опубликованные в общую библиотеку. Удаление — полное, для случаев жалоб на содержимое.
           </div>
 
-          {moderationLoading && <p style={{ color: '#6b7280', fontSize: '13px' }}>Загрузка...</p>}
+          {moderationLoading && <p style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Загрузка...</p>}
           {!moderationLoading && moderationLessons.length === 0 && (
-            <div style={{ color: '#4b5563', fontSize: '13px' }}>В библиотеке пока пусто</div>
+            <div style={{ color: 'var(--t-text-faint)', fontSize: '13px' }}>В библиотеке пока пусто</div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '400px', overflowY: 'auto' }}>
             {moderationLessons.map(l => (
               <div key={l.id} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px',
-                fontSize: '13px', padding: '8px 0', borderBottom: '1px solid #2a2d3d',
+                fontSize: '13px', padding: '8px 0', borderBottom: '1px solid var(--t-border)',
               }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 600 }}>{l.title}</div>
-                  <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>
+                  <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '2px' }}>
                     {[l.subject, l.grade ? `${l.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
                     {' · '}{l.block_count} {l.block_count === 1 ? 'блок' : 'блоков'}
                     {' · '}автор: {l.author_name}
@@ -410,7 +410,7 @@ export default function AdminPage() {
                   onClick={() => deleteLesson(l.id, l.title)}
                   disabled={deletingLessonId === l.id}
                   style={{
-                    flexShrink: 0, background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', color: '#ef4444',
+                    flexShrink: 0, background: 'rgba(var(--t-danger-rgb),0.1)', border: '1px solid var(--t-danger)', color: 'var(--t-danger)',
                     borderRadius: '8px', padding: '6px 14px', fontSize: '12px',
                     cursor: deletingLessonId === l.id ? 'not-allowed' : 'pointer',
                   }}

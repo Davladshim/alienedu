@@ -38,6 +38,11 @@
   --t-template-accent-rgb: 167, 139, 250;
   --t-template-gradient-end: #c026d3;
   --t-danger-bg: #2d1515;
+  --t-sub-border: #a16207;
+  --t-sub-text: #d1a656;
+  --t-sub-gradient-start: #d97706;
+  --t-sub-gradient-end: #b45309;
+  --t-overlay: rgba(0, 0, 0, 0.6);
 
   --t-shadow: rgba(0, 0, 0, 0.6);
 }
@@ -76,6 +81,11 @@
   --t-template-accent-rgb: 147, 51, 234;
   --t-template-gradient-end: #a21caf;
   --t-danger-bg: #fee2e2;
+  --t-sub-border: #d97706;
+  --t-sub-text: #92400e;
+  --t-sub-gradient-start: #d97706;
+  --t-sub-gradient-end: #92400e;
+  --t-overlay: rgba(15, 23, 42, 0.4);
 
   --t-shadow: rgba(15, 23, 42, 0.12);
 }

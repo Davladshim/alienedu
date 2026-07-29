@@ -32,7 +32,7 @@ export default function ShopFilters({ presentations }: { presentations: Presenta
     <>
       <div style={{ marginBottom: 32, display: "flex", flexWrap: "wrap", gap: 24 }}>
         <div>
-          <div style={{ color: "#6b7280", fontSize: "0.75rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          <div style={{ color: "var(--t-text-muted)", fontSize: "0.75rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}>
             Предмет
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -44,7 +44,7 @@ export default function ShopFilters({ presentations }: { presentations: Presenta
         </div>
 
         <div>
-          <div style={{ color: "#6b7280", fontSize: "0.75rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          <div style={{ color: "var(--t-text-muted)", fontSize: "0.75rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}>
             Класс
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -56,16 +56,16 @@ export default function ShopFilters({ presentations }: { presentations: Presenta
         </div>
       </div>
 
-      <div style={{ color: "#4b5563", fontSize: "0.85rem", marginBottom: 20 }}>
+      <div style={{ color: "var(--t-text-faint)", fontSize: "0.85rem", marginBottom: 20 }}>
         {filtered.length === 0 ? "Ничего не найдено" : `Найдено: ${filtered.length}`}
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "80px 0", color: "#4b5563" }}>
+        <div style={{ textAlign: "center", padding: "80px 0", color: "var(--t-text-faint)" }}>
           <p style={{ fontSize: "1.1rem", marginBottom: 8 }}>По этим фильтрам ничего нет</p>
           <button
             onClick={() => { setSelectedGrade(null); setSelectedSubject(null); }}
-            style={{ color: "#60a5fa", background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}
+            style={{ color: "var(--t-info)", background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}
           >
             Сбросить фильтры
           </button>
@@ -79,19 +79,19 @@ export default function ShopFilters({ presentations }: { presentations: Presenta
       )}
       {popupPresentation && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
+          style={{ position: "fixed", inset: 0, background: "var(--t-overlay)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
           onClick={() => setPopupPresentation(null)}
         >
           <div
-            style={{ background: "#1e2029", border: "1px solid #2a2d3a", borderRadius: 16, padding: 32, maxWidth: 480, width: "90%", maxHeight: "80vh", overflowY: "auto" }}
+            style={{ background: "var(--t-card)", border: "1px solid var(--t-border)", borderRadius: 16, padding: 32, maxWidth: 480, width: "90%", maxHeight: "80vh", overflowY: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#fff" }}>{popupPresentation.title}</h2>
-              <button onClick={() => setPopupPresentation(null)} style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 20 }}>✕</button>
+              <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--t-text)" }}>{popupPresentation.title}</h2>
+              <button onClick={() => setPopupPresentation(null)} style={{ background: "none", border: "none", color: "var(--t-text-muted)", cursor: "pointer", fontSize: 20 }}>✕</button>
             </div>
-            <p style={{ color: "#6b7280", fontSize: "0.85rem", marginBottom: 16 }}>📋 Содержание презентации:</p>
-            <div style={{ color: "#e5e7eb", fontSize: "0.9rem", lineHeight: 1.8, whiteSpace: "pre-line" }}>
+            <p style={{ color: "var(--t-text-muted)", fontSize: "0.85rem", marginBottom: 16 }}>📋 Содержание презентации:</p>
+            <div style={{ color: "var(--t-text-secondary)", fontSize: "0.9rem", lineHeight: 1.8, whiteSpace: "pre-line" }}>
               {popupPresentation.content_description}
             </div>
           </div>
@@ -108,9 +108,9 @@ function FilterButton({ label, active, onClick }: { label: string; active: boole
       style={{
         padding: "6px 14px",
         borderRadius: 8,
-        border: active ? "1px solid #3b82f6" : "1px solid #1e2029",
-        background: active ? "rgba(59,130,246,0.15)" : "#1e2029",
-        color: active ? "#60a5fa" : "#6b7280",
+        border: active ? "1px solid var(--t-accent)" : "1px solid var(--t-card)",
+        background: active ? "rgba(var(--t-accent-rgb),0.15)" : "var(--t-card)",
+        color: active ? "var(--t-info)" : "var(--t-text-muted)",
         fontSize: "0.85rem",
         cursor: "pointer",
         transition: "all 0.15s ease",
@@ -128,10 +128,10 @@ function PresentationCard({ presentation, onShowContent }: { presentation: Prese
     <Link href={`/shop/${id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
       <div
         style={{
-          background: "#1e2029",
+          background: "var(--t-card)",
           borderRadius: 14,
           overflow: "hidden",
-          border: "1px solid #2a2d3a",
+          border: "1px solid var(--t-border)",
           transition: "border-color 0.2s ease, transform 0.2s ease",
           cursor: "pointer",
           height: 340,
@@ -139,15 +139,15 @@ function PresentationCard({ presentation, onShowContent }: { presentation: Prese
           flexDirection: "column",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = "#3b82f6";
+          (e.currentTarget as HTMLDivElement).style.borderColor = "var(--t-accent)";
           (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = "#2a2d3a";
+          (e.currentTarget as HTMLDivElement).style.borderColor = "var(--t-border)";
           (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
         }}
       >
-        <div style={{ height: 160, background: "#12131a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+        <div style={{ height: 160, background: "var(--t-bg)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
           {preview_image ? (
             <img
               src={`/previews/${preview_image}`}
@@ -155,7 +155,7 @@ function PresentationCard({ presentation, onShowContent }: { presentation: Prese
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <div style={{ textAlign: "center", color: "#374151" }}>
+            <div style={{ textAlign: "center", color: "var(--t-text-faint)" }}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <rect x="2" y="3" width="20" height="14" rx="2"/>
                 <path d="M8 21h8M12 17v4"/>
@@ -167,20 +167,20 @@ function PresentationCard({ presentation, onShowContent }: { presentation: Prese
 
         <div style={{ padding: "12px 16px 16px", display: "flex", flexDirection: "column", flex: 1 }}>
           <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-            <span style={{ background: "#12131a", color: "#60a5fa", fontSize: "0.72rem", padding: "3px 8px", borderRadius: 6 }}>
+            <span style={{ background: "var(--t-bg)", color: "var(--t-info)", fontSize: "0.72rem", padding: "3px 8px", borderRadius: 6 }}>
               {subject}
             </span>
-            <span style={{ background: "#12131a", color: "#9ca3af", fontSize: "0.72rem", padding: "3px 8px", borderRadius: 6 }}>
+            <span style={{ background: "var(--t-bg)", color: "var(--t-text-secondary)", fontSize: "0.72rem", padding: "3px 8px", borderRadius: 6 }}>
               {grade} класс
             </span>
           </div>
 
-          <h2 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#f3f4f6", marginBottom: 6, lineHeight: 1.4 }}>
+          <h2 style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--t-text)", marginBottom: 6, lineHeight: 1.4 }}>
             {title}
           </h2>
           <p style={{
             fontSize: "0.82rem",
-            color: "#6b7280",
+            color: "var(--t-text-muted)",
             lineHeight: 1.5,
             flex: 1,
             overflow: "hidden",
@@ -192,7 +192,7 @@ function PresentationCard({ presentation, onShowContent }: { presentation: Prese
           </p>
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
-            <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>
+            <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--t-text)" }}>
               {price} ₽
             </span>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -200,13 +200,13 @@ function PresentationCard({ presentation, onShowContent }: { presentation: Prese
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onShowContent(presentation); }}
                   style={{
-                    background: "rgba(59,130,246,0.15)", border: "1px solid #3b82f6",
-                    color: "#60a5fa", borderRadius: 6, padding: "3px 8px",
+                    background: "rgba(var(--t-accent-rgb),0.15)", border: "1px solid var(--t-accent)",
+                    color: "var(--t-info)", borderRadius: 6, padding: "3px 8px",
                     fontSize: "0.72rem", cursor: "pointer"
                   }}
                 >📋 Содержание</button>
               )}
-              <span style={{ fontSize: "0.72rem", color: "#4b5563", background: "#12131a", padding: "3px 8px", borderRadius: 6 }}>
+              <span style={{ fontSize: "0.72rem", color: "var(--t-text-faint)", background: "var(--t-bg)", padding: "3px 8px", borderRadius: 6 }}>
                 10 дней доступа
               </span>
             </div>

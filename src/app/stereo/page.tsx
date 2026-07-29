@@ -86,19 +86,19 @@ export default function StereoSpacePage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1117" }}>
+    <div style={{ minHeight: "100vh", background: "var(--t-bg)" }}>
       <div style={{ maxWidth: 1300, margin: "0 auto", padding: "48px 24px" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: "#f1f5f9"  }}>
+      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: "var(--t-text)"  }}>
         💎 StereoSpace
       </h1>
-      <p style={{ color: "#9ca3af", marginBottom: 32 }}>
+      <p style={{ color: "var(--t-text-secondary)", marginBottom: 32 }}>
         Банк задач по стереометрии
       </p>
 
-      {loading && <p style={{ color: "#9ca3af" }}>Загрузка...</p>}
+      {loading && <p style={{ color: "var(--t-text-secondary)" }}>Загрузка...</p>}
 
       {!loading && tasks.length === 0 && (
-        <p style={{ color: "#9ca3af" }}>Задач пока нет.</p>
+        <p style={{ color: "var(--t-text-secondary)" }}>Задач пока нет.</p>
       )}
 
       <div
@@ -111,8 +111,8 @@ export default function StereoSpacePage() {
             style={{
               display: "flex",
               borderRadius: 12,
-              background: "#1e293b",
-              border: "1px solid #334155",
+              background: "var(--t-card)",
+              border: "1px solid var(--t-border)",
               cursor: "pointer",
               opacity: task.is_free || isAdmin ? 1 : 0.5,
               position: "relative",
@@ -125,7 +125,7 @@ export default function StereoSpacePage() {
                 width: 110,
                 height: 110,
                 flexShrink: 0,
-                background: "#0f172a",
+                background: "var(--t-bg)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -142,7 +142,7 @@ export default function StereoSpacePage() {
             )}
 
             <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0, flex: 1 }}>
-              <p style={{ color: "#64748b", fontSize: 11, marginBottom: 6 }}>
+              <p style={{ color: "var(--t-text-muted)", fontSize: 11, marginBottom: 6 }}>
                 {[task.textbook, task.authors, task.year].filter(Boolean).join(" · ") || "—"}
               </p>
               <h3
@@ -150,7 +150,7 @@ export default function StereoSpacePage() {
                   fontWeight: 700,
                   fontSize: 15,
                   marginBottom: 6,
-                  color: "#f1f5f9",
+                  color: "var(--t-text)",
                 }}
               >
                 {task.title}
@@ -158,8 +158,8 @@ export default function StereoSpacePage() {
               <div style={{ display: "flex", gap: 6 }}>
                 <span
                   style={{
-                    background: "#1e3a5f",
-                    color: "#7dd3fc",
+                    background: "rgba(var(--t-info-rgb),0.2)",
+                    color: "var(--t-info)",
                     fontSize: 11,
                     padding: "3px 8px",
                     borderRadius: 999,
@@ -169,8 +169,8 @@ export default function StereoSpacePage() {
                 </span>
                 <span
                   style={{
-                    background: "#334155",
-                    color: "#cbd5e1",
+                    background: "var(--t-border)",
+                    color: "var(--t-text-secondary)",
                     fontSize: 11,
                     padding: "3px 8px",
                     borderRadius: 999,
@@ -189,7 +189,7 @@ export default function StereoSpacePage() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.6)",
+            background: "var(--t-overlay)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -200,17 +200,17 @@ export default function StereoSpacePage() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "#1f2937",
+              background: "var(--t-card)",
               borderRadius: 12,
               padding: 32,
               maxWidth: 400,
               width: "90%",
             }}
           >
-            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#f1f5f9"  }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "var(--t-text)"  }}>
               🔒 Задача заблокирована
             </h2>
-            <p style={{ color: "#9ca3af", marginBottom: 20, fontSize: 14 }}>
+            <p style={{ color: "var(--t-text-secondary)", marginBottom: 20, fontSize: 14 }}>
               Чтобы открыть все задачи StereoSpace на 30 дней, купите код доступа:
             </p>
             <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -223,7 +223,7 @@ export default function StereoSpacePage() {
                   textAlign: "center",
                   padding: "10px 12px",
                   borderRadius: 8,
-                  background: "#3b82f6",
+                  background: "var(--t-accent)",
                   color: "#fff",
                   fontSize: 14,
                   fontWeight: 600,
@@ -241,7 +241,7 @@ export default function StereoSpacePage() {
                   textAlign: "center",
                   padding: "10px 12px",
                   borderRadius: 8,
-                  background: "#3b82f6",
+                  background: "var(--t-accent)",
                   color: "#fff",
                   fontSize: 14,
                   fontWeight: 600,
@@ -262,16 +262,16 @@ export default function StereoSpacePage() {
                   width: "100%",
                   padding: "10px 14px",
                   borderRadius: 8,
-                  border: "1px solid #374151",
-                  background: "#111827",
-                  color: "#fff",
+                  border: "1px solid var(--t-border)",
+                  background: "var(--t-bg)",
+                  color: "var(--t-text)",
                   fontSize: 14,
                   marginBottom: 8,
                   boxSizing: "border-box",
                 }}
               />
               {codeError && (
-                <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>
+                <p style={{ color: "var(--t-danger-soft)", fontSize: 13, marginBottom: 8 }}>
                   {codeError}
                 </p>
               )}
@@ -283,7 +283,7 @@ export default function StereoSpacePage() {
                   padding: "10px 14px",
                   borderRadius: 8,
                   border: "none",
-                  background: "#22c55e",
+                  background: "var(--t-success2)",
                   color: "#fff",
                   fontSize: 14,
                   fontWeight: 600,
@@ -302,7 +302,7 @@ export default function StereoSpacePage() {
                 padding: "8px",
                 background: "transparent",
                 border: "none",
-                color: "#9ca3af",
+                color: "var(--t-text-secondary)",
                 fontSize: 13,
                 cursor: "pointer",
               }}

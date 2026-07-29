@@ -28,18 +28,18 @@ export default async function ShopPage() {
   const presentations = await getPresentations();
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1117", color: "#fff" }}>
-      <header style={{ borderBottom: "1px solid #1e2029", padding: "20px 24px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--t-bg)", color: "var(--t-text)" }}>
+      <header style={{ borderBottom: "1px solid var(--t-border)", padding: "20px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 22 }}>🪐</span>
             <span style={{ fontWeight: 700, fontSize: "1.1rem" }}>
-              <span style={{ color: "#fff" }}>Alien</span>
-              <span style={{ color: "#60a5fa" }}>Edu</span>
+              <span style={{ color: "var(--t-text)" }}>Alien</span>
+              <span style={{ color: "var(--t-info)" }}>Edu</span>
             </span>
-            <span style={{ color: "#4b5563", marginLeft: 8, fontSize: "0.9rem" }}>/ магазин презентаций</span>
+            <span style={{ color: "var(--t-text-faint)", marginLeft: 8, fontSize: "0.9rem" }}>/ магазин презентаций</span>
           </div>
-          <Link href="/" style={{ color: "#6b7280", fontSize: "0.85rem", textDecoration: "none" }}>
+          <Link href="/" style={{ color: "var(--t-text-muted)", fontSize: "0.85rem", textDecoration: "none" }}>
             ← на платформу
           </Link>
         </div>
@@ -50,7 +50,7 @@ export default async function ShopPage() {
           <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: 8 }}>
             Интерактивные презентации
           </h1>
-          <p style={{ color: "#6b7280", fontSize: "1rem" }}>
+          <p style={{ color: "var(--t-text-muted)", fontSize: "1rem" }}>
             Авторские материалы по точным предметам. Купи код доступа — открой презентацию на 10 дней.
           </p>
         </div>

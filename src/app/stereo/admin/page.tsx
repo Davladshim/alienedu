@@ -19,11 +19,11 @@ interface StereoCode {
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#0f1117",
-  border: "1px solid #2a2d3d",
+  background: "var(--t-bg)",
+  border: "1px solid var(--t-border)",
   borderRadius: "8px",
   padding: "10px 14px",
-  color: "#fff",
+  color: "var(--t-text)",
   fontSize: "14px",
   outline: "none",
   boxSizing: "border-box",
@@ -32,13 +32,13 @@ const inputStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: "13px",
-  color: "#9ca3af",
+  color: "var(--t-text-secondary)",
   marginBottom: "4px",
 };
 
 const cardStyle: React.CSSProperties = {
-  background: "#1a1d27",
-  border: "1px solid #2a2d3d",
+  background: "var(--t-card)",
+  border: "1px solid var(--t-border)",
   borderRadius: "16px",
   padding: "1.5rem",
 };
@@ -194,11 +194,11 @@ export default function StereoAdminPage() {
 
   if (!isLoggedIn) {
     return (
-      <div style={{ position: "fixed", inset: 0, overflow: "auto", display: "flex", background: "#0f1117", padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ position: "fixed", inset: 0, overflow: "auto", display: "flex", background: "var(--t-bg)", padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
         <div style={{ ...cardStyle, width: "100%", maxWidth: "380px", margin: "auto", textAlign: "center" }}>
           <div style={{ fontSize: "28px", marginBottom: "8px" }}>🔷</div>
-          <h1 style={{ color: "#fff", fontSize: "20px", fontWeight: 600, margin: "0 0 4px" }}>StereoSpace</h1>
-          <div style={{ color: "#6b7280", fontSize: "13px", marginBottom: "1.5rem" }}>Панель управления</div>
+          <h1 style={{ color: "var(--t-text)", fontSize: "20px", fontWeight: 600, margin: "0 0 4px" }}>StereoSpace</h1>
+          <div style={{ color: "var(--t-text-muted)", fontSize: "13px", marginBottom: "1.5rem" }}>Панель управления</div>
           <form onSubmit={handleLogin}>
             <input
               type="password"
@@ -208,11 +208,11 @@ export default function StereoAdminPage() {
               style={{ ...inputStyle, marginBottom: "12px" }}
               autoFocus
             />
-            {loginError && <div style={{ color: "#ef4444", fontSize: "13px", marginBottom: "12px" }}>{loginError}</div>}
+            {loginError && <div style={{ color: "var(--t-danger)", fontSize: "13px", marginBottom: "12px" }}>{loginError}</div>}
             <button
               type="submit"
               style={{
-                width: "100%", background: "#4f8ef7", color: "#fff", border: "none", borderRadius: "8px",
+                width: "100%", background: "var(--t-accent)", color: "#fff", border: "none", borderRadius: "8px",
                 padding: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer",
               }}
             >
@@ -225,14 +225,14 @@ export default function StereoAdminPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1117", fontFamily: "system-ui, sans-serif", color: "#fff", display: "flex", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "var(--t-bg)", fontFamily: "system-ui, sans-serif", color: "var(--t-text)", display: "flex", justifyContent: "center" }}>
       <div style={{ width: "100%", maxWidth: "900px", padding: "2rem" }}>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h1 style={{ fontSize: "22px", fontWeight: 700, margin: 0 }}>🔷 StereoSpace — админка</h1>
           <button
             onClick={handleLogout}
-            style={{ background: "none", border: "1px solid #2a2d3d", color: "#9ca3af", borderRadius: "8px", padding: "6px 14px", fontSize: "13px", cursor: "pointer" }}
+            style={{ background: "none", border: "1px solid var(--t-border)", color: "var(--t-text-secondary)", borderRadius: "8px", padding: "6px 14px", fontSize: "13px", cursor: "pointer" }}
           >
             Выйти
           </button>
@@ -243,9 +243,9 @@ export default function StereoAdminPage() {
             onClick={() => setTab("tasks")}
             style={{
               padding: "8px 20px", borderRadius: "8px", cursor: "pointer", fontSize: "13px",
-              border: tab === "tasks" ? "1px solid #4f8ef7" : "1px solid #2a2d3d",
-              background: tab === "tasks" ? "rgba(79,142,247,0.15)" : "#1a1d27",
-              color: tab === "tasks" ? "#4f8ef7" : "#6b7280",
+              border: tab === "tasks" ? "1px solid var(--t-accent)" : "1px solid var(--t-border)",
+              background: tab === "tasks" ? "rgba(var(--t-accent-rgb),0.15)" : "var(--t-card)",
+              color: tab === "tasks" ? "var(--t-accent)" : "var(--t-text-muted)",
             }}
           >
             Задачи
@@ -254,9 +254,9 @@ export default function StereoAdminPage() {
             onClick={() => { setTab("codes"); loadCodes(); }}
             style={{
               padding: "8px 20px", borderRadius: "8px", cursor: "pointer", fontSize: "13px",
-              border: tab === "codes" ? "1px solid #4f8ef7" : "1px solid #2a2d3d",
-              background: tab === "codes" ? "rgba(79,142,247,0.15)" : "#1a1d27",
-              color: tab === "codes" ? "#4f8ef7" : "#6b7280",
+              border: tab === "codes" ? "1px solid var(--t-accent)" : "1px solid var(--t-border)",
+              background: tab === "codes" ? "rgba(var(--t-accent-rgb),0.15)" : "var(--t-card)",
+              color: tab === "codes" ? "var(--t-accent)" : "var(--t-text-muted)",
             }}
           >
             Коды доступа
@@ -267,7 +267,7 @@ export default function StereoAdminPage() {
           <div>
             <div style={{ ...cardStyle, marginBottom: "1.5rem" }}>
               <div style={{ fontWeight: 600, fontSize: "15px", marginBottom: "4px" }}>Сгенерировать коды подписки</div>
-              <p style={{ color: "#6b7280", fontSize: "12px", marginBottom: "14px" }}>
+              <p style={{ color: "var(--t-text-muted)", fontSize: "12px", marginBottom: "14px" }}>
                 Один код открывает весь банк задач StereoSpace на указанное число дней.
               </p>
               <form onSubmit={handleGenerateCodes} style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "14px" }}>
@@ -284,8 +284,8 @@ export default function StereoAdminPage() {
                     type="submit"
                     disabled={codesLoading}
                     style={{
-                      background: codesLoading ? "#2a2d3d" : "linear-gradient(135deg, #4f8ef7, #7c3aed)",
-                      color: codesLoading ? "#6b7280" : "#fff",
+                      background: codesLoading ? "var(--t-border)" : "linear-gradient(135deg, var(--t-accent), var(--t-accent2))",
+                      color: codesLoading ? "var(--t-text-muted)" : "#fff",
                       border: "none", borderRadius: "8px", padding: "10px 20px", fontSize: "14px", fontWeight: 600,
                       cursor: codesLoading ? "not-allowed" : "pointer",
                     }}
@@ -297,10 +297,10 @@ export default function StereoAdminPage() {
 
               {newCodes.length > 0 && (
                 <div style={{
-                  background: "#0f1117", border: "1px solid #4f8ef7", borderRadius: "10px",
+                  background: "var(--t-bg)", border: "1px solid var(--t-accent)", borderRadius: "10px",
                   padding: "14px 16px",
                 }}>
-                  <div style={{ color: "#34d399", fontSize: "12px", marginBottom: "8px" }}>✓ Новые коды:</div>
+                  <div style={{ color: "var(--t-success)", fontSize: "12px", marginBottom: "8px" }}>✓ Новые коды:</div>
                   {newCodes.map((c) => (
                     <div key={c} style={{ fontFamily: "monospace", fontSize: "15px", letterSpacing: "1px", marginBottom: "4px" }}>{c}</div>
                   ))}
@@ -309,9 +309,9 @@ export default function StereoAdminPage() {
             </div>
 
             <div style={cardStyle}>
-              <div style={{ color: "#6b7280", fontSize: "12px", marginBottom: "8px" }}>История кодов</div>
+              <div style={{ color: "var(--t-text-muted)", fontSize: "12px", marginBottom: "8px" }}>История кодов</div>
               {codes.length === 0 ? (
-                <div style={{ color: "#4b5563", fontSize: "13px" }}>Кодов ещё не было</div>
+                <div style={{ color: "var(--t-text-faint)", fontSize: "13px" }}>Кодов ещё не было</div>
               ) : (
                 <div style={{ overflowX: "auto", maxHeight: "360px", overflowY: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", whiteSpace: "nowrap" }}>
@@ -319,9 +319,9 @@ export default function StereoAdminPage() {
                       <tr>
                         {["Код", "Дата активации", "Срок", "Осталось", "Статус"].map((h) => (
                           <th key={h} style={{
-                            position: "sticky", top: 0, background: "#1a1d27", textAlign: "left",
-                            color: "#6b7280", fontWeight: 500, fontSize: "11px", textTransform: "uppercase",
-                            padding: "6px 10px", borderBottom: "1px solid #2a2d3d",
+                            position: "sticky", top: 0, background: "var(--t-card)", textAlign: "left",
+                            color: "var(--t-text-muted)", fontWeight: 500, fontSize: "11px", textTransform: "uppercase",
+                            padding: "6px 10px", borderBottom: "1px solid var(--t-border)",
                           }}>
                             {h}
                           </th>
@@ -331,16 +331,16 @@ export default function StereoAdminPage() {
                     <tbody>
                       {codes.map((c) => {
                         const daysLeft = c.first_used_at ? daysLeftFrom(c.first_used_at, c.valid_days) : null;
-                        const statusColor = c.status !== "active" ? "#6b7280" : c.first_used_at ? "#34d399" : "#60a5fa";
+                        const statusColor = c.status !== "active" ? "var(--t-text-muted)" : c.first_used_at ? "var(--t-success)" : "var(--t-info)";
                         const statusLabel = c.status !== "active" ? "отозван" : c.first_used_at ? "активирован" : "не использован";
                         return (
-                          <tr key={c.id} style={{ borderBottom: "1px solid #2a2d3d" }}>
+                          <tr key={c.id} style={{ borderBottom: "1px solid var(--t-border)" }}>
                             <td style={{ padding: "8px 10px", fontFamily: "monospace" }}>{c.code}</td>
-                            <td style={{ padding: "8px 10px", color: "#9ca3af" }}>
+                            <td style={{ padding: "8px 10px", color: "var(--t-text-secondary)" }}>
                               {c.first_used_at ? new Date(c.first_used_at).toLocaleDateString("ru-RU") : "—"}
                             </td>
-                            <td style={{ padding: "8px 10px", color: "#9ca3af" }}>{c.valid_days} дн.</td>
-                            <td style={{ padding: "8px 10px", color: "#9ca3af" }}>
+                            <td style={{ padding: "8px 10px", color: "var(--t-text-secondary)" }}>{c.valid_days} дн.</td>
+                            <td style={{ padding: "8px 10px", color: "var(--t-text-secondary)" }}>
                               {daysLeft === null ? "—" : daysLeft > 0 ? `${daysLeft} ${daysWord(daysLeft)}` : "истёк"}
                             </td>
                             <td style={{ padding: "8px 10px" }}>
@@ -348,7 +348,7 @@ export default function StereoAdminPage() {
                               {c.status === "active" && (
                                 <button
                                   onClick={() => handleRevokeCode(c.id)}
-                                  style={{ marginLeft: "10px", background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: "12px", textDecoration: "underline" }}
+                                  style={{ marginLeft: "10px", background: "none", border: "none", color: "var(--t-text-muted)", cursor: "pointer", fontSize: "12px", textDecoration: "underline" }}
                                 >
                                   отозвать
                                 </button>
@@ -426,13 +426,13 @@ export default function StereoAdminPage() {
                 </div>
               </div>
 
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px", fontSize: "14px", color: "#d1d5db" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px", fontSize: "14px", color: "var(--t-text-secondary)" }}>
                 <input type="checkbox" checked={isFree} onChange={(e) => setIsFree(e.target.checked)} />
                 Бесплатная задача (доступна без кода)
               </label>
 
               {message && (
-                <p style={{ marginBottom: "12px", color: message.includes("добавлена") ? "#34d399" : "#ef4444", fontSize: "13px" }}>
+                <p style={{ marginBottom: "12px", color: message.includes("добавлена") ? "var(--t-success)" : "var(--t-danger)", fontSize: "13px" }}>
                   {message}
                 </p>
               )}
@@ -442,8 +442,8 @@ export default function StereoAdminPage() {
                 disabled={saving}
                 style={{
                   padding: "10px 20px", borderRadius: "8px", border: "none",
-                  background: saving ? "#2a2d3d" : "linear-gradient(135deg, #4f8ef7, #7c3aed)",
-                  color: saving ? "#6b7280" : "#fff", fontSize: "14px", fontWeight: 600,
+                  background: saving ? "var(--t-border)" : "linear-gradient(135deg, var(--t-accent), var(--t-accent2))",
+                  color: saving ? "var(--t-text-muted)" : "#fff", fontSize: "14px", fontWeight: 600,
                   cursor: saving ? "not-allowed" : "pointer",
                 }}
               >
