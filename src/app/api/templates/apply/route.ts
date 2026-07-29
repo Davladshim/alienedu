@@ -40,19 +40,27 @@ export async function POST(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    const { weeks } = await request.json()
-    const weekCount = Math.min(Math.max(Number(weeks) || 4, 1), 12)
+    const { weeks, endDate } = await request.json()
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayStr = toISODate(today)
+    const currentWeekStart = startOfWeek(today)
+
+    let weekCount: number
+    if (endDate) {
+      const end = new Date(`${endDate}T00:00:00`)
+      const diffDays = Math.ceil((end.getTime() - currentWeekStart.getTime()) / (1000 * 60 * 60 * 24))
+      weekCount = Math.min(Math.max(Math.ceil((diffDays + 1) / 7), 1), 120)
+    } else {
+      weekCount = Math.min(Math.max(Number(weeks) || 4, 1), 120)
+    }
 
     const templatesResult = await query(
       `SELECT * FROM lesson_templates WHERE teacher_id = $1`,
       [decoded.id]
     )
     const templates = templatesResult.rows
-
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const todayStr = toISODate(today)
-    const currentWeekStart = startOfWeek(today)
 
     let created = 0
     let skipped = 0

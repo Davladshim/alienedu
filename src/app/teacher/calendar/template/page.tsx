@@ -83,6 +83,27 @@ function formatDateRu(dateStr: string): string {
   return `${d}.${m}.${y}`
 }
 
+function toISODateLocal(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// «До ближайшего 31 мая» — если сегодня ещё до 31 мая этого года, берём
+// его; если уже позже — 31 мая следующего года (по сути «до конца
+// текущего учебного года»)
+function nearestMay31(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const may31ThisYear = new Date(year, 4, 31)
+  const target = now <= may31ThisYear ? may31ThisYear : new Date(year + 1, 4, 31)
+  return toISODateLocal(target)
+}
+
+function endOfYear(): string {
+  return toISODateLocal(new Date(new Date().getFullYear(), 11, 31))
+}
+
+type PeriodPreset = '' | 'may' | 'newyear' | 'custom'
+
 export default function TemplatePage() {
   const [roster, setRoster] = useState<any[]>([])
   const [templates, setTemplates] = useState<any[]>([])
@@ -97,9 +118,42 @@ export default function TemplatePage() {
   const [editSaving, setEditSaving] = useState(false)
   const [editError, setEditError] = useState('')
 
-  const [weeks, setWeeks] = useState(4)
   const [generating, setGenerating] = useState(false)
   const [resultMsg, setResultMsg] = useState('')
+
+  // Период применения шаблона + подсветка-напоминалка после изменений
+  const [selectedPreset, setSelectedPreset] = useState<PeriodPreset>('')
+  const [customWeeksModalOpen, setCustomWeeksModalOpen] = useState(false)
+  const [customWeeksInput, setCustomWeeksInput] = useState(4)
+  const [customConfirmed, setCustomConfirmed] = useState(false)
+  const [needsAttention, setNeedsAttention] = useState(false)
+
+  const periodReady = selectedPreset === 'may' || selectedPreset === 'newyear' || (selectedPreset === 'custom' && customConfirmed)
+  const highlightDropdown = needsAttention && !periodReady
+  const highlightButton = needsAttention && periodReady
+
+  function markChanged() {
+    setNeedsAttention(true)
+    setSelectedPreset('')
+    setCustomConfirmed(false)
+  }
+
+  function onPeriodSelectChange(value: string) {
+    const v = value as PeriodPreset
+    setSelectedPreset(v)
+    setCustomConfirmed(false)
+    if (v === 'custom') setCustomWeeksModalOpen(true)
+  }
+
+  function confirmCustomWeeks() {
+    setCustomConfirmed(true)
+    setCustomWeeksModalOpen(false)
+  }
+
+  function cancelCustomWeeks() {
+    setCustomWeeksModalOpen(false)
+    setSelectedPreset('')
+  }
 
   function loadTemplates() {
     fetch('/api/templates').then(r => r.json()).then(data => {
@@ -137,6 +191,7 @@ export default function TemplatePage() {
     if (res.ok) {
       setAddingForDay(null)
       loadTemplates()
+      markChanged()
     } else {
       setError(data.error || 'Ошибка')
     }
@@ -145,7 +200,10 @@ export default function TemplatePage() {
   async function handleDelete(id: number) {
     if (!confirm('Удалить из шаблона?')) return
     const res = await fetch(`/api/templates/${id}`, { method: 'DELETE' })
-    if (res.ok) setTemplates(t => t.filter(tpl => tpl.id !== id))
+    if (res.ok) {
+      setTemplates(t => t.filter(tpl => tpl.id !== id))
+      markChanged()
+    }
   }
 
   function openEditForm(tpl: TemplateRow) {
@@ -184,23 +242,31 @@ export default function TemplatePage() {
     if (res.ok) {
       setEditForm(null)
       loadTemplates()
+      markChanged()
     } else {
       setEditError(data.error || 'Ошибка')
     }
   }
 
   async function handleGenerate() {
+    if (!periodReady) return
     setGenerating(true)
     setResultMsg('')
+    const body = selectedPreset === 'custom'
+      ? { weeks: customWeeksInput }
+      : { endDate: selectedPreset === 'may' ? nearestMay31() : endOfYear() }
     const res = await fetch('/api/templates/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ weeks }),
+      body: JSON.stringify(body),
     })
     const data = await res.json()
     setGenerating(false)
     if (res.ok) {
       setResultMsg(`Создано занятий: ${data.created}${data.skipped ? `, пропущено (уже были): ${data.skipped}` : ''}`)
+      setNeedsAttention(false)
+      setSelectedPreset('')
+      setCustomConfirmed(false)
     } else {
       setResultMsg(data.error || 'Ошибка')
     }
@@ -394,14 +460,53 @@ export default function TemplatePage() {
         )}
 
         <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <label style={labelStyle}>Добавить в расписание на</label>
-          <input type="number" value={weeks} onChange={e => setWeeks(Number(e.target.value))} style={{ ...inputStyle, width: '70px' }} min={1} max={12} />
-          <span style={{ color: 'var(--t-text-secondary)', fontSize: '13px' }}>недель вперёд</span>
-          <button onClick={handleGenerate} disabled={generating || templates.length === 0} style={generating || templates.length === 0 ? submitButtonDisabledStyle : accentSubmitStyle}>
+          <label style={labelStyle}>Применить шаблон</label>
+          <select
+            value={selectedPreset}
+            onChange={e => onPeriodSelectChange(e.target.value)}
+            style={{ ...inputStyle, width: 'auto', minWidth: '220px' }}
+            className={highlightDropdown ? 't-reminder-pulse' : undefined}
+          >
+            <option value="" disabled>Выбери период</option>
+            <option value="may">До конца учебного года (31 мая)</option>
+            <option value="newyear">До Нового года</option>
+            <option value="custom">Выбрать другой промежуток…</option>
+          </select>
+          {selectedPreset === 'custom' && customConfirmed && (
+            <span style={{ color: 'var(--t-text-secondary)', fontSize: '13px' }}>({customWeeksInput} нед.)</span>
+          )}
+          <button
+            onClick={handleGenerate}
+            disabled={generating || templates.length === 0 || !periodReady}
+            className={highlightButton ? 't-reminder-pulse' : undefined}
+            style={generating || templates.length === 0 || !periodReady ? submitButtonDisabledStyle : accentSubmitStyle}
+          >
             {generating ? 'Добавляем...' : '⚡ Добавить в расписание'}
           </button>
           {resultMsg && <span style={{ color: 'var(--t-text-secondary)', fontSize: '13px' }}>{resultMsg}</span>}
         </div>
+
+        {customWeeksModalOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, background: 'var(--t-overlay)', zIndex: 1000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ background: 'var(--t-card)', border: `1px solid ${ACCENT}`, borderRadius: '16px', padding: '1.5rem', width: '90%', maxWidth: '340px' }}>
+              <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '10px' }}>Другой промежуток</div>
+              <label style={labelStyle}>Сколько недель вперёд?</label>
+              <input
+                type="number" min={1} max={120} value={customWeeksInput}
+                onChange={e => setCustomWeeksInput(Number(e.target.value))}
+                style={{ ...inputStyle, marginBottom: '14px' }}
+                autoFocus
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button onClick={cancelCustomWeeks} style={{ ...accentButtonStyle, background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)' }}>Отмена</button>
+                <button onClick={confirmCustomWeeks} style={accentSubmitStyle}>Подтвердить</button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

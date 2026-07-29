@@ -86,6 +86,26 @@ function primaryBtnStyle(disabled: boolean, gradient = "linear-gradient(135deg, 
   };
 }
 
+function buildPresentationCodeMessage(code: string, presentationTitle: string, validDays: number): string {
+  return [
+    `Вы получили код доступа к презентации «${presentationTitle}» на ${validDays} ${daysWord(validDays)}.`,
+    `Код: ${code}`,
+    ``,
+    `Никому его не передавайте — он одноразовый.`,
+    `Отсчёт срока начнётся с момента активации: введите код на странице презентации в разделе «Магазин».`,
+  ].join("\n");
+}
+
+function buildSubscriptionCodeMessage(code: string, validDays: number): string {
+  return [
+    `Вы получили код подписки на весь магазин презентаций на ${validDays} ${daysWord(validDays)}.`,
+    `Код: ${code}`,
+    ``,
+    `Никому его не передавайте — он одноразовый.`,
+    `Отсчёт срока начнётся с момента активации: введите код в разделе «Магазин».`,
+  ].join("\n");
+}
+
 export default function ShopAdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
@@ -107,6 +127,15 @@ export default function ShopAdminPage() {
   const [newSubCodes, setNewSubCodes] = useState<string[]>([]);
   const [subLoading, setSubLoading] = useState(false);
   const [editingPresentation, setEditingPresentation] = useState<Presentation | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  async function copyCode(code: string, message: string) {
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode((c) => (c === code ? null : c)), 2000);
+    } catch {}
+  }
 
   useEffect(() => {
     fetch("/api/admin-presentations-shop")
@@ -416,9 +445,26 @@ export default function ShopAdminPage() {
               {newCodes.length > 0 && (
                 <div style={{ background: "var(--t-bg)", border: "1px solid var(--t-accent)", borderRadius: "10px", padding: "14px 16px" }}>
                   <div style={{ color: "var(--t-success)", fontSize: "12px", marginBottom: "8px" }}>✓ Новые коды:</div>
-                  {newCodes.map((c) => (
-                    <div key={c} style={{ fontFamily: "monospace", fontSize: "15px", letterSpacing: "1px", marginBottom: "4px" }}>{c}</div>
-                  ))}
+                  {newCodes.map((c) => {
+                    const presTitle = presentations.find((p) => p.id === Number(codeForm.presentationId))?.title || "";
+                    const message = buildPresentationCodeMessage(c, presTitle, Number(codeForm.validDays));
+                    return (
+                      <div key={c} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                        <div style={{ fontFamily: "monospace", fontSize: "15px", letterSpacing: "1px" }}>{c}</div>
+                        <button
+                          onClick={() => copyCode(c, message)}
+                          style={{
+                            background: copiedCode === c ? "rgba(var(--t-success-rgb),0.15)" : "rgba(var(--t-accent-rgb),0.15)",
+                            border: `1px solid ${copiedCode === c ? "var(--t-success)" : "var(--t-accent)"}`,
+                            color: copiedCode === c ? "var(--t-success)" : "var(--t-accent)",
+                            borderRadius: "6px", padding: "3px 10px", fontSize: "12px", cursor: "pointer", fontWeight: 600,
+                          }}
+                        >
+                          {copiedCode === c ? "✓ Скопировано" : "📋 Скопировать"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -450,9 +496,25 @@ export default function ShopAdminPage() {
               {newSubCodes.length > 0 && (
                 <div style={{ background: "var(--t-bg)", border: "1px solid var(--t-sub-gradient-start)", borderRadius: "10px", padding: "14px 16px" }}>
                   <div style={{ color: "var(--t-warning)", fontSize: "12px", marginBottom: "8px" }}>⭐ Новые коды подписки:</div>
-                  {newSubCodes.map((c) => (
-                    <div key={c} style={{ fontFamily: "monospace", fontSize: "15px", letterSpacing: "1px", marginBottom: "4px" }}>{c}</div>
-                  ))}
+                  {newSubCodes.map((c) => {
+                    const message = buildSubscriptionCodeMessage(c, Number(subForm.validDays));
+                    return (
+                      <div key={c} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                        <div style={{ fontFamily: "monospace", fontSize: "15px", letterSpacing: "1px" }}>{c}</div>
+                        <button
+                          onClick={() => copyCode(c, message)}
+                          style={{
+                            background: copiedCode === c ? "rgba(var(--t-success-rgb),0.15)" : "rgba(var(--t-warning-rgb),0.15)",
+                            border: `1px solid ${copiedCode === c ? "var(--t-success)" : "var(--t-sub-gradient-start)"}`,
+                            color: copiedCode === c ? "var(--t-success)" : "var(--t-warning)",
+                            borderRadius: "6px", padding: "3px 10px", fontSize: "12px", cursor: "pointer", fontWeight: 600,
+                          }}
+                        >
+                          {copiedCode === c ? "✓ Скопировано" : "📋 Скопировать"}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

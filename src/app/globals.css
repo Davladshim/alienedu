@@ -128,3 +128,13 @@ input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* Пульсирующая подсветка-напоминалка (шаблон недели: «не забудь применить
+   период»/«не забудь нажать «Добавить в расписание»») */
+@keyframes t-reminder-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--t-template-accent-rgb), 0.55); }
+  50% { box-shadow: 0 0 0 7px rgba(var(--t-template-accent-rgb), 0); }
+}
+.t-reminder-pulse {
+  animation: t-reminder-pulse 1.4s ease-in-out infinite;
+}
