@@ -202,7 +202,7 @@ export default function AdminPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0f1117', fontFamily: 'system-ui, sans-serif', color: '#fff', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ width: '100%', maxWidth: '760px', padding: '2rem' }}>
+      <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>🛠 Админка AlienEdu</h1>
@@ -214,23 +214,74 @@ export default function AdminPage() {
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '16px' }}>
           <Link href="/teacher/quests" style={{ textDecoration: 'none' }}>
-            <div style={{ ...cardStyle, padding: '1rem 1.5rem', cursor: 'pointer', minWidth: '200px' }}>
-              <div style={{ fontSize: '15px', fontWeight: 600 }}>🧩 Мои квесты</div>
-              <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>Управление квестами</div>
+            <div
+              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#60a5fa')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🧩</div>
+              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Мои квесты</div>
+              <div style={{ color: '#6b7280', fontSize: '13px' }}>Управление квестами</div>
             </div>
           </Link>
           <Link href="/teacher" style={{ textDecoration: 'none' }}>
-            <div style={{ ...cardStyle, padding: '1rem 1.5rem', cursor: 'pointer', minWidth: '200px' }}>
-              <div style={{ fontSize: '15px', fontWeight: 600 }}>🪐 Кабинет репетитора</div>
-              <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>Основной кабинет</div>
+            <div
+              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🪐</div>
+              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Кабинет репетитора</div>
+              <div style={{ color: '#6b7280', fontSize: '13px' }}>Основной кабинет</div>
             </div>
           </Link>
           <Link href="/admin/models" target="_blank" style={{ textDecoration: 'none' }}>
-            <div style={{ ...cardStyle, padding: '1rem 1.5rem', cursor: 'pointer', minWidth: '200px' }}>
-              <div style={{ fontSize: '15px', fontWeight: 600 }}>🏦 Банк интерактивных моделей</div>
-              <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '2px' }}>Откроется в новой вкладке</div>
+            <div
+              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🏦</div>
+              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Банк интерактивных моделей</div>
+              <div style={{ color: '#6b7280', fontSize: '13px' }}>Откроется в новой вкладке</div>
+            </div>
+          </Link>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '1.5rem' }}>
+          <Link href="/shop/admin" target="_blank" style={{ textDecoration: 'none' }}>
+            <div
+              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#60a5fa')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🛍️</div>
+              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Админка магазина</div>
+              <div style={{ color: '#6b7280', fontSize: '13px' }}>Презентации, коды доступа</div>
+            </div>
+          </Link>
+          <Link href="/stereo/admin" target="_blank" style={{ textDecoration: 'none' }}>
+            <div
+              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔷</div>
+              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Админка StereoSpace</div>
+              <div style={{ color: '#6b7280', fontSize: '13px' }}>Задачи, коды доступа</div>
+            </div>
+          </Link>
+          <Link href="/stereo" target="_blank" style={{ textDecoration: 'none' }}>
+            <div
+              style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f8ef7')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2d3d')}
+            >
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔷</div>
+              <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>StereoSpace</div>
+              <div style={{ color: '#6b7280', fontSize: '13px' }}>Сам сервис — для проверки</div>
             </div>
           </Link>
         </div>
