@@ -73,5 +73,8 @@ export function Formula({ text }: { text: string }) {
     parts.push(...renderFormatted(text.slice(lastIndex), `t${key++}`))
   }
 
-  return <>{parts}</>
+  // white-space: pre-wrap — переносы строк и повторные пробелы, введённые
+  // репетитором, должны отображаться как есть, а не схлопываться в один
+  // пробел (поведение браузера по умолчанию для обычного текста)
+  return <span style={{ whiteSpace: 'pre-wrap' }}>{parts}</span>
 }

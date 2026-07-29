@@ -55,6 +55,7 @@ export default function WatchLessonPage() {
   const [studentOnline, setStudentOnline] = useState(false)
   const [revealed, setRevealed] = useState<Record<string, boolean>>({})
   const [boardOpen, setBoardOpen] = useState(false)
+  const [liveTimedOut, setLiveTimedOut] = useState(false)
 
   const live = useLiveChannel(liveChannelId, {
     onBroadcast: {
@@ -70,6 +71,21 @@ export default function WatchLessonPage() {
   useEffect(() => {
     boardOpenRef.current = boardOpen
   }, [boardOpen])
+
+  // Показ решения/доски работает через тот же живой канал, что и трансляция
+  // прогресса — если он не смог подключиться (например, не настроен Supabase
+  // на сервере), кнопки будут молча ничего не делать. Явно предупреждаем,
+  // а не оставляем репетитора гадать, почему "ничего не происходит"
+  const liveReadyRef = useRef(false)
+  useEffect(() => { liveReadyRef.current = live.ready }, [live.ready])
+  useEffect(() => {
+    if (!liveChannelId) return
+    queueMicrotask(() => setLiveTimedOut(false))
+    const timer = setTimeout(() => {
+      if (!liveReadyRef.current) setLiveTimedOut(true)
+    }, 6000)
+    return () => clearTimeout(timer)
+  }, [liveChannelId])
 
   useEffect(() => {
     fetch(`/api/lessons/${lessonId}/watch?student_id=${studentId}`)
@@ -165,6 +181,17 @@ export default function WatchLessonPage() {
         <div style={{ color: '#6b7280', fontSize: '13px', marginBottom: '1.25rem' }}>
           Показ решения и доски видны только ученику прямо сейчас — ничего не сохраняется.
         </div>
+
+        {liveTimedOut && !live.ready && (
+          <div style={{
+            color: '#fbbf24', fontSize: '13px', marginBottom: '1.25rem', padding: '10px 14px',
+            background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px',
+          }}>
+            ⚠ Живое соединение не установилось — «Показать решение» и доска сейчас не дойдут до ученика.
+            Прогресс тоже не обновляется. Обычно причина на стороне сервера (не настроен или недоступен Supabase) —
+            если это повторяется, стоит проверить его настройки.
+          </div>
+        )}
 
         <div style={{ marginBottom: '1.25rem' }}>
           <button

@@ -47,6 +47,9 @@ export default function StudentLessonPage() {
   const [index, setIndex] = useState(0)
   const [finished, setFinished] = useState(false)
   const [blockStates, setBlockStates] = useState<Record<string, BlockState>>({})
+  // Счётчик "перерешиваний" по блоку — меняет key у Player'а, чтобы при
+  // повторной попытке поле ввода очищалось, а не показывало старый неверный ответ
+  const [retryNonce, setRetryNonce] = useState<Record<string, number>>({})
 
   // Живое наблюдение учителя: канал приходит с сервера только для
   // проверочных уроков (см. GET /api/lessons/[id]) — на контрольной остаётся null
@@ -308,6 +311,10 @@ export default function StudentLessonPage() {
     logAttempt(block.id, null, false)
   }
 
+  function retryBlock() {
+    setRetryNonce(n => ({ ...n, [block.id]: (n[block.id] || 0) + 1 }))
+  }
+
   function handleSubmit(answer: any) {
     const isCorrect = def.checkAnswer ? def.checkAnswer(block.content, answer) : null
     const attempts = state.attempts + 1
@@ -361,22 +368,46 @@ export default function StudentLessonPage() {
           {!interactive ? (
             <Player content={block.content} />
           ) : (
-            <Player content={block.content} disabled={playerDisabled} onSubmit={handleSubmit} />
+            <Player key={`${block.id}-${retryNonce[block.id] || 0}`} content={block.content} disabled={playerDisabled} onSubmit={handleSubmit} />
           )}
 
           {isGradable && mode === 'quiz' && state.attempts > 0 && (
             <div style={{
               marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap',
               background: state.skipped ? 'rgba(107,114,128,0.15)' : state.isCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(244,114,182,0.15)',
               color: state.skipped ? '#9ca3af' : state.isCorrect ? '#34d399' : '#f472b6',
             }}>
-              {state.skipped
-                ? '⏭ Пропущено'
-                : state.isCorrect
-                  ? '✅ Правильно!'
-                  : awaitingRetry
-                    ? `❌ Неверно — попробуй ещё раз (попытка ${state.attempts} из ${maxAttempts})`
-                    : '❌ Неверно'}
+              <span>
+                {state.skipped
+                  ? '⏭ Пропущено'
+                  : state.isCorrect
+                    ? '✅ Правильно!'
+                    : awaitingRetry
+                      ? `❌ Неверно — попытка ${state.attempts} из ${maxAttempts}`
+                      : '❌ Неверно'}
+              </span>
+              {awaitingRetry && (
+                <button
+                  onClick={retryBlock}
+                  style={{
+                    background: 'rgba(244,114,182,0.2)', border: '1px solid #f472b6', color: '#f472b6',
+                    borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer', flexShrink: 0,
+                  }}
+                >
+                  🔁 Перерешать
+                </button>
+              )}
+            </div>
+          )}
+
+          {isGradable && mode === 'quiz' && state.done && state.isCorrect === false && !state.skipped && block.content.explanation && (
+            <div style={{
+              marginTop: '14px', padding: '12px 16px', borderRadius: '8px', fontSize: '14px',
+              background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.4)', color: '#60a5fa',
+            }}>
+              💡 Решение:<br />
+              <Formula text={block.content.explanation} />
             </div>
           )}
 

@@ -10,10 +10,27 @@ export function FormulaEditorModal({ onInsert, onClose }: {
   const fieldRef = useRef<(HTMLElement & { value: string }) | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [ready, setReady] = useState(false)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
 
   useEffect(() => {
     import('mathlive').then(() => setReady(true))
   }, [])
+
+  // Виртуальная клавиатура MathLive прижата к низу экрана и может занимать
+  // больше половины его высоты — если не резервировать под неё место, поле
+  // ввода и кнопки "Вставить"/"Отмена" физически оказываются под ней и
+  // перестают ловить клики. window.mathVirtualKeyboard — глобальный объект
+  // самой библиотеки, сообщает актуальную высоту через это событие
+  useEffect(() => {
+    if (!ready) return
+    const vk = (window as unknown as { mathVirtualKeyboard?: EventTarget & { boundingRect: DOMRect } }).mathVirtualKeyboard
+    if (!vk) return
+    function onGeometryChange() {
+      setKeyboardHeight(vk!.boundingRect?.height || 0)
+    }
+    vk.addEventListener('geometrychange', onGeometryChange)
+    return () => vk.removeEventListener('geometrychange', onGeometryChange)
+  }, [ready])
 
   useEffect(() => {
     const container = containerRef.current
@@ -50,15 +67,24 @@ export function FormulaEditorModal({ onInsert, onClose }: {
         // наша подложка выше, клавиатура визуально "гаснет" под ней и не
         // ловит клики. Поэтому подложка ниже клавиатуры, а закрытие —
         // только по кнопкам, не по клику снаружи (иначе клик по клавиатуре,
-        // не попавшей "внутрь" модалки, закрывал бы конструктор)
+        // не попавшей "внутрь" модалки, закрывал бы конструктор).
+        // Клавиатура всегда прижата к НИЗУ экрана и занимает существенную
+        // его часть — если диалог центрировать по вертикали, поле ввода и
+        // кнопки "Вставить"/"Отмена" физически оказываются под клавиатурой
+        // и перестают ловить клики. Поэтому диалог держим у ВЕРХА экрана,
+        // где клавиатура гарантированно не может его перекрыть.
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 90,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px',
+        paddingBottom: keyboardHeight + 20,
+        overflowY: 'auto',
       }}
     >
       <div
         style={{
           background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px',
           padding: '1.5rem', width: '100%', maxWidth: '520px', zIndex: 91,
+          marginTop: '32px', flexShrink: 0,
+          maxHeight: `calc(100vh - ${keyboardHeight}px - 60px)`, overflowY: 'auto',
         }}
       >
         <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '12px' }}>Конструктор формулы</div>
