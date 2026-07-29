@@ -95,18 +95,22 @@ export async function PUT(
       return NextResponse.json({ error: 'Урок из библиотеки нельзя редактировать' }, { status: 403 })
     }
 
-    const { title, subject, grade, status, mode, is_public, blocks } = await request.json()
+    const { title, subject, grade, status, mode, is_public, library_description, blocks } = await request.json()
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Введите название урока' }, { status: 400 })
     }
 
     const limits = await getTeacherLimits(decoded.id)
+    const isPublic = limits.canPublishToLibrary ? !!is_public : false
+    if (isPublic && !(library_description || '').trim()) {
+      return NextResponse.json({ error: 'Для публикации в библиотеке нужно заполнить описание урока' }, { status: 400 })
+    }
 
     await query(
-      `UPDATE lessons SET title = $1, subject = $2, grade = $3, status = $4, mode = $5, is_public = $6, updated_at = NOW()
-       WHERE id = $7`,
-      [title, subject || null, grade || null, status || 'draft', mode === 'exam' ? 'exam' : 'quiz', limits.canPublishToLibrary ? !!is_public : false, lessonId]
+      `UPDATE lessons SET title = $1, subject = $2, grade = $3, status = $4, mode = $5, is_public = $6, library_description = $7, updated_at = NOW()
+       WHERE id = $8`,
+      [title, subject || null, grade || null, status || 'draft', mode === 'exam' ? 'exam' : 'quiz', isPublic, isPublic ? library_description.trim() : null, lessonId]
     )
 
     await query(`DELETE FROM lesson_blocks WHERE lesson_id = $1`, [lessonId])

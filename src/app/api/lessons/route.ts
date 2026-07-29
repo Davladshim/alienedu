@@ -58,17 +58,22 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    const { title, subject, grade, status, mode, is_public, blocks } = await request.json()
+    const { title, subject, grade, status, mode, is_public, library_description, blocks } = await request.json()
 
     if (!title || !title.trim()) {
       return NextResponse.json({ error: 'Введите название урока' }, { status: 400 })
     }
 
+    const isPublic = limits.canPublishToLibrary ? !!is_public : false
+    if (isPublic && !(library_description || '').trim()) {
+      return NextResponse.json({ error: 'Для публикации в библиотеке нужно заполнить описание урока' }, { status: 400 })
+    }
+
     const lessonResult = await query(
-      `INSERT INTO lessons (teacher_id, title, subject, grade, status, mode, is_public)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO lessons (teacher_id, title, subject, grade, status, mode, is_public, library_description)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id`,
-      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz', limits.canPublishToLibrary ? !!is_public : false]
+      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz', isPublic, isPublic ? library_description.trim() : null]
     )
     const lessonId = lessonResult.rows[0].id
 

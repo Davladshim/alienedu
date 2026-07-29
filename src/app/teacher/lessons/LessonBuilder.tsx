@@ -13,6 +13,7 @@ export interface LessonMeta {
   status: 'draft' | 'published'
   mode: 'quiz' | 'exam'
   isPublic: boolean
+  libraryDescription: string
 }
 
 function iconBtnStyle(disabled: boolean, danger?: boolean): CSSProperties {
@@ -33,6 +34,7 @@ export function LessonBuilder({
   initialStatus = 'draft',
   initialMode = 'quiz',
   initialIsPublic = false,
+  initialLibraryDescription = '',
   initialBlocks = [],
   initialAssignedStudentIds = [],
   locked = false,
@@ -51,6 +53,7 @@ export function LessonBuilder({
   initialStatus?: 'draft' | 'published'
   initialMode?: 'quiz' | 'exam'
   initialIsPublic?: boolean
+  initialLibraryDescription?: string
   initialBlocks?: LessonBlockData[]
   initialAssignedStudentIds?: number[]
   locked?: boolean
@@ -68,6 +71,7 @@ export function LessonBuilder({
   const [status, setStatus] = useState<'draft' | 'published'>(initialStatus)
   const [mode, setMode] = useState<'quiz' | 'exam'>(initialMode)
   const [isPublic, setIsPublic] = useState(initialIsPublic)
+  const [libraryDescription, setLibraryDescription] = useState(initialLibraryDescription)
   const [blocks, setBlocks] = useState<LessonBlockData[]>(initialBlocks)
   const [previewing, setPreviewing] = useState(false)
 
@@ -112,13 +116,13 @@ export function LessonBuilder({
     if (locked || !draftChecked) return
     const timer = setTimeout(() => {
       try {
-        localStorage.setItem(draftKey, JSON.stringify({ title, subject, grade, status, mode, isPublic, blocks, savedAt: Date.now() }))
+        localStorage.setItem(draftKey, JSON.stringify({ title, subject, grade, status, mode, isPublic, libraryDescription, blocks, savedAt: Date.now() }))
       } catch {
         // например, localStorage переполнен или недоступен (приватный режим) — ничего страшного
       }
     }, 1000)
     return () => clearTimeout(timer)
-  }, [locked, draftChecked, draftKey, title, subject, grade, status, mode, isPublic, blocks])
+  }, [locked, draftChecked, draftKey, title, subject, grade, status, mode, isPublic, libraryDescription, blocks])
 
   function restoreDraft() {
     try {
@@ -131,6 +135,7 @@ export function LessonBuilder({
         setStatus(draft.status ?? 'draft')
         setMode(draft.mode ?? 'quiz')
         setIsPublic(draft.isPublic ?? false)
+        setLibraryDescription(draft.libraryDescription ?? '')
         setBlocks(draft.blocks ?? [])
       }
     } catch {
@@ -192,7 +197,7 @@ export function LessonBuilder({
     return <LessonPreview blocks={blocks} onExit={() => setPreviewing(false)} />
   }
 
-  const canSave = title.trim().length > 0 && blocks.length > 0 && !saving
+  const canSave = title.trim().length > 0 && blocks.length > 0 && !saving && (!isPublic || libraryDescription.trim().length > 0)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
@@ -283,6 +288,17 @@ export function LessonBuilder({
           {canPublishToLibrary && isPublic && status !== 'published' && (
             <div style={{ color: 'var(--t-warning)', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
               Появится в библиотеке только после публикации самого урока (галочка выше)
+            </div>
+          )}
+          {canPublishToLibrary && isPublic && (
+            <div style={{ marginTop: '10px', marginLeft: '24px' }}>
+              <label style={labelStyle}>Описание урока для библиотеки</label>
+              <textarea
+                value={libraryDescription}
+                onChange={e => setLibraryDescription(e.target.value)}
+                placeholder="Обязательное поле — опиши урок, чтобы другие репетиторы поняли, подойдёт ли он им"
+                style={{ ...textareaStyle, minHeight: '80px' }}
+              />
             </div>
           )}
 
@@ -376,7 +392,7 @@ export function LessonBuilder({
             </button>
             <button
               onClick={async () => {
-                const ok = await onSave({ title, subject, grade, status, mode, isPublic }, blocks)
+                const ok = await onSave({ title, subject, grade, status, mode, isPublic, libraryDescription }, blocks)
                 if (ok) discardDraft()
               }}
               disabled={!canSave}

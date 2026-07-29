@@ -19,9 +19,33 @@ export default function TariffsPage() {
           Есть код на тариф? Введите его прямо здесь — активируется сразу.
         </p>
 
-        <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px', padding: '14px 18px', marginBottom: '2rem' }}>
+        <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px', padding: '14px 18px', marginBottom: '1.5rem' }}>
           <PlanWidget />
         </div>
+
+        <a
+          href="http://vk.ru/alientutor_for_tutors"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap',
+            background: 'linear-gradient(135deg, #0077FF, #4a90ff)', borderRadius: '16px', padding: '1.25rem 1.5rem',
+            marginBottom: '2rem', textDecoration: 'none', boxShadow: '0 4px 20px rgba(0,119,255,0.35)',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '17px', fontWeight: 700, color: '#fff' }}>💬 Коды на тарифы — в нашей группе ВКонтакте</div>
+            <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', marginTop: '4px' }}>
+              Пишите нам, чтобы купить код на Pro, магазин презентаций или StereoSpace
+            </div>
+          </div>
+          <span style={{
+            background: '#fff', color: '#0077FF', borderRadius: '10px', padding: '12px 24px',
+            fontWeight: 700, fontSize: '14px', whiteSpace: 'nowrap', flexShrink: 0,
+          }}>
+            Перейти в группу →
+          </span>
+        </a>
 
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '2rem' }}>
           <div style={cardStyle}>

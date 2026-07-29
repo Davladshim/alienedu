@@ -12,6 +12,7 @@ interface LibraryLesson {
   author_name: string
   block_count: number
   is_own: boolean
+  library_description: string | null
 }
 
 export default function LessonLibraryPage() {
@@ -22,6 +23,7 @@ export default function LessonLibraryPage() {
   const [addingId, setAddingId] = useState<number | null>(null)
   const [addError, setAddError] = useState('')
   const [removingId, setRemovingId] = useState<number | null>(null)
+  const [descriptionLesson, setDescriptionLesson] = useState<LibraryLesson | null>(null)
 
   const load = useCallback((query: string) => {
     setLoading(true)
@@ -134,6 +136,15 @@ export default function LessonLibraryPage() {
               </div>
               {lesson.is_own ? (
                 <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+                  <button
+                    onClick={() => setDescriptionLesson(lesson)}
+                    style={{
+                      background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
+                      borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer',
+                    }}
+                  >
+                    📄 Описание
+                  </button>
                   <Link
                     href={`/teacher/lessons/${lesson.id}`}
                     style={{
@@ -163,22 +174,64 @@ export default function LessonLibraryPage() {
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => addToMyLessons(lesson.id)}
-                  disabled={addingId === lesson.id}
-                  style={{
-                    flexShrink: 0, background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)',
-                    borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: addingId === lesson.id ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {addingId === lesson.id ? 'Добавляем...' : '➕ Добавить себе'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+                  <button
+                    onClick={() => setDescriptionLesson(lesson)}
+                    style={{
+                      background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
+                      borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: 'pointer',
+                    }}
+                  >
+                    📄 Описание
+                  </button>
+                  <button
+                    onClick={() => addToMyLessons(lesson.id)}
+                    disabled={addingId === lesson.id}
+                    style={{
+                      flexShrink: 0, background: 'rgba(var(--t-accent-rgb),0.15)', border: '1px solid var(--t-accent)', color: 'var(--t-accent)',
+                      borderRadius: '8px', padding: '8px 16px', fontSize: '13px', cursor: addingId === lesson.id ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {addingId === lesson.id ? 'Добавляем...' : '➕ Добавить себе'}
+                  </button>
+                </div>
               )}
             </div>
           ))}
         </div>
 
       </div>
+
+      {descriptionLesson && (
+        <div
+          onClick={() => setDescriptionLesson(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'var(--t-overlay)', zIndex: 1000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px',
+              padding: '1.75rem', width: '100%', maxWidth: '480px', maxHeight: '80vh', overflowY: 'auto',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ fontWeight: 700, fontSize: '16px' }}>{descriptionLesson.title}</div>
+              <button
+                onClick={() => setDescriptionLesson(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '18px', flexShrink: 0 }}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ color: 'var(--t-text)', fontSize: '14px', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {descriptionLesson.library_description || 'Автор не оставил описание.'}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
