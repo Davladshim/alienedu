@@ -20,8 +20,11 @@ export async function GET(req: NextRequest) {
   }
   try {
     const result = await query(
-      `SELECT id, code, plan, status, first_used_at, valid_days, created_at
-       FROM plan_codes ORDER BY created_at DESC LIMIT 200`
+      `SELECT pc.id, pc.code, pc.plan, pc.status, pc.first_used_at, pc.valid_days, pc.created_at,
+         u.login as used_by_login, u.full_name as used_by_name
+       FROM plan_codes pc
+       LEFT JOIN users u ON u.id = pc.user_id
+       ORDER BY pc.created_at DESC LIMIT 200`
     )
     return NextResponse.json({ codes: result.rows })
   } catch (error) {

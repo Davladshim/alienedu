@@ -32,9 +32,12 @@ export default function StudentsPage() {
   const [gradeDraft, setGradeDraft] = useState('')
   const [parentNameDraft, setParentNameDraft] = useState('')
   const [callLinkDraft, setCallLinkDraft] = useState('')
+  const [displayNameDraft, setDisplayNameDraft] = useState('')
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentDescription, setPaymentDescription] = useState('')
   const [savingRow, setSavingRow] = useState(false)
+  const [savedId, setSavedId] = useState<number | null>(null)
+  const [savedFading, setSavedFading] = useState(false)
   const [history, setHistory] = useState<any[] | null>(null)
 
   const [expandedFamilyId, setExpandedFamilyId] = useState<number | null>(null)
@@ -159,6 +162,7 @@ export default function StudentsPage() {
     setGradeDraft(student.grade ?? '')
     setParentNameDraft(student.parent_name ?? '')
     setCallLinkDraft(student.call_link ?? '')
+    setDisplayNameDraft(student.display_name ?? '')
     setPaymentAmount('')
     setPaymentDescription('')
     setHistory(null)
@@ -166,7 +170,7 @@ export default function StudentsPage() {
 
   async function saveRowSettings(studentRowId: number) {
     setSavingRow(true)
-    await fetch(`/api/students/${studentRowId}`, {
+    const res = await fetch(`/api/students/${studentRowId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -175,9 +179,17 @@ export default function StudentsPage() {
         grade: gradeDraft === '' ? null : Number(gradeDraft),
         parent_name: parentNameDraft === '' ? null : parentNameDraft,
         call_link: callLinkDraft.trim() === '' ? null : callLinkDraft.trim(),
+        display_name: displayNameDraft.trim() === '' ? null : displayNameDraft.trim(),
       }),
     })
     setSavingRow(false)
+    if (res.ok) {
+      setExpandedId(null)
+      setSavedId(studentRowId)
+      setSavedFading(false)
+      setTimeout(() => setSavedFading(true), 1200)
+      setTimeout(() => setSavedId(id => (id === studentRowId ? null : id)), 2000)
+    }
     loadAll()
   }
 
@@ -258,47 +270,14 @@ export default function StudentsPage() {
           </div>
         )}
 
-        {/* Семьи */}
-        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>Семьи (общий баланс на нескольких учеников)</div>
-          {families.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
-              {families.map(f => {
-                const balance = Number(f.balance)
-                const avgPrice = Number(f.avg_lesson_price)
-                const available = balance > 0 && avgPrice > 0 ? Math.floor(balance / avgPrice) : 0
-                return (
-                  <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '6px 0' }}>
-                    <span>{f.name}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ color: balance < 0 ? '#f87171' : '#9ca3af' }}>
-                        {formatMoney(f.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
-                      </span>
-                      <button
-                        onClick={() => handleDeleteFamily(f.id)}
-                        style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '13px' }}
-                      >
-                        Удалить
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-          <form onSubmit={handleCreateFamily} style={{ display: 'flex', gap: '10px' }}>
-            <input value={newFamilyName} onChange={e => setNewFamilyName(e.target.value)} style={{ ...inputStyle, flex: 1 }} placeholder="Название семьи, например «Ивановы»" />
-            <button type="submit" disabled={creatingFamily || !newFamilyName.trim()} style={creatingFamily || !newFamilyName.trim() ? submitButtonDisabledStyle : smallButtonStyle}>
-              + Создать
-            </button>
-          </form>
-        </div>
-
         {/* Добавить ученика */}
         <div style={{
           background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px',
           padding: '1.5rem', marginBottom: '1.5rem',
         }}>
+          <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>
+            Мои ученики · {students.length} {students.length === 1 ? 'ученик' : 'учеников'}
+          </div>
           <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
             <button
               type="button"
@@ -359,6 +338,44 @@ export default function StudentsPage() {
               Можно сразу планировать занятия и вести оплату. Когда ученик зарегистрируется сам — привяжи его аккаунт кнопкой в карточке, и вся история перенесётся.
             </div>
           )}
+        </div>
+
+        {/* Семьи */}
+        <div style={{ background: '#1a1d27', border: '1px solid #2a2d3d', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ color: '#6b7280', fontSize: '12px', marginBottom: '10px', textTransform: 'uppercase' }}>
+            Семьи (общий баланс на нескольких учеников) · {families.length}
+          </div>
+          {families.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+              {families.map(f => {
+                const balance = Number(f.balance)
+                const avgPrice = Number(f.avg_lesson_price)
+                const available = balance > 0 && avgPrice > 0 ? Math.floor(balance / avgPrice) : 0
+                return (
+                  <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '6px 0' }}>
+                    <span>{f.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ color: balance < 0 ? '#f87171' : '#9ca3af' }}>
+                        {formatMoney(f.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteFamily(f.id)}
+                        style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '13px' }}
+                      >
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          <form onSubmit={handleCreateFamily} style={{ display: 'flex', gap: '10px' }}>
+            <input value={newFamilyName} onChange={e => setNewFamilyName(e.target.value)} style={{ ...inputStyle, flex: 1 }} placeholder="Название семьи, например «Ивановы»" />
+            <button type="submit" disabled={creatingFamily || !newFamilyName.trim()} style={creatingFamily || !newFamilyName.trim() ? submitButtonDisabledStyle : smallButtonStyle}>
+              + Создать
+            </button>
+          </form>
         </div>
 
         {error && <p style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</p>}
@@ -462,9 +479,15 @@ export default function StudentsPage() {
                           не зарегистрирован
                         </span>
                       )}
+                      {savedId === student.id && (
+                        <span style={{ color: '#34d399', fontSize: '12px', fontWeight: 500, transition: 'opacity 0.8s', opacity: savedFading ? 0 : 1 }}>
+                          ✓ Сохранено
+                        </span>
+                      )}
                     </div>
                     <div style={{ color: '#6b7280', fontSize: '13px', marginTop: '2px' }}>
                       {student.is_placeholder ? 'ждём регистрацию' : `@${student.login}`}{student.family_name ? ` · семья: ${student.family_name}` : ''}
+                      {student.display_name && ` · настоящее имя: ${student.account_name}`}
                       {Number(student.assigned_count) > 0 && ` · уроков пройдено: ${student.completed_count}/${student.assigned_count}`}
                     </div>
                   </div>
@@ -514,6 +537,13 @@ export default function StudentsPage() {
                 {isOpen && (
                   <div style={{ borderTop: '1px solid #2a2d3d', padding: '14px 18px' }}>
                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
+                      <div style={{ minWidth: '200px' }}>
+                        <label style={labelStyle}>Отображаемое имя (видно только тебе)</label>
+                        <input
+                          type="text" value={displayNameDraft} onChange={e => setDisplayNameDraft(e.target.value)}
+                          style={inputStyle} placeholder={student.account_name || student.full_name}
+                        />
+                      </div>
                       <div>
                         <label style={labelStyle}>Стоимость занятия, ₽</label>
                         <input type="number" value={priceDraft} onChange={e => setPriceDraft(e.target.value)} style={{ ...inputStyle, width: '120px' }} />

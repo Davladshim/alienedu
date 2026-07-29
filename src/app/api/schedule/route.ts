@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     await autoCompleteDueLessons()
 
     const result = await query(
-      `SELECT sl.*, COALESCE(u.full_name, sl.student_name, 'Пробный урок') as student_name, ts.call_link
+      `SELECT sl.*, COALESCE(ts.display_name, u.full_name, sl.student_name, 'Пробный урок') as student_name, ts.call_link
        FROM schedule_lessons sl
        LEFT JOIN users u ON u.id = sl.student_id
        LEFT JOIN teacher_students ts ON ts.teacher_id = sl.teacher_id AND ts.student_id = sl.student_id

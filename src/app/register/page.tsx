@@ -77,8 +77,6 @@ export default function RegisterPage() {
       overflow: 'auto',
       background: '#0f1117',
       display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       fontFamily: 'system-ui, sans-serif',
       padding: '2rem'
     }}>
@@ -88,7 +86,8 @@ export default function RegisterPage() {
         borderRadius: '16px',
         padding: '2.5rem',
         width: '100%',
-        maxWidth: '440px'
+        maxWidth: '440px',
+        margin: 'auto'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontSize: '28px', marginBottom: '8px' }}>🪐</div>

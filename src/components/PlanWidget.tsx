@@ -1,17 +1,37 @@
 'use client'
 import { useState, useEffect } from 'react'
 
+function daysWord(n: number): string {
+  const mod100 = n % 100
+  const mod10 = n % 10
+  if (mod100 >= 11 && mod100 <= 14) return 'дней'
+  if (mod10 === 1) return 'день'
+  if (mod10 >= 2 && mod10 <= 4) return 'дня'
+  return 'дней'
+}
+
 // Тихий индикатор тарифа + поле ввода кода — виден в шапке кабинета
 // репетитора на любой странице, специально сделан неярким (просто текст +
 // маленькое поле), чтобы не выглядеть навязчивой рекламой
 export function PlanWidget() {
   const [plan, setPlan] = useState<'free' | 'pro' | null>(null)
+  const [daysLeft, setDaysLeft] = useState<number | null>(null)
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
+  function applyPlanData(data: { plan: string; plan_expires_at: string | null }) {
+    setPlan(data.plan === 'pro' ? 'pro' : 'free')
+    if (data.plan === 'pro' && data.plan_expires_at) {
+      const msLeft = new Date(data.plan_expires_at).getTime() - Date.now()
+      setDaysLeft(Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000))))
+    } else {
+      setDaysLeft(null)
+    }
+  }
+
   useEffect(() => {
-    fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free')).catch(() => {})
+    fetch('/api/me').then(r => r.json()).then(applyPlanData).catch(() => {})
   }, [])
 
   async function redeem() {
@@ -26,7 +46,7 @@ export function PlanWidget() {
     const data = await res.json()
     setBusy(false)
     if (res.ok) {
-      setPlan(data.plan === 'pro' ? 'pro' : 'free')
+      applyPlanData({ plan: data.plan, plan_expires_at: data.expires_at })
       setCode('')
       setMsg({ text: 'Тариф обновлён', ok: true })
     } else {
@@ -38,7 +58,10 @@ export function PlanWidget() {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#6b7280' }}>
-      <span>Тариф: {plan === 'pro' ? 'Pro' : 'Free'}</span>
+      <span>
+        Тариф: {plan === 'pro' ? 'Pro' : 'Free'}
+        {plan === 'pro' && daysLeft !== null && ` (осталось ${daysLeft} ${daysWord(daysLeft)})`}
+      </span>
       <input
         value={code}
         onChange={e => setCode(e.target.value)}

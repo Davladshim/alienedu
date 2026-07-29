@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const result = await query(
-      `SELECT ts.id, u.id as student_id, u.full_name, u.login, u.is_placeholder, ts.created_at,
+      `SELECT ts.id, u.id as student_id, COALESCE(ts.display_name, u.full_name) as full_name,
+         u.full_name as account_name, ts.display_name, u.login, u.is_placeholder, ts.created_at,
          ts.lesson_price, ts.grade, ts.parent_name, ts.family_id, f.name as family_name,
          ts.call_link, ts.balance as balance,
          COALESCE(prog.assigned_count, 0) as assigned_count,
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
          ) per_lesson
        ) prog ON true
        WHERE ts.teacher_id = $1
-       ORDER BY u.full_name`,
+       ORDER BY COALESCE(ts.display_name, u.full_name)`,
       [decoded.id]
     )
 

@@ -23,7 +23,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
     }
 
-    const { lesson_price, family_id, grade, parent_name, call_link } = await request.json()
+    const { lesson_price, family_id, grade, parent_name, call_link, display_name } = await request.json()
 
     if (family_id !== undefined && family_id !== null) {
       const family = await query(`SELECT teacher_id FROM families WHERE id = $1`, [family_id])
@@ -33,13 +33,14 @@ export async function PUT(
     }
 
     await query(
-      `UPDATE teacher_students SET lesson_price = $1, family_id = $2, grade = $3, parent_name = $4, call_link = $5 WHERE id = $6`,
+      `UPDATE teacher_students SET lesson_price = $1, family_id = $2, grade = $3, parent_name = $4, call_link = $5, display_name = $6 WHERE id = $7`,
       [
         lesson_price !== undefined ? lesson_price : row.lesson_price,
         family_id !== undefined ? family_id : row.family_id,
         grade !== undefined ? grade : row.grade,
         parent_name !== undefined ? parent_name : row.parent_name,
         call_link !== undefined ? call_link : row.call_link,
+        display_name !== undefined ? display_name : row.display_name,
         id,
       ]
     )

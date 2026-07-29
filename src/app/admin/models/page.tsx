@@ -135,8 +135,8 @@ export default function ModelsAdminPage() {
 
   if (!isLoggedIn) {
     return (
-      <div style={{ position: 'fixed', inset: 0, overflow: 'auto', background: '#0f1117', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui, sans-serif' }}>
-        <div style={{ ...cardStyle, width: '100%', maxWidth: '380px' }}>
+      <div style={{ position: 'fixed', inset: 0, overflow: 'auto', background: '#0f1117', display: 'flex', fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
+        <div style={{ ...cardStyle, width: '100%', maxWidth: '380px', margin: 'auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>🏦</div>
             <h1 style={{ color: '#fff', fontSize: '20px', fontWeight: 600, margin: 0 }}>Банк интерактивных моделей</h1>
@@ -159,7 +159,7 @@ export default function ModelsAdminPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0f1117', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>🏦 Банк интерактивных моделей</h1>
           {editingId === null && (
@@ -223,7 +223,7 @@ export default function ModelsAdminPage() {
 
             <div style={{ flex: '1 1 280px', minWidth: '260px' }}>
               <label style={labelStyle}>Предпросмотр — перетащи модель мышью, чтобы вписать в окно</label>
-              <div style={{ position: 'relative', display: 'inline-block' }}>
+              <div style={{ position: 'relative', maxWidth: '100%', overflow: 'auto' }}>
                 {form.html_code.trim() ? (
                   <>
                     <InteractiveModelFrame

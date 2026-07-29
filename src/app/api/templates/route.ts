@@ -11,9 +11,10 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const result = await query(
-      `SELECT lt.*, u.full_name as student_name
+      `SELECT lt.*, COALESCE(ts.display_name, u.full_name) as student_name
        FROM lesson_templates lt
        JOIN users u ON u.id = lt.student_id
+       LEFT JOIN teacher_students ts ON ts.teacher_id = lt.teacher_id AND ts.student_id = lt.student_id
        WHERE lt.teacher_id = $1
        ORDER BY lt.day_of_week, lt.time`,
       [decoded.id]

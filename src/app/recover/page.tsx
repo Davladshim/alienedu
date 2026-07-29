@@ -91,8 +91,6 @@ export default function RecoverPage() {
       overflow: 'auto',
       background: '#0f1117',
       display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       fontFamily: 'system-ui, sans-serif',
       padding: '2rem'
     }}>
@@ -102,7 +100,8 @@ export default function RecoverPage() {
         borderRadius: '16px',
         padding: '2.5rem',
         width: '100%',
-        maxWidth: '400px'
+        maxWidth: '400px',
+        margin: 'auto'
       }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontSize: '28px', marginBottom: '8px' }}>🪐</div>

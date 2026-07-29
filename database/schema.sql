@@ -169,6 +169,10 @@ CREATE TABLE IF NOT EXISTS teacher_students (
     balance DECIMAL(10, 2) NOT NULL DEFAULT 0,
     family_id INTEGER REFERENCES families(id),
     call_link VARCHAR(500), -- необязательная ссылка на звонок (Zoom/Telemost/Telegram и т.д.)
+    -- Локальное отображаемое имя ученика для этого конкретного репетитора —
+    -- ученик мог указать при регистрации что угодно, а репетитору удобнее
+    -- видеть своё. NULL — показываем настоящее имя из users.full_name
+    display_name VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (teacher_id, student_id)
 );

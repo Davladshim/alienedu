@@ -50,9 +50,10 @@ export async function GET(request: NextRequest) {
     )
 
     const unpaid = await query(
-      `SELECT sl.id, sl.date, sl.time, sl.price, u.full_name as student_name
+      `SELECT sl.id, sl.date, sl.time, sl.price, COALESCE(ts.display_name, u.full_name) as student_name
        FROM schedule_lessons sl
        JOIN users u ON u.id = sl.student_id
+       LEFT JOIN teacher_students ts ON ts.teacher_id = sl.teacher_id AND ts.student_id = sl.student_id
        WHERE sl.teacher_id = $1 AND sl.status = 'completed' AND sl.is_paid = false AND sl.price IS NOT NULL
        ORDER BY sl.date`,
       [decoded.id]

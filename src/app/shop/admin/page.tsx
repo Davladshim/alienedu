@@ -203,9 +203,9 @@ export default function ShopAdminPage() {
       <div style={{
         ...s.page, minHeight: undefined,
         position: "fixed", inset: 0, overflow: "auto",
-        display: "flex", alignItems: "center", justifyContent: "center",
+        display: "flex", padding: "2rem",
       }}>
-        <div style={{ background: "#1e2029", border: "1px solid #2a2d3a", borderRadius: 16, padding: 48, width: 360, textAlign: "center" }}>
+        <div style={{ background: "#1e2029", border: "1px solid #2a2d3a", borderRadius: 16, padding: 48, width: 360, textAlign: "center", margin: "auto" }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>🪐</div>
           <div style={{ fontWeight: 700, fontSize: "1.2rem", marginBottom: 4 }}>
             <span style={{ color: "#fff" }}>Alien</span><span style={{ color: "#60a5fa" }}>Edu</span>

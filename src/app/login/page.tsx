@@ -44,9 +44,8 @@ export default function LoginPage() {
       overflow: 'auto',
       background: '#0f1117',
       display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'system-ui, sans-serif'
+      fontFamily: 'system-ui, sans-serif',
+      padding: '2rem'
     }}>
       <div style={{
         background: '#1a1d27',
@@ -54,7 +53,8 @@ export default function LoginPage() {
         borderRadius: '16px',
         padding: '2.5rem',
         width: '100%',
-        maxWidth: '400px'
+        maxWidth: '400px',
+        margin: 'auto'
       }}>
         {/* Логотип */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>

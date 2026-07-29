@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    const result = await query(`SELECT id, full_name, role, grade, timezone FROM users WHERE id = $1`, [decoded.id])
+    const result = await query(`SELECT id, full_name, role, grade, timezone, plan_expires_at FROM users WHERE id = $1`, [decoded.id])
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Не найден' }, { status: 404 })
     }
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       id: user.id, full_name: user.full_name, role: user.role, plan,
       grade: user.grade, timezone: user.timezone,
+      plan_expires_at: plan === 'pro' ? user.plan_expires_at : null,
     })
   } catch (error) {
     console.error('Ошибка получения текущего пользователя:', error)

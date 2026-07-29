@@ -63,7 +63,9 @@ function lessonColor(lesson: any, dayLessons: any[]): string {
   if (lesson.status === 'cancelled') return '#6b7280'
   if (hasConflict(lesson, dayLessons)) return '#f472b6'
   if (lesson.is_trial) return '#e5e7eb'
-  if (lesson.template_id) return '#4f8ef7'
+  // Урок из шаблона, но перенесённый (original_date заполняется при первом
+  // переносе) — визуально как обычный внеплановый урок, для наглядности
+  if (lesson.template_id && !lesson.original_date) return '#4f8ef7'
   return '#34d399'
 }
 
