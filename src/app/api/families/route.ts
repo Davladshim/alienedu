@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { settleFamilyDebts } from '@/lib/familyBalance'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,6 +10,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+
+    // Подчищаем случаи, когда в пуле уже лежат деньги, а личный долг ученика
+    // ещё не погашен (например, пополнение случилось раньше, чем появился
+    // этот автоматический перерасчёт) — чтобы не зависало до следующего платежа
+    const familiesWithPool = await query(
+      `SELECT id FROM families WHERE teacher_id = $1 AND balance > 0`,
+      [decoded.id]
+    )
+    for (const family of familiesWithPool.rows) {
+      await settleFamilyDebts(family.id)
+    }
 
     // Баланс семьи — реальный пул ещё не распределённых денег (families.balance,
     // всегда >= 0). Долги за проведённые занятия — отдельно, у каждого ученика лично
