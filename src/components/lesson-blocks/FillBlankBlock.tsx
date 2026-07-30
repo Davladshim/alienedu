@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Formula } from './Formula'
-import { labelStyle, textareaStyle, inputStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextarea } from './FormulaTextarea'
+import { labelStyle, inputStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface FillBlankContent {
   template: string // пропуски отмечаются как ___
@@ -45,11 +46,10 @@ export function FillBlankEditor({ content, onChange }: {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <label style={labelStyle}>Текст с пропусками — отмечай пропуск как <code>___</code> (три подчёркивания)</label>
-      <textarea
+      <FormulaTextarea
         value={content.template}
-        onChange={e => updateTemplate(e.target.value)}
+        onChange={updateTemplate}
         rows={3}
-        style={textareaStyle}
         placeholder="Например: Единица измерения силы — ___, обозначается ___."
       />
       {content.blanks.length > 0 && (

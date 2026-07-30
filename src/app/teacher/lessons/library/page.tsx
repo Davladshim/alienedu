@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Formula } from '@/components/lesson-blocks/Formula'
 
 interface LibraryLesson {
   id: number
@@ -227,7 +228,7 @@ export default function LessonLibraryPage() {
               </button>
             </div>
             <div style={{ color: 'var(--t-text)', fontSize: '14px', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-              {descriptionLesson.library_description || 'Автор не оставил описание.'}
+              {descriptionLesson.library_description ? <Formula text={descriptionLesson.library_description} /> : 'Автор не оставил описание.'}
             </div>
           </div>
         </div>

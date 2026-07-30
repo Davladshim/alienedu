@@ -2,7 +2,7 @@
 import { useState, useEffect, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { blockRegistry, blockTypes, groupBlocksIntoPages, getGroupId, GROUP_ID_FIELD, type BlockType, type LessonBlockData } from '@/components/lesson-blocks'
-import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle } from '@/components/lesson-blocks/styles'
+import { inputStyle, labelStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle } from '@/components/lesson-blocks/styles'
 import { FormulaTextarea } from '@/components/lesson-blocks/FormulaTextarea'
 import { LessonPreview } from './LessonPreview'
 import { LessonAssignment } from './LessonAssignment'
@@ -357,11 +357,11 @@ export function LessonBuilder({
           {canPublishToLibrary && isPublic && (
             <div style={{ marginTop: '10px', marginLeft: '24px' }}>
               <label style={labelStyle}>Описание урока для библиотеки</label>
-              <textarea
+              <FormulaTextarea
                 value={libraryDescription}
-                onChange={e => setLibraryDescription(e.target.value)}
+                onChange={setLibraryDescription}
+                rows={3}
                 placeholder="Обязательное поле — опиши урок, чтобы другие репетиторы поняли, подойдёт ли он им"
-                style={{ ...textareaStyle, minHeight: '80px' }}
               />
             </div>
           )}

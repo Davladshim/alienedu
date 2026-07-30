@@ -2,6 +2,7 @@
 import { useRef, useState } from 'react'
 import { textareaStyle } from './styles'
 import { FormulaEditorModal } from './FormulaEditorModal'
+import { ColorPicker } from './ColorPicker'
 
 const formatBtnStyle: React.CSSProperties = {
   background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
@@ -23,7 +24,7 @@ export function FormulaTextarea({ value, onChange, rows = 2, placeholder }: {
   const ref = useRef<HTMLTextAreaElement>(null)
   const [centered, setCentered] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
-  const [color, setColor] = useState('var(--t-pink)')
+  const [color, setColor] = useState('#f472b6')
 
   function insert(latex: string) {
     const wrap = centered ? '$$' : '$'
@@ -91,20 +92,9 @@ export function FormulaTextarea({ value, onChange, rows = 2, placeholder }: {
           <button type="button" title="Подчёркнутый" onClick={() => wrapSelection('__', '__')} style={{ ...formatBtnStyle, textDecoration: 'underline' }}>
             Ч
           </button>
-          <button
-            type="button"
-            title="Цвет текста"
-            onClick={() => wrapSelection(`[color=${color}]`, '[/color]')}
-            style={{ ...formatBtnStyle, padding: 0 }}
-          >
-            <span style={{ width: '14px', height: '14px', borderRadius: '3px', background: color, display: 'block' }} />
-          </button>
-          <input
-            type="color"
-            value={color}
-            onChange={e => setColor(e.target.value)}
-            title="Выбрать цвет"
-            style={{ width: '22px', height: '22px', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
+          <ColorPicker
+            color={color}
+            onApply={hex => { setColor(hex); wrapSelection(`[color=${hex}]`, '[/color]') }}
           />
         </div>
 
