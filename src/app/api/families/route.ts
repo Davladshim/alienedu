@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
-import { settleFamilyDebts } from '@/lib/familyBalance'
+import { settleFamilyDebts, reconcileNegativeFamilyBalance } from '@/lib/familyBalance'
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,6 +20,17 @@ export async function GET(request: NextRequest) {
     )
     for (const family of familiesWithPool.rows) {
       await settleFamilyDebts(family.id)
+    }
+
+    // Разовое исправление: у семьи не должно быть отрицательного баланса
+    // (это всегда пул ещё не распределённых денег, >= 0) — если ушёл в минус
+    // из-за старого сбоя, забираем недостачу обратно у переплативших учеников
+    const familiesInDebt = await query(
+      `SELECT id FROM families WHERE teacher_id = $1 AND balance < 0`,
+      [decoded.id]
+    )
+    for (const family of familiesInDebt.rows) {
+      await reconcileNegativeFamilyBalance(family.id)
     }
 
     // Баланс семьи — реальный пул ещё не распределённых денег (families.balance,

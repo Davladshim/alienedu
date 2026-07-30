@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { query } from '@/lib/db'
 import { getTeacherLimits } from '@/lib/plan'
-import { settleFamilyDebts } from '@/lib/familyBalance'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,17 +12,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
-
-    // Подчищаем случаи, когда в пуле семьи уже лежат деньги, а личный долг
-    // ученика ещё не погашен — эта страница и /api/families грузятся
-    // параллельно, оба подчищают независимо, чтобы не зависело от порядка
-    const familiesWithPool = await query(
-      `SELECT id FROM families WHERE teacher_id = $1 AND balance > 0`,
-      [decoded.id]
-    )
-    for (const family of familiesWithPool.rows) {
-      await settleFamilyDebts(family.id)
-    }
 
     const result = await query(
       `SELECT ts.id, u.id as student_id, COALESCE(ts.display_name, u.full_name) as full_name,
