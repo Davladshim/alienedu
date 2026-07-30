@@ -1,39 +1,48 @@
 'use client'
 import { useState } from 'react'
-import { blockRegistry, Formula, type LessonBlockData } from '@/components/lesson-blocks'
+import { blockRegistry, groupBlocksIntoPages, Formula, type LessonBlockData } from '@/components/lesson-blocks'
 import { submitButtonStyle } from '@/components/lesson-blocks/styles'
+
+interface BlockState {
+  attempts: number
+  lastCorrect: boolean | null
+}
+
+const EMPTY_STATE: BlockState = { attempts: 0, lastCorrect: null }
+
+function isBlockReady(block: LessonBlockData, state: BlockState): boolean {
+  const def = blockRegistry[block.type]
+  if (def.checkAnswer === null) return true
+  const answered = state.attempts > 0
+  const retryable = !!block.content.retryable
+  const maxAttempts = block.content.maxAttempts ?? 2
+  const awaitingRetry = answered && state.lastCorrect === false && retryable && state.attempts < maxAttempts
+  return answered && !awaitingRetry
+}
 
 export function LessonPreview({ blocks, onExit }: {
   blocks: LessonBlockData[]
   onExit: () => void
 }) {
-  const [index, setIndex] = useState(0)
-  const [attempts, setAttempts] = useState(0)
-  const [lastCorrect, setLastCorrect] = useState<boolean | null>(null)
+  const [pageIndex, setPageIndex] = useState(0)
+  const [states, setStates] = useState<Record<string, BlockState>>({})
 
   if (blocks.length === 0) return null
 
-  const block = blocks[index]
-  const def = blockRegistry[block.type]
-  const Player = def.Player
-  const isLast = index === blocks.length - 1
-  const retryable = !!block.content.retryable
-  const maxAttempts = block.content.maxAttempts ?? 2
-  const answered = attempts > 0
-  const awaitingRetry = answered && lastCorrect === false && retryable && attempts < maxAttempts
-  const done = answered && !awaitingRetry
+  const pages = groupBlocksIntoPages(blocks)
+  const page = pages[pageIndex]
+  const isLast = pageIndex === pages.length - 1
+  const pageReady = page.every(b => isBlockReady(b, states[b.id] || EMPTY_STATE))
 
-  function handleSubmit(answer: any) {
+  function handleSubmit(block: LessonBlockData, answer: any) {
+    const def = blockRegistry[block.type]
     const isCorrect = def.checkAnswer ? def.checkAnswer(block.content, answer) : null
-    setLastCorrect(isCorrect)
-    setAttempts(a => a + 1)
+    setStates(s => ({ ...s, [block.id]: { attempts: (s[block.id]?.attempts || 0) + 1, lastCorrect: isCorrect } }))
   }
 
   function next() {
     if (isLast) { onExit(); return }
-    setIndex(i => i + 1)
-    setAttempts(0)
-    setLastCorrect(null)
+    setPageIndex(i => i + 1)
   }
 
   return (
@@ -43,38 +52,55 @@ export function LessonPreview({ blocks, onExit }: {
           <button onClick={onExit} style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '14px' }}>
             ✕ Выйти из предпросмотра
           </button>
-          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>{index + 1} / {blocks.length}</div>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>{pageIndex + 1} / {pages.length}</div>
         </div>
 
         <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.75rem' }}>
-          {def.checkAnswer === null ? (
-            <Player content={block.content} />
-          ) : (
-            <Player content={block.content} disabled={done} onSubmit={handleSubmit} />
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+            {page.map((block, i) => {
+              const def = blockRegistry[block.type]
+              const Player = def.Player
+              const state = states[block.id] || EMPTY_STATE
+              const answered = state.attempts > 0
+              const retryable = !!block.content.retryable
+              const maxAttempts = block.content.maxAttempts ?? 2
+              const awaitingRetry = answered && state.lastCorrect === false && retryable && state.attempts < maxAttempts
+              const done = answered && !awaitingRetry
 
-          {answered && lastCorrect !== null && (
-            <div style={{
-              marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
-              background: lastCorrect ? 'rgba(var(--t-success2-rgb),0.15)' : 'rgba(var(--t-danger-rgb),0.15)',
-              color: lastCorrect ? 'var(--t-success)' : 'var(--t-danger-soft)',
-            }}>
-              {lastCorrect
-                ? '✅ Правильно!'
-                : awaitingRetry
-                  ? `❌ Неверно — попробуй ещё раз (попытка ${attempts} из ${maxAttempts})`
-                  : '❌ Неверно'}
-            </div>
-          )}
+              return (
+                <div key={block.id} style={i > 0 ? { paddingTop: '1.75rem', borderTop: '1px solid var(--t-border)' } : undefined}>
+                  {def.checkAnswer === null ? (
+                    <Player content={block.content} />
+                  ) : (
+                    <Player content={block.content} disabled={done} onSubmit={(answer: any) => handleSubmit(block, answer)} />
+                  )}
 
-          {done && lastCorrect === false && block.content.explanation && (
-            <div style={{ marginTop: '10px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(var(--t-warning-rgb),0.1)', color: 'var(--t-warning)' }}>
-              Объяснение: <Formula text={block.content.explanation} />
-            </div>
-          )}
+                  {answered && state.lastCorrect !== null && (
+                    <div style={{
+                      marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
+                      background: state.lastCorrect ? 'rgba(var(--t-success2-rgb),0.15)' : 'rgba(var(--t-danger-rgb),0.15)',
+                      color: state.lastCorrect ? 'var(--t-success)' : 'var(--t-danger-soft)',
+                    }}>
+                      {state.lastCorrect
+                        ? '✅ Правильно!'
+                        : awaitingRetry
+                          ? `❌ Неверно — попробуй ещё раз (попытка ${state.attempts} из ${maxAttempts})`
+                          : '❌ Неверно'}
+                    </div>
+                  )}
 
-          {(def.checkAnswer === null || done) && (
-            <button onClick={next} style={{ ...submitButtonStyle, marginTop: '16px' }}>
+                  {done && state.lastCorrect === false && block.content.explanation && (
+                    <div style={{ marginTop: '10px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(var(--t-warning-rgb),0.1)', color: 'var(--t-warning)' }}>
+                      Объяснение: <Formula text={block.content.explanation} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {pageReady && (
+            <button onClick={next} style={{ ...submitButtonStyle, marginTop: '20px' }}>
               {isLast ? 'Завершить' : 'Далее →'}
             </button>
           )}

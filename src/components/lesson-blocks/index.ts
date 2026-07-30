@@ -2,6 +2,7 @@ export { Formula } from './Formula'
 
 export { blockRegistry, blockTypes } from './registry'
 export type { BlockType, BlockDefinition, LessonBlockData } from './registry'
+export { GROUP_ID_FIELD, getGroupId, groupBlocksIntoPages } from './blockGroups'
 
 export * from './TheoryBlock'
 export * from './SingleChoiceBlock'

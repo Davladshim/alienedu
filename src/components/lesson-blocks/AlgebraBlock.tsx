@@ -3,12 +3,20 @@ import { useRef, useState } from 'react'
 import { Formula } from './Formula'
 import { FormulaTextarea } from './FormulaTextarea'
 import { AlgebraBoard, type AlgebraBoardHandle } from './AlgebraBoard'
+import { ConditionBoardEditor, ConditionBoardViewer } from './ConditionBoard'
 import { compressPhoto } from './photoUpload'
 import { labelStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface AlgebraContent {
   question: string
   explanation?: string
+  // Доска для решения — ученик строит на ней черновик (по умолчанию включена,
+  // undefined трактуется как true ради обратной совместимости со старыми уроками)
+  solutionBoard?: boolean
+  // Доска для условия — учитель заранее рисует график к задаче в конструкторе,
+  // ученик видит его только для просмотра
+  conditionBoard?: boolean
+  conditionBoardState?: string | null
 }
 
 export const algebraDefault: AlgebraContent = { question: '' }
@@ -23,6 +31,9 @@ export function AlgebraEditor({ content, onChange }: {
   content: AlgebraContent
   onChange: (content: AlgebraContent) => void
 }) {
+  const solutionBoard = content.solutionBoard !== false
+  const conditionBoard = !!content.conditionBoard
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <label style={labelStyle}>Условие задачи</label>
@@ -36,6 +47,37 @@ export function AlgebraEditor({ content, onChange }: {
         Ученик может построить график в GeoGebra и/или записать решение текстом или фото из тетради.
         Ответ не проверяется автоматически — его нужно посмотреть вручную.
       </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--t-text-secondary)' }}>
+          <input
+            type="checkbox"
+            checked={solutionBoard}
+            onChange={e => onChange({ ...content, solutionBoard: e.target.checked })}
+          />
+          Показать доску для решения ученику
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--t-text-secondary)' }}>
+          <input
+            type="checkbox"
+            checked={conditionBoard}
+            onChange={e => onChange({ ...content, conditionBoard: e.target.checked, ...(e.target.checked ? {} : { conditionBoardState: null }) })}
+          />
+          Показать доску для условия (построить график к задаче заранее)
+        </label>
+      </div>
+
+      {conditionBoard && (
+        <div>
+          <label style={labelStyle}>График к задаче — покажется ученику для просмотра</label>
+          <ConditionBoardEditor
+            appName="graphing"
+            initialState={content.conditionBoardState}
+            onStateChange={base64 => onChange({ ...content, conditionBoardState: base64 })}
+          />
+        </div>
+      )}
+
       <label style={{ ...labelStyle, marginTop: '4px' }}>Решение (необязательно, можно показать ученику во время урока)</label>
       <FormulaTextarea
         value={content.explanation || ''}
@@ -58,6 +100,9 @@ export function AlgebraPlayer({ content, onSubmit, disabled }: {
   const [photoBusy, setPhotoBusy] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
+  const solutionBoard = content.solutionBoard !== false
+  const conditionBoard = !!content.conditionBoard && !!content.conditionBoardState
+
   async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -76,7 +121,7 @@ export function AlgebraPlayer({ content, onSubmit, disabled }: {
   async function handleSubmit() {
     setSubmitting(true)
     try {
-      const drawing = await boardRef.current?.exportSnapshot() ?? null
+      const drawing = solutionBoard ? (await boardRef.current?.exportSnapshot() ?? null) : null
       onSubmit({ drawing, solutionText, photo })
     } finally {
       setSubmitting(false)
@@ -91,8 +136,19 @@ export function AlgebraPlayer({ content, onSubmit, disabled }: {
         <Formula text={content.question} />
       </div>
 
-      <label style={labelStyle}>График (черновик решения, необязательно)</label>
-      <AlgebraBoard ref={boardRef} disabled={disabled} />
+      {conditionBoard && (
+        <>
+          <label style={labelStyle}>Рисунок к задаче</label>
+          <ConditionBoardViewer appName="graphing" base64={content.conditionBoardState!} />
+        </>
+      )}
+
+      {solutionBoard && (
+        <>
+          <label style={{ ...labelStyle, marginTop: conditionBoard ? '14px' : 0 }}>Доска для решения (черновик, необязательно)</label>
+          <AlgebraBoard ref={boardRef} disabled={disabled} />
+        </>
+      )}
 
       <label style={{ ...labelStyle, marginTop: '14px' }}>Решение текстом</label>
       <FormulaTextarea

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { blockRegistry, Formula, type LessonBlockData } from '@/components/lesson-blocks'
+import { blockRegistry, groupBlocksIntoPages, Formula, type LessonBlockData } from '@/components/lesson-blocks'
 import { submitButtonStyle, resizeHandleStyle, dragHandleStyle, GEOGEBRA_ZOOM_RESET } from '@/components/lesson-blocks/styles'
 import { useLiveChannel } from '@/components/lesson-blocks/useLiveChannel'
 import { LiveStudentBoardViewer, type LiveStudentBoardViewerHandle } from '@/components/lesson-blocks/LiveStudentBoardViewer'
@@ -34,6 +34,18 @@ interface Attempt {
 
 const EMPTY_STATE: BlockState = { attempts: 0, isCorrect: null, skipped: false, done: false }
 
+// Находит номер страницы (группы блоков), в которую входит блок с данным
+// плоским индексом — нужно, чтобы восстановить прогресс после перезагрузки:
+// сохранённый resumeIndex указывает на блок, а перемещаться нужно по страницам
+function pageIndexForBlock(pages: LessonBlockData[][], blockIndex: number): number {
+  let counted = 0
+  for (let p = 0; p < pages.length; p++) {
+    counted += pages[p].length
+    if (blockIndex < counted) return p
+  }
+  return 0
+}
+
 export default function StudentLessonPage() {
   const params = useParams()
   const router = useRouter()
@@ -45,7 +57,7 @@ export default function StudentLessonPage() {
   const [mode, setMode] = useState<'quiz' | 'exam'>('quiz')
   const [blocks, setBlocks] = useState<LessonBlockData[]>([])
 
-  const [index, setIndex] = useState(0)
+  const [pageIndex, setPageIndex] = useState(0)
   const [finished, setFinished] = useState(false)
   const [blockStates, setBlockStates] = useState<Record<string, BlockState>>({})
   // Счётчик "перерешиваний" по блоку — меняет key у Player'а, чтобы при
@@ -118,14 +130,18 @@ export default function StudentLessonPage() {
         if (loadedBlocks.length > 0 && loadedBlocks.every(b => restored[b.id]?.done)) {
           setFinished(true)
         } else {
-          const resumeIndex = loadedBlocks.findIndex(b => !restored[b.id]?.done)
-          setIndex(resumeIndex === -1 ? 0 : resumeIndex)
+          const resumeBlockIndex = loadedBlocks.findIndex(b => !restored[b.id]?.done)
+          const pages = groupBlocksIntoPages(loadedBlocks)
+          setPageIndex(resumeBlockIndex === -1 ? 0 : pageIndexForBlock(pages, resumeBlockIndex))
         }
 
         setLoading(false)
       })
       .catch(() => { setNotFound(true); setLoading(false) })
   }, [id])
+
+  const pages = groupBlocksIntoPages(blocks)
+  const page = pages[pageIndex] || []
 
   // Сообщаем о себе присутствие — сам факт открытого урока говорит
   // учителю "ученик сейчас здесь"
@@ -135,11 +151,15 @@ export default function StudentLessonPage() {
   }, [live.ready])
 
   // Транслируем учителю живой прогресс — на каком блоке ученик сейчас
-  // и что уже отправлено по каждому блоку
+  // и что уже отправлено по каждому блоку. Передаём плоский индекс первого
+  // блока текущей страницы — экран наблюдения учителя подсвечивает блоки
+  // по плоскому списку и не знает про объединение в страницы
   useEffect(() => {
     if (!liveChannelId || !live.ready) return
+    const firstBlockId = page[0]?.id
+    const flatIndex = firstBlockId ? blocks.findIndex(b => b.id === firstBlockId) : 0
     live.broadcast('progress', {
-      index,
+      index: flatIndex,
       finished,
       statuses: Object.fromEntries(
         blocks.map(b => {
@@ -149,7 +169,7 @@ export default function StudentLessonPage() {
       ),
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liveChannelId, live.ready, index, finished, blockStates, blocks])
+  }, [liveChannelId, live.ready, pageIndex, finished, blockStates, blocks])
 
   function logAttempt(blockId: string, answer: any, isCorrect: boolean | null) {
     fetch(`/api/lessons/${id}/attempt`, {
@@ -206,11 +226,11 @@ export default function StudentLessonPage() {
     setFinished(true)
   }
 
-  function goTo(newIndex: number) {
-    finalizeTheoryIfNeeded(blocks[index])
-    if (newIndex >= blocks.length) { finishLesson(); return }
-    if (newIndex < 0) return
-    setIndex(newIndex)
+  function goTo(newPageIndex: number) {
+    for (const b of page) finalizeTheoryIfNeeded(b)
+    if (newPageIndex >= pages.length) { finishLesson(); return }
+    if (newPageIndex < 0) return
+    setPageIndex(newPageIndex)
   }
 
   if (finished) {
@@ -296,48 +316,56 @@ export default function StudentLessonPage() {
     )
   }
 
-  const block = blocks[index]
-  const def = blockRegistry[block.type]
-  const Player = def.Player
-  const isLast = index === blocks.length - 1
-  const isGradable = def.checkAnswer !== null
-  const isManualReview = !!def.manualReview
-  const interactive = isGradable || isManualReview
-  const state = blockStates[block.id] || EMPTY_STATE
-  const awaitingRetry = isGradable && state.attempts > 0 && !state.done
-  // Пока остались попытки, плеер не блокируется — можно сразу поменять
-  // ответ и отправить снова, без отдельной кнопки "повторить"
-  const playerDisabled = state.done
-  const retryable = !!block.content.retryable
-  const maxAttempts = block.content.maxAttempts ?? 2
+  const isLastPage = pageIndex === pages.length - 1
 
-  function skipBlock() {
+  function skipBlock(block: LessonBlockData) {
     setBlockStates(s => ({ ...s, [block.id]: { ...(s[block.id] || EMPTY_STATE), skipped: true, isCorrect: false, done: true } }))
     logAttempt(block.id, null, false)
   }
 
-  function retryBlock() {
-    setRetryNonce(n => ({ ...n, [block.id]: (n[block.id] || 0) + 1 }))
+  function skipPage() {
+    for (const b of page) {
+      const def = blockRegistry[b.type]
+      const interactive = def.checkAnswer !== null || !!def.manualReview
+      if (interactive && !blockStates[b.id]?.done) skipBlock(b)
+    }
   }
 
-  function handleSubmit(answer: any) {
+  function retryBlock(blockId: string) {
+    setRetryNonce(n => ({ ...n, [blockId]: (n[blockId] || 0) + 1 }))
+  }
+
+  function handleSubmit(block: LessonBlockData, answer: any) {
+    const def = blockRegistry[block.type]
+    const state = blockStates[block.id] || EMPTY_STATE
     const isCorrect = def.checkAnswer ? def.checkAnswer(block.content, answer) : null
     const attempts = state.attempts + 1
+    const retryable = !!block.content.retryable
+    const maxAttempts = block.content.maxAttempts ?? 2
     const done = isCorrect === true || mode === 'exam' || !retryable || attempts >= maxAttempts
     setBlockStates(s => ({ ...s, [block.id]: { ...state, attempts, isCorrect, done } }))
     logAttempt(block.id, answer, isCorrect)
   }
 
-  function dotStatus(b: LessonBlockData, i: number): { bg: string; color: string } {
-    if (i === index) return { bg: 'var(--t-accent)', color: 'var(--t-text)' }
-    const st = blockStates[b.id]
-    if (!st?.done && !(st && st.attempts > 0)) return { bg: 'var(--t-card)', color: 'var(--t-text-muted)' }
+  function pageDotStatus(pageBlocks: LessonBlockData[], i: number): { bg: string; color: string } {
+    if (i === pageIndex) return { bg: 'var(--t-accent)', color: 'var(--t-text)' }
+    const anyTouched = pageBlocks.some(b => { const st = blockStates[b.id]; return st && (st.done || st.attempts > 0) })
+    if (!anyTouched) return { bg: 'var(--t-card)', color: 'var(--t-text-muted)' }
+    const allDone = pageBlocks.every(b => blockStates[b.id]?.done)
+    if (!allDone) return { bg: 'var(--t-card)', color: 'var(--t-text-muted)' }
     if (mode === 'exam') return { bg: 'var(--t-border)', color: 'var(--t-text-secondary)' } // не выдаём правильность заранее
-    if (blockRegistry[b.type].checkAnswer === null) return { bg: 'var(--t-border)', color: 'var(--t-text-secondary)' }
-    if (st?.skipped) return { bg: 'rgba(107,114,128,0.3)', color: 'var(--t-text-secondary)' }
-    if (st?.isCorrect) return { bg: 'rgba(16,185,129,0.25)', color: 'var(--t-success)' }
+    const graded = pageBlocks.filter(b => blockRegistry[b.type].checkAnswer !== null)
+    if (graded.length === 0) return { bg: 'var(--t-border)', color: 'var(--t-text-secondary)' }
+    if (graded.some(b => blockStates[b.id]?.skipped)) return { bg: 'rgba(107,114,128,0.3)', color: 'var(--t-text-secondary)' }
+    if (graded.every(b => blockStates[b.id]?.isCorrect)) return { bg: 'rgba(16,185,129,0.25)', color: 'var(--t-success)' }
     return { bg: 'rgba(244,114,182,0.25)', color: 'var(--t-pink)' }
   }
+
+  const pageHasSkippable = page.some(b => {
+    const def = blockRegistry[b.type]
+    const interactive = def.checkAnswer !== null || !!def.manualReview
+    return interactive && !blockStates[b.id]?.done
+  })
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
@@ -346,17 +374,17 @@ export default function StudentLessonPage() {
           <Link href="/student/lessons" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>
             ← Мои уроки
           </Link>
-          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>{index + 1} / {blocks.length}{mode === 'exam' && ' · Контрольная'}</div>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>{pageIndex + 1} / {pages.length}{mode === 'exam' && ' · Контрольная'}</div>
         </div>
 
         <h1 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '1rem' }}>{lessonTitle}</h1>
 
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '1rem' }}>
-          {blocks.map((b, i) => {
-            const s = dotStatus(b, i)
+          {pages.map((pageBlocks, i) => {
+            const s = pageDotStatus(pageBlocks, i)
             return (
               <button
-                key={b.id}
+                key={pageBlocks[0].id}
                 onClick={() => goTo(i)}
                 style={{
                   width: '28px', height: '28px', borderRadius: '8px', border: 'none',
@@ -370,95 +398,113 @@ export default function StudentLessonPage() {
         </div>
 
         <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.75rem' }}>
-          {!interactive ? (
-            <Player content={block.content} />
-          ) : (
-            <Player key={`${block.id}-${retryNonce[block.id] || 0}`} content={block.content} disabled={playerDisabled} onSubmit={handleSubmit} />
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+            {page.map((block, blockPos) => {
+              const def = blockRegistry[block.type]
+              const Player = def.Player
+              const isGradable = def.checkAnswer !== null
+              const isManualReview = !!def.manualReview
+              const interactive = isGradable || isManualReview
+              const state = blockStates[block.id] || EMPTY_STATE
+              const awaitingRetry = isGradable && state.attempts > 0 && !state.done
+              const playerDisabled = state.done
+              const maxAttempts = block.content.maxAttempts ?? 2
 
-          {isGradable && mode === 'quiz' && state.attempts > 0 && (
-            <div style={{
-              marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap',
-              background: state.skipped ? 'rgba(107,114,128,0.15)' : state.isCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(244,114,182,0.15)',
-              color: state.skipped ? 'var(--t-text-secondary)' : state.isCorrect ? 'var(--t-success)' : 'var(--t-pink)',
-            }}>
-              <span>
-                {state.skipped
-                  ? '⏭ Пропущено'
-                  : state.isCorrect
-                    ? '✅ Правильно!'
-                    : awaitingRetry
-                      ? `❌ Неверно — осталось попыток: ${maxAttempts - state.attempts} (из ${maxAttempts})`
-                      : '❌ Неверно'}
-              </span>
-              {awaitingRetry && (
-                <button
-                  onClick={retryBlock}
-                  style={{
-                    background: 'rgba(244,114,182,0.2)', border: '1px solid var(--t-pink)', color: 'var(--t-pink)',
-                    borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer', flexShrink: 0,
-                  }}
-                >
-                  🔁 Перерешать
-                </button>
-              )}
-            </div>
-          )}
+              return (
+                <div key={block.id} style={blockPos > 0 ? { paddingTop: '1.75rem', borderTop: '1px solid var(--t-border)' } : undefined}>
+                  {!interactive ? (
+                    <Player content={block.content} />
+                  ) : (
+                    <Player key={`${block.id}-${retryNonce[block.id] || 0}`} content={block.content} disabled={playerDisabled} onSubmit={(answer: any) => handleSubmit(block, answer)} />
+                  )}
 
-          {isGradable && mode === 'quiz' && state.done && state.isCorrect === false && !state.skipped && block.content.explanation && (
-            <div style={{
-              marginTop: '14px', padding: '12px 16px', borderRadius: '8px', fontSize: '14px',
-              background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.4)', color: 'var(--t-info)',
-            }}>
-              💡 Решение:<br />
-              <Formula text={block.content.explanation} />
-            </div>
-          )}
+                  {isGradable && mode === 'quiz' && state.attempts > 0 && (
+                    <div style={{
+                      marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap',
+                      background: state.skipped ? 'rgba(107,114,128,0.15)' : state.isCorrect ? 'rgba(16,185,129,0.15)' : 'rgba(244,114,182,0.15)',
+                      color: state.skipped ? 'var(--t-text-secondary)' : state.isCorrect ? 'var(--t-success)' : 'var(--t-pink)',
+                    }}>
+                      <span>
+                        {state.skipped
+                          ? '⏭ Пропущено'
+                          : state.isCorrect
+                            ? '✅ Правильно!'
+                            : awaitingRetry
+                              ? `❌ Неверно — осталось попыток: ${maxAttempts - state.attempts} (из ${maxAttempts})`
+                              : '❌ Неверно'}
+                      </span>
+                      {awaitingRetry && (
+                        <button
+                          onClick={() => retryBlock(block.id)}
+                          style={{
+                            background: 'rgba(244,114,182,0.2)', border: '1px solid var(--t-pink)', color: 'var(--t-pink)',
+                            borderRadius: '8px', padding: '6px 14px', fontSize: '13px', cursor: 'pointer', flexShrink: 0,
+                          }}
+                        >
+                          🔁 Перерешать
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-          {isGradable && mode === 'exam' && state.attempts > 0 && (
-            <div style={{ marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(96,165,250,0.15)', color: 'var(--t-info)' }}>
-              Ответ сохранён
-            </div>
-          )}
+                  {isGradable && mode === 'quiz' && state.done && state.isCorrect === false && !state.skipped && block.content.explanation && (
+                    <div style={{
+                      marginTop: '14px', padding: '12px 16px', borderRadius: '8px', fontSize: '14px',
+                      background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.4)', color: 'var(--t-info)',
+                    }}>
+                      💡 Решение:<br />
+                      <Formula text={block.content.explanation} />
+                    </div>
+                  )}
 
-          {isManualReview && state.attempts > 0 && (
-            <div style={{
-              marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
-              background: state.skipped ? 'rgba(107,114,128,0.15)' : 'rgba(96,165,250,0.15)',
-              color: state.skipped ? 'var(--t-text-secondary)' : 'var(--t-info)',
-            }}>
-              {state.skipped ? '⏭ Пропущено' : '✅ Решение отправлено — учитель проверит вручную'}
-            </div>
-          )}
+                  {isGradable && mode === 'exam' && state.attempts > 0 && (
+                    <div style={{ marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px', background: 'rgba(96,165,250,0.15)', color: 'var(--t-info)' }}>
+                      Ответ сохранён
+                    </div>
+                  )}
 
-          {revealedSolutions[block.id] && block.content.explanation && (
-            <div style={{
-              marginTop: '14px', padding: '12px 16px', borderRadius: '8px', fontSize: '14px',
-              background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: 'var(--t-warning)',
-            }}>
-              💡 Учитель показал решение:<br />
-              <Formula text={block.content.explanation} />
-            </div>
-          )}
+                  {isManualReview && state.attempts > 0 && (
+                    <div style={{
+                      marginTop: '14px', padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
+                      background: state.skipped ? 'rgba(107,114,128,0.15)' : 'rgba(96,165,250,0.15)',
+                      color: state.skipped ? 'var(--t-text-secondary)' : 'var(--t-info)',
+                    }}>
+                      {state.skipped ? '⏭ Пропущено' : '✅ Решение отправлено — учитель проверит вручную'}
+                    </div>
+                  )}
 
-          <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap' }}>
-            {interactive && !state.done && (
+                  {revealedSolutions[block.id] && block.content.explanation && (
+                    <div style={{
+                      marginTop: '14px', padding: '12px 16px', borderRadius: '8px', fontSize: '14px',
+                      background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: 'var(--t-warning)',
+                    }}>
+                      💡 Учитель показал решение:<br />
+                      <Formula text={block.content.explanation} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
+            {pageHasSkippable && (
               <button
-                onClick={skipBlock}
+                onClick={skipPage}
                 style={{ background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}
               >
                 Пропустить
               </button>
             )}
-            <button onClick={() => goTo(index - 1)} disabled={index === 0} style={{
-              background: 'transparent', border: '1px solid var(--t-border)', color: index === 0 ? 'var(--t-border)' : 'var(--t-text-secondary)',
-              borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: index === 0 ? 'not-allowed' : 'pointer',
+            <button onClick={() => goTo(pageIndex - 1)} disabled={pageIndex === 0} style={{
+              background: 'transparent', border: '1px solid var(--t-border)', color: pageIndex === 0 ? 'var(--t-border)' : 'var(--t-text-secondary)',
+              borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: pageIndex === 0 ? 'not-allowed' : 'pointer',
             }}>
               ← Назад
             </button>
-            <button onClick={() => goTo(index + 1)} style={{ ...submitButtonStyle, marginLeft: 'auto' }}>
-              {isLast ? 'Завершить' : 'Далее →'}
+            <button onClick={() => goTo(pageIndex + 1)} style={{ ...submitButtonStyle, marginLeft: 'auto' }}>
+              {isLastPage ? 'Завершить' : 'Далее →'}
             </button>
           </div>
         </div>

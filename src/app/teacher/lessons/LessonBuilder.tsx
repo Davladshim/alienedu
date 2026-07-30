@@ -1,8 +1,8 @@
 'use client'
 import { useState, useEffect, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
-import { blockRegistry, blockTypes, type BlockType, type LessonBlockData } from '@/components/lesson-blocks'
-import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle } from '@/components/lesson-blocks/styles'
+import { blockRegistry, blockTypes, groupBlocksIntoPages, getGroupId, GROUP_ID_FIELD, type BlockType, type LessonBlockData } from '@/components/lesson-blocks'
+import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle } from '@/components/lesson-blocks/styles'
 import { FormulaTextarea } from '@/components/lesson-blocks/FormulaTextarea'
 import { LessonPreview } from './LessonPreview'
 import { LessonAssignment } from './LessonAssignment'
@@ -15,6 +15,13 @@ export interface LessonMeta {
   mode: 'quiz' | 'exam'
   isPublic: boolean
   libraryDescription: string
+}
+
+function stripGroupId(content: any): any {
+  if (!content || !(GROUP_ID_FIELD in content)) return content
+  const rest = { ...content }
+  delete rest[GROUP_ID_FIELD]
+  return rest
 }
 
 function iconBtnStyle(disabled: boolean, danger?: boolean): CSSProperties {
@@ -75,6 +82,7 @@ export function LessonBuilder({
   const [libraryDescription, setLibraryDescription] = useState(initialLibraryDescription)
   const [blocks, setBlocks] = useState<LessonBlockData[]>(initialBlocks)
   const [previewing, setPreviewing] = useState(false)
+  const [mergeSelection, setMergeSelection] = useState<Set<string>>(new Set())
 
   // Автосохранение черновика в localStorage — если браузер перезагрузится
   // или пропадёт питание посреди составления большого урока из кучи блоков,
@@ -180,18 +188,73 @@ export function LessonBuilder({
   function updateBlockContent(id: string, content: any) {
     setBlocks(bs => bs.map(b => (b.id === id ? { ...b, content } : b)))
   }
+  // Удаление одного блока — если это был предпоследний блок в группе,
+  // группа автоматически распадается (объединение из одного блока не имеет смысла)
   function removeBlock(id: string) {
-    setBlocks(bs => bs.filter(b => b.id !== id))
-  }
-  function moveBlock(id: string, dir: -1 | 1) {
     setBlocks(bs => {
-      const i = bs.findIndex(b => b.id === id)
-      const j = i + dir
-      if (j < 0 || j >= bs.length) return bs
-      const copy = [...bs]
-      ;[copy[i], copy[j]] = [copy[j], copy[i]]
+      const filtered = bs.filter(b => b.id !== id)
+      const pages = groupBlocksIntoPages(filtered)
+      return pages.flatMap(page => (page.length === 1 && getGroupId(page[0]))
+        ? [{ ...page[0], content: stripGroupId(page[0].content) }]
+        : page)
+    })
+    setMergeSelection(s => {
+      if (!s.has(id)) return s
+      const copy = new Set(s)
+      copy.delete(id)
       return copy
     })
+  }
+  // Перемещение целой "страницы" (одиночный блок или объединённая группа) —
+  // соседние страницы просто меняются местами целиком
+  function movePage(pageIndex: number, dir: -1 | 1) {
+    setBlocks(bs => {
+      const pages = groupBlocksIntoPages(bs)
+      const j = pageIndex + dir
+      if (j < 0 || j >= pages.length) return bs
+      const copy = [...pages]
+      ;[copy[pageIndex], copy[j]] = [copy[j], copy[pageIndex]]
+      return copy.flat()
+    })
+  }
+  function removePage(pageIndex: number) {
+    setBlocks(bs => {
+      const pages = groupBlocksIntoPages(bs)
+      return pages.filter((_, i) => i !== pageIndex).flat()
+    })
+  }
+  function ungroupPage(pageIndex: number) {
+    setBlocks(bs => {
+      const pages = groupBlocksIntoPages(bs)
+      const target = pages[pageIndex]
+      if (!target) return bs
+      const targetIds = new Set(target.map(b => b.id))
+      return bs.map(b => (targetIds.has(b.id) ? { ...b, content: stripGroupId(b.content) } : b))
+    })
+  }
+  function toggleMergeSelect(id: string) {
+    setMergeSelection(s => {
+      const copy = new Set(s)
+      if (copy.has(id)) copy.delete(id)
+      else copy.add(id)
+      return copy
+    })
+  }
+
+  const selectedIndices = blocks
+    .map((b, i) => ({ id: b.id, i }))
+    .filter(({ id }) => mergeSelection.has(id))
+    .map(({ i }) => i)
+    .sort((a, b) => a - b)
+  const canMerge = selectedIndices.length >= 2 &&
+    selectedIndices[selectedIndices.length - 1] - selectedIndices[0] + 1 === selectedIndices.length
+  const mergeButtonAfterIndex = canMerge ? selectedIndices[selectedIndices.length - 1] : -1
+
+  function mergeSelected() {
+    if (!canMerge) return
+    const gid = `g${Date.now()}${Math.random().toString(36).slice(2)}`
+    setBlocks(bs => bs.map(b => (mergeSelection.has(b.id) ? { ...b, content: { ...b.content, [GROUP_ID_FIELD]: gid } } : b)))
+    setMergeSelection(new Set())
   }
 
   if (previewing) {
@@ -318,26 +381,92 @@ export function LessonBuilder({
 
         {/* Блоки */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '1.5rem' }}>
-          {blocks.map((block, i) => {
-            const def = blockRegistry[block.type]
-            const Editor = def.Editor
-            return (
-              <div key={block.id} style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '13px', color: 'var(--t-text-muted)', fontWeight: 600 }}>{def.icon} {i + 1}. {def.label}</div>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button onClick={() => moveBlock(block.id, -1)} disabled={i === 0} style={iconBtnStyle(i === 0)}>↑</button>
-                    <button onClick={() => moveBlock(block.id, 1)} disabled={i === blocks.length - 1} style={iconBtnStyle(i === blocks.length - 1)}>↓</button>
-                    <button onClick={() => removeBlock(block.id)} style={iconBtnStyle(false, true)}>✕</button>
+          {(() => {
+            const pages = groupBlocksIntoPages(blocks)
+            const startIndices: number[] = []
+            {
+              let running = 0
+              for (const p of pages) {
+                startIndices.push(running)
+                running += p.length
+              }
+            }
+            return pages.map((page, pageIndex) => {
+              const startIndex = startIndices[pageIndex]
+              const pageNumber = pageIndex + 1
+              const isGroup = page.length > 1
+
+              if (!isGroup) {
+                const block = page[0]
+                const def = blockRegistry[block.type]
+                const Editor = def.Editor
+                const showMergeButton = mergeButtonAfterIndex === startIndex
+                return (
+                  <div key={block.id}>
+                    <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ fontSize: '13px', color: 'var(--t-text-muted)', fontWeight: 600 }}>{def.icon} {pageNumber}. {def.label}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--t-text-muted)', cursor: 'pointer' }}>
+                            <input type="checkbox" checked={mergeSelection.has(block.id)} onChange={() => toggleMergeSelect(block.id)} />
+                            Объединить
+                          </label>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button onClick={() => movePage(pageIndex, -1)} disabled={pageIndex === 0} style={iconBtnStyle(pageIndex === 0)}>↑</button>
+                            <button onClick={() => movePage(pageIndex, 1)} disabled={pageIndex === pages.length - 1} style={iconBtnStyle(pageIndex === pages.length - 1)}>↓</button>
+                            <button onClick={() => removeBlock(block.id)} style={iconBtnStyle(false, true)}>✕</button>
+                          </div>
+                        </div>
+                      </div>
+                      <Editor content={block.content} onChange={(c: any) => updateBlockContent(block.id, c)} />
+                      {def.checkAnswer !== null && (
+                        <BlockRetrySettings content={block.content} onChange={c => updateBlockContent(block.id, c)} mode={mode} />
+                      )}
+                    </div>
+                    {showMergeButton && (
+                      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+                        <button onClick={mergeSelected} style={smallButtonStyle}>
+                          🔗 Объединить в один
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+
+              return (
+                <div key={page[0].content[GROUP_ID_FIELD]} style={{ border: '1px solid var(--t-accent)', borderRadius: '16px', padding: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--t-accent)', fontWeight: 700 }}>🔗 {pageNumber}. Объединённые блоки ({page.length})</div>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button onClick={() => movePage(pageIndex, -1)} disabled={pageIndex === 0} style={iconBtnStyle(pageIndex === 0)}>↑</button>
+                      <button onClick={() => movePage(pageIndex, 1)} disabled={pageIndex === pages.length - 1} style={iconBtnStyle(pageIndex === pages.length - 1)}>↓</button>
+                      <button onClick={() => ungroupPage(pageIndex)} style={{ ...iconBtnStyle(false), width: 'auto', padding: '0 10px', fontSize: '12px' }}>Разъединить</button>
+                      <button onClick={() => removePage(pageIndex)} style={iconBtnStyle(false, true)}>✕</button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {page.map(block => {
+                      const def = blockRegistry[block.type]
+                      const Editor = def.Editor
+                      return (
+                        <div key={block.id} style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px', padding: '1rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <div style={{ fontSize: '12px', color: 'var(--t-text-muted)', fontWeight: 600 }}>{def.icon} {def.label}</div>
+                            <button onClick={() => removeBlock(block.id)} style={iconBtnStyle(false, true)}>✕</button>
+                          </div>
+                          <Editor content={block.content} onChange={(c: any) => updateBlockContent(block.id, c)} />
+                          {def.checkAnswer !== null && (
+                            <BlockRetrySettings content={block.content} onChange={c => updateBlockContent(block.id, c)} mode={mode} />
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
-                <Editor content={block.content} onChange={(c: any) => updateBlockContent(block.id, c)} />
-                {def.checkAnswer !== null && (
-                  <BlockRetrySettings content={block.content} onChange={c => updateBlockContent(block.id, c)} mode={mode} />
-                )}
-              </div>
-            )
-          })}
+              )
+            })
+          })()}
 
           {blocks.length === 0 && (
             <div style={{ background: 'var(--t-card)', border: '1px dashed var(--t-border)', borderRadius: '16px', padding: '2rem', textAlign: 'center', color: 'var(--t-text-faint)', fontSize: '14px' }}>
