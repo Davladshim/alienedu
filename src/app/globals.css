@@ -105,8 +105,8 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--t-bg);
+  color: var(--t-text);
   font-family: Arial, Helvetica, sans-serif;
 }
 

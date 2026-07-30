@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { settleFamilyDebts } from '@/lib/familyBalance'
 
 export async function GET(request: NextRequest) {
   try {
@@ -91,6 +92,7 @@ export async function POST(request: NextRequest) {
 
     if (targetFamilyId) {
       await query(`UPDATE families SET balance = balance + $1 WHERE id = $2`, [amount, targetFamilyId])
+      await settleFamilyDebts(targetFamilyId)
       const result = await query(
         `INSERT INTO payments (teacher_id, family_id, amount, description)
          VALUES ($1, $2, $3, $4) RETURNING id, amount, description, payment_date`,

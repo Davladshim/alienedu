@@ -26,6 +26,31 @@ export async function chargeForLesson(teacherStudentId: number, familyId: number
   }
 }
 
+// Применяем пул семьи к уже накопленным личным долгам её учеников — нужно
+// вызывать сразу после пополнения баланса семьи, иначе деньги просто лежат
+// в пуле и не гасят долг, начисленный за уже прошедшие занятия
+export async function settleFamilyDebts(familyId: number) {
+  const familyResult = await query(`SELECT balance FROM families WHERE id = $1`, [familyId])
+  let pool = Number(familyResult.rows[0]?.balance || 0)
+  if (pool <= 0) return
+
+  const studentsResult = await query(
+    `SELECT id, balance FROM teacher_students WHERE family_id = $1 AND balance < 0 ORDER BY id`,
+    [familyId]
+  )
+
+  for (const student of studentsResult.rows) {
+    if (pool <= 0) break
+    const debt = -Number(student.balance)
+    const toPay = Math.min(debt, pool)
+    if (toPay > 0) {
+      await query(`UPDATE teacher_students SET balance = balance + $1 WHERE id = $2`, [toPay, student.id])
+      await query(`UPDATE families SET balance = balance - $1 WHERE id = $2`, [toPay, familyId])
+      pool -= toPay
+    }
+  }
+}
+
 // Обратная операция (например, отмена уже списанного занятия): сначала
 // гасим личный долг ученика (не выше нуля), остаток возвращается в семейный пул
 export async function refundForLesson(teacherStudentId: number, familyId: number | null, amount: number) {
