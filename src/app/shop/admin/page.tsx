@@ -294,7 +294,7 @@ export default function ShopAdminPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--t-bg)", fontFamily: "system-ui, sans-serif", color: "var(--t-text)", display: "flex", justifyContent: "center" }}>
+    <div style={{ minHeight: "100%", background: "var(--t-bg)", fontFamily: "system-ui, sans-serif", color: "var(--t-text)", display: "flex", justifyContent: "center" }}>
       <div style={{ width: "100%", maxWidth: "900px", padding: "2rem" }}>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>

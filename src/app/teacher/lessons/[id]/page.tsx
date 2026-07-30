@@ -64,14 +64,14 @@ export default function EditLessonPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         Загрузка...
       </div>
     )
   }
   if (!lesson) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         Урок не найден
       </div>
     )

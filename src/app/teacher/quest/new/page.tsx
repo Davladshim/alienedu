@@ -183,7 +183,7 @@ export default function NewQuestPage() {
     return (
       <div
         ref={editorRef}
-        style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', padding: '1.5rem' }}
+        style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', padding: '1.5rem' }}
         onKeyDown={handleKeyDown}
         tabIndex={0}
         autoFocus
@@ -345,7 +345,7 @@ export default function NewQuestPage() {
 
   // ===== РЕДАКТОР ВЕТОК =====
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>

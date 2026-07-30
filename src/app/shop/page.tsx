@@ -28,7 +28,7 @@ export default async function ShopPage() {
   const presentations = await getPresentations();
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--t-bg)", color: "var(--t-text)" }}>
+    <div style={{ minHeight: "100%", background: "var(--t-bg)", color: "var(--t-text)" }}>
       <header style={{ borderBottom: "1px solid var(--t-border)", padding: "20px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

@@ -53,7 +53,7 @@ interface TemplateForm {
 }
 
 const emptyForm = (dayOfWeek: number): TemplateForm => ({
-  student_id: '', day_of_week: dayOfWeek, time: '15:00', duration_minutes: 60, subject: '', price: '', start_date: todayISO(),
+  student_id: '', day_of_week: dayOfWeek, time: '00:00', duration_minutes: 60, subject: '', price: '', start_date: todayISO(),
 })
 
 interface EditForm {
@@ -276,7 +276,7 @@ export default function TemplatePage() {
   const todayDow = (new Date().getDay() + 6) % 7 // 0=понедельник
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '95%', maxWidth: '1600px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
@@ -380,7 +380,7 @@ export default function TemplatePage() {
               </div>
               <div>
                 <label style={labelStyle}>Время</label>
-                <input type="time" value={addForm.time} onChange={e => setAddForm({ ...addForm, time: e.target.value })} style={inputStyle} />
+                <input type="time" value={addForm.time} onChange={e => setAddForm({ ...addForm, time: e.target.value })} style={{ ...inputStyle, color: addForm.time === '00:00' ? 'var(--t-text-muted)' : inputStyle.color }} />
               </div>
               <div>
                 <label style={labelStyle}>Длительность (мин)</label>

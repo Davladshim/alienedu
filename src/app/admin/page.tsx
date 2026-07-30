@@ -189,7 +189,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -203,9 +203,9 @@ export default function AdminPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '16px' }}>
-          <Link href="/teacher/quests" style={{ textDecoration: 'none' }}>
+          <Link href="/teacher/quests" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div
-              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-info)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
@@ -214,9 +214,9 @@ export default function AdminPage() {
               <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Управление квестами</div>
             </div>
           </Link>
-          <Link href="/teacher" style={{ textDecoration: 'none' }}>
+          <Link href="/teacher" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div
-              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
@@ -225,9 +225,9 @@ export default function AdminPage() {
               <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Основной кабинет</div>
             </div>
           </Link>
-          <Link href="/admin/models" target="_blank" style={{ textDecoration: 'none' }}>
+          <Link href="/admin/models" target="_blank" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div
-              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
@@ -239,9 +239,9 @@ export default function AdminPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '1.5rem' }}>
-          <Link href="/shop/admin" target="_blank" style={{ textDecoration: 'none' }}>
+          <Link href="/shop/admin" target="_blank" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div
-              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-info)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
@@ -250,9 +250,9 @@ export default function AdminPage() {
               <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Презентации, коды доступа</div>
             </div>
           </Link>
-          <Link href="/stereo/admin" target="_blank" style={{ textDecoration: 'none' }}>
+          <Link href="/stereo/admin" target="_blank" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div
-              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >
@@ -261,9 +261,9 @@ export default function AdminPage() {
               <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Задачи, коды доступа</div>
             </div>
           </Link>
-          <Link href="/stereo" target="_blank" style={{ textDecoration: 'none' }}>
+          <Link href="/stereo" target="_blank" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div
-              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', cursor: 'pointer', transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
             >

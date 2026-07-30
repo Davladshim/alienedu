@@ -10,7 +10,7 @@ const itemStyle: React.CSSProperties = { display: 'flex', gap: '8px', alignItems
 
 export default function TariffsPage() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <Link href="/teacher" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>← Кабинет</Link>
@@ -36,7 +36,7 @@ export default function TariffsPage() {
           <div>
             <div style={{ fontSize: '17px', fontWeight: 700, color: '#fff' }}>💬 Коды на тарифы — в нашей группе ВКонтакте</div>
             <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.9)', marginTop: '4px' }}>
-              Пишите нам, чтобы купить код на Pro, магазин презентаций или StereoSpace
+              Пишите нам, чтобы купить код на Pro или магазин презентаций
             </div>
           </div>
           <span style={{
@@ -84,10 +84,10 @@ export default function TariffsPage() {
               Подписка на 30 дней на весь магазин — 399 ₽. Код вводится прямо в <a href="/shop" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--t-accent)' }}>магазине</a>.
             </div>
           </div>
-          <div style={cardStyle}>
+          <div style={{ ...cardStyle, opacity: 0.5, cursor: 'not-allowed' }}>
             <div style={{ fontSize: '16px', fontWeight: 700 }}>🔷 StereoSpace</div>
             <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '4px' }}>
-              Подписка на 30 дней на весь банк задач — 399 ₽. Код вводится прямо в <a href="/stereo" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--t-accent)' }}>StereoSpace</a>.
+              В разработке — скоро будет доступно
             </div>
           </div>
         </div>

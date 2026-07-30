@@ -49,7 +49,7 @@ export default function QuestsPage() {
 
   return (
   <div style={{
-    minHeight: '100vh',
+    minHeight: '100%',
     background: 'var(--t-bg)',
     fontFamily: 'system-ui, sans-serif',
     color: 'var(--t-text)',

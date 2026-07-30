@@ -146,7 +146,7 @@ export default function WatchLessonPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         Загрузка...
       </div>
     )
@@ -154,7 +154,7 @@ export default function WatchLessonPage() {
 
   if (errorMsg) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
         <div>{errorMsg}</div>
         <Link href={`/teacher/lessons/${lessonId}`} style={{ color: 'var(--t-accent)', fontSize: '14px' }}>← К уроку</Link>
       </div>
@@ -162,7 +162,7 @@ export default function WatchLessonPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
         <Link href={`/teacher/lessons/${lessonId}`} style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>
           ← {lessonTitle}

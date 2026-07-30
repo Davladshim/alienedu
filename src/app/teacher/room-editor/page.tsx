@@ -146,7 +146,7 @@ export default function RoomEditorPage() {
     : null
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', padding: '1.5rem' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', padding: '1.5rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
         <Link href="/teacher" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>← Кабинет</Link>
         <h1 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>🗺️ Редактор комнат</h1>

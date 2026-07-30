@@ -102,7 +102,7 @@ export default function QuestDashboardPage() {
   }
 
   if (loading) return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <p style={{ color: 'var(--t-text-muted)' }}>Загружаем квест...</p>
     </div>
   )
@@ -111,7 +111,7 @@ export default function QuestDashboardPage() {
   const excludedPlayers = players.filter(p => p.is_excluded)
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
     <div style={{ width: '100%', maxWidth: '1200px', padding: '1.5rem' }}>
 
       {/* Шапка */}

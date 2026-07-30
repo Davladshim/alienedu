@@ -116,7 +116,7 @@ export default function QuestRoomPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100%', background: '#0a0a0f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ color: 'var(--t-text-muted)', fontSize: '16px' }}>Загружаем комнату...</div>
       </div>
     )
@@ -131,7 +131,7 @@ export default function QuestRoomPage() {
 
   return (
       <div style={{
-        minHeight: '100vh',
+        minHeight: '100%',
         background: '#0a0a0f',
         display: 'flex',
         alignItems: 'center',

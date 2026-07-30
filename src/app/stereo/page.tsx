@@ -86,7 +86,7 @@ export default function StereoSpacePage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--t-bg)" }}>
+    <div style={{ minHeight: "100%", background: "var(--t-bg)" }}>
       <div style={{ maxWidth: 1300, margin: "0 auto", padding: "48px 24px" }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: "var(--t-text)"  }}>
         💎 StereoSpace

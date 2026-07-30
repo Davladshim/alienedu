@@ -38,7 +38,7 @@ export default function QuestJoinPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100%',
       background: 'var(--t-bg)',
       display: 'flex',
       alignItems: 'center',

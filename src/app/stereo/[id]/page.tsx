@@ -111,7 +111,7 @@ export default function TaskPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--t-bg)" }}>
+      <div style={{ minHeight: "100%", background: "var(--t-bg)" }}>
         <div style={{ maxWidth: 1400, margin: "0 auto", padding: "48px 24px", color: "var(--t-text-secondary)" }}>
           Загрузка...
         </div>
@@ -121,7 +121,7 @@ export default function TaskPage() {
 
   if (error === "Нужен код доступа" || error === "Код недействителен" || error === "Срок действия кода истёк") {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--t-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ minHeight: "100%", background: "var(--t-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ background: "var(--t-card)", borderRadius: 12, padding: 32, maxWidth: 400, width: "90%" }}>
           <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "var(--t-text)" }}>
             🔒 Задача заблокирована
@@ -231,7 +231,7 @@ export default function TaskPage() {
 
   if (error || !task) {
     return (
-      <div style={{ minHeight: "100vh", background: "var(--t-bg)" }}>
+      <div style={{ minHeight: "100%", background: "var(--t-bg)" }}>
         <div style={{ maxWidth: 1400, margin: "0 auto", padding: "48px 24px", color: "var(--t-danger-soft)" }}>
           {error || "Задача не найдена"}
         </div>
@@ -281,7 +281,7 @@ export default function TaskPage() {
   const solutionSteps = task.solution.split("\n").filter((s) => s.trim().length > 0);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--t-bg)" }}>
+    <div style={{ minHeight: "100%", background: "var(--t-bg)" }}>
     <div style={{ maxWidth: 1400, margin: "0 auto", padding: "48px 24px" }}>
       <a href="/stereo" style={{ color: "var(--t-info)", fontSize: 14, textDecoration: "none" }}>
         ← Все задачи

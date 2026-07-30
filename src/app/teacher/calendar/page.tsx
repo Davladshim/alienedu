@@ -79,8 +79,8 @@ interface LessonForm {
   price: string
 }
 
-const emptyForm: LessonForm = { student_id: '', time: '15:00', duration_minutes: 60, subject: '', notes: '', price: '' }
-const emptyTrialForm = { time: '15:00', student_name: '', notes: '' }
+const emptyForm: LessonForm = { student_id: '', time: '00:00', duration_minutes: 60, subject: '', notes: '', price: '' }
+const emptyTrialForm = { time: '00:00', student_name: '', notes: '' }
 
 export default function CalendarPage() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
@@ -276,7 +276,7 @@ export default function CalendarPage() {
   const today = new Date()
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '95%', maxWidth: '1600px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
@@ -436,7 +436,7 @@ export default function CalendarPage() {
                   </div>
                   <div>
                     <label style={labelStyle}>Время</label>
-                    <input type="time" value={addForm.time} onChange={e => setAddForm({ ...addForm, time: e.target.value })} style={inputStyle} />
+                    <input type="time" value={addForm.time} onChange={e => setAddForm({ ...addForm, time: e.target.value })} style={{ ...inputStyle, color: addForm.time === '00:00' ? 'var(--t-text-muted)' : inputStyle.color }} />
                   </div>
                   <div>
                     <label style={labelStyle}>Длительность (мин)</label>
@@ -473,7 +473,7 @@ export default function CalendarPage() {
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
                   <div>
                     <label style={labelStyle}>Время</label>
-                    <input type="time" value={trialForm.time} onChange={e => setTrialForm({ ...trialForm, time: e.target.value })} style={inputStyle} />
+                    <input type="time" value={trialForm.time} onChange={e => setTrialForm({ ...trialForm, time: e.target.value })} style={{ ...inputStyle, color: trialForm.time === '00:00' ? 'var(--t-text-muted)' : inputStyle.color }} />
                   </div>
                   <div style={{ flex: 1, minWidth: '160px' }}>
                     <label style={labelStyle}>Имя (необязательно)</label>

@@ -11,7 +11,7 @@ export default function TeacherPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100%',
       background: 'var(--t-bg)',
       fontFamily: 'system-ui, sans-serif',
       color: 'var(--t-text)',
@@ -43,11 +43,11 @@ export default function TeacherPage() {
         }}>
 
           {/* Мои ученики */}
-          <Link href="/teacher/students" style={{ textDecoration: 'none' }}>
+          <Link href="/teacher/students" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div style={{
               background: 'var(--t-card)', border: '1px solid var(--t-border)',
               borderRadius: '16px', padding: '1.5rem', cursor: 'pointer',
-              transition: 'border-color 0.2s',
+              transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box',
             }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-info)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
@@ -59,11 +59,11 @@ export default function TeacherPage() {
           </Link>
 
           {/* Финансы */}
-          <Link href="/teacher/finance" style={{ textDecoration: 'none' }}>
+          <Link href="/teacher/finance" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div style={{
               background: 'var(--t-card)', border: '1px solid var(--t-border)',
               borderRadius: '16px', padding: '1.5rem', cursor: 'pointer',
-              transition: 'border-color 0.2s',
+              transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box',
             }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
@@ -75,11 +75,11 @@ export default function TeacherPage() {
           </Link>
 
           {/* Мои уроки */}
-          <Link href="/teacher/lessons" style={{ textDecoration: 'none' }}>
+          <Link href="/teacher/lessons" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div style={{
               background: 'var(--t-card)', border: '1px solid var(--t-border)',
               borderRadius: '16px', padding: '1.5rem', cursor: 'pointer',
-              transition: 'border-color 0.2s',
+              transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box',
             }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-accent)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
@@ -101,11 +101,11 @@ export default function TeacherPage() {
         }}>
 
           {/* Магазин презентаций */}
-          <a href="/shop" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+          <a href="/shop" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <div style={{
               background: 'var(--t-card)', border: '1px solid var(--t-border)',
               borderRadius: '16px', padding: '1.5rem', cursor: 'pointer',
-              transition: 'border-color 0.2s',
+              transition: 'border-color 0.2s', height: '100%', boxSizing: 'border-box',
             }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--t-info)')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--t-border)')}
@@ -120,6 +120,7 @@ export default function TeacherPage() {
           <div style={{
             background: 'var(--t-card)', border: '1px solid var(--t-border)',
             borderRadius: '16px', padding: '1.5rem', cursor: 'not-allowed', opacity: 0.5,
+            height: '100%', boxSizing: 'border-box',
           }}>
             <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔷</div>
             <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>StereoSpace</div>
