@@ -1,20 +1,42 @@
 import { query } from './db'
 import { chargeForLesson } from './familyBalance'
+import { addMinutesToTime, wallTimeToUtcMs, toDateOnlyString, DEFAULT_TIMEZONE } from './timezone'
 
 // Занятие завершается само, когда истекает заявленное время (начало + длительность).
 // В этот момент статус становится "проведён" и, если это не пробный урок,
 // автоматически списывается оплата: сначала из семейного пула (если ученик
 // состоит в семье), а то, что пул не покрыл — личным долгом ученика.
 // Отменённые занятия сюда не попадают — их статус больше не меняется.
+//
+// date/time в schedule_lessons — это "настенное" время в часовом поясе
+// репетитора, а не UTC. Раньше сравнение "истекло ли время" делалось прямо
+// в SQL (date + time + duration <= NOW()) — Postgres неявно трактует такой
+// naive-timestamp в часовом поясе СЕССИИ БД, который может не совпадать с
+// часовым поясом репетитора (например, сессия в UTC, а репетитор в МСК),
+// из-за чего занятие могло считаться завершённым на несколько часов раньше
+// или позже настоящего окончания. Теперь конец занятия считается явно, в
+// часовом поясе конкретного репетитора, через те же хелперы, что уже
+// используются для проверки конфликтов расписания между репетиторами
 export async function autoCompleteDueLessons() {
-  const due = await query(
-    `SELECT id, teacher_id, student_id, price, is_paid, is_trial
-     FROM schedule_lessons
-     WHERE status = 'scheduled'
-       AND (date + time::time + (duration_minutes || ' minutes')::interval) <= NOW()`
+  const candidates = await query(
+    `SELECT sl.id, sl.teacher_id, sl.student_id, sl.price, sl.is_paid, sl.is_trial,
+            sl.date, sl.time, sl.duration_minutes, u.timezone as teacher_timezone
+     FROM schedule_lessons sl
+     JOIN users u ON u.id = sl.teacher_id
+     WHERE sl.status = 'scheduled'
+       AND sl.date <= (CURRENT_DATE + INTERVAL '1 day')`
   )
 
-  for (const lesson of due.rows) {
+  const nowMs = Date.now()
+  const due = candidates.rows.filter(lesson => {
+    const tz = lesson.teacher_timezone || DEFAULT_TIMEZONE
+    const dateStr = toDateOnlyString(lesson.date)
+    const end = addMinutesToTime(dateStr, lesson.time.slice(0, 5), Number(lesson.duration_minutes) || 60)
+    const endMs = wallTimeToUtcMs(end.date, end.time, tz)
+    return endMs <= nowMs
+  })
+
+  for (const lesson of due) {
     try {
       if (!lesson.is_trial && !lesson.is_paid && lesson.price && lesson.student_id) {
         const rosterResult = await query(

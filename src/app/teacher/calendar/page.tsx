@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle, removeButtonStyle } from '@/components/lesson-blocks/styles'
 import { SubjectPicker, SubjectIcon } from '@/components/subjects'
+import { FitToWidth } from '@/components/FitToWidth'
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 const WEEKDAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -204,7 +205,9 @@ export default function CalendarPage() {
 
   function openEdit(lesson: any) {
     setEditingId(lesson.id)
-    const isPastLesson = new Date(`${String(lesson.date).slice(0, 10)}T${lesson.time}:00`) < new Date()
+    const lessonEnd = new Date(`${String(lesson.date).slice(0, 10)}T${lesson.time}:00`)
+    lessonEnd.setMinutes(lessonEnd.getMinutes() + (lesson.duration_minutes || 60))
+    const isPastLesson = lessonEnd < new Date()
     setEditForm({
       date: String(lesson.date).slice(0, 10),
       time: lesson.time,
@@ -333,7 +336,7 @@ export default function CalendarPage() {
 
         {loading && <p style={{ color: 'var(--t-text-muted)' }}>Загрузка...</p>}
 
-        <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
+        <FitToWidth style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(160px, 1fr))', gap: '10px', minWidth: '1120px' }}>
             {days.map((day, i) => {
               const dateStr = toISODate(day)
@@ -414,7 +417,7 @@ export default function CalendarPage() {
               )
             })}
           </div>
-        </div>
+        </FitToWidth>
 
         {(addingForDate || addingTrialForDate || (editingId && editForm)) && (
           <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>

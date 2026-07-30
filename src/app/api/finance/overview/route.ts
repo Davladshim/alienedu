@@ -31,7 +31,8 @@ export async function GET(request: NextRequest) {
     //    при переносе), поэтому сюда попадают только реально добавленные
     //    внепланово уроки
     //  - "отмены": из шаблона, но отменены (перенос тоже остаётся "из шаблона")
-    //  - "всего": все проведённые в этом месяце, кроме пробных
+    //  - "всего": вообще все занятия этого месяца, кроме пробных — независимо
+    //    от статуса (прошедшие, ещё предстоящие и отменённые тоже)
     const monthStats = await query(
       `SELECT
          COUNT(*) FILTER (WHERE template_id IS NOT NULL AND status != 'cancelled') as template_count,
@@ -40,8 +41,8 @@ export async function GET(request: NextRequest) {
          COALESCE(SUM(price) FILTER (WHERE template_id IS NULL AND status = 'completed' AND is_trial = false), 0) as unplanned_money,
          COUNT(*) FILTER (WHERE template_id IS NOT NULL AND status = 'cancelled') as cancelled_count,
          COALESCE(SUM(price) FILTER (WHERE template_id IS NOT NULL AND status = 'cancelled'), 0) as cancelled_money,
-         COUNT(*) FILTER (WHERE status = 'completed' AND is_trial = false) as total_count,
-         COALESCE(SUM(price) FILTER (WHERE status = 'completed' AND is_trial = false), 0) as total_money
+         COUNT(*) FILTER (WHERE is_trial = false) as total_count,
+         COALESCE(SUM(price) FILTER (WHERE is_trial = false), 0) as total_money
        FROM schedule_lessons
        WHERE teacher_id = $1
          AND date >= date_trunc('month', NOW())::date

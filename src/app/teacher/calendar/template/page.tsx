@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { inputStyle, labelStyle, submitButtonDisabledStyle } from '@/components/lesson-blocks/styles'
 import { SubjectPicker, SubjectIcon } from '@/components/subjects'
+import { FitToWidth } from '@/components/FitToWidth'
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 const WEEKDAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -304,7 +305,7 @@ export default function TemplatePage() {
 
         {loading && <p style={{ color: 'var(--t-text-muted)' }}>Загрузка...</p>}
 
-        <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
+        <FitToWidth style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(160px, 1fr))', gap: '10px', minWidth: '1120px' }}>
             {WEEKDAYS.map((weekday, dow) => {
               const dayTemplates = templates.filter(t => t.day_of_week === dow)
@@ -362,7 +363,7 @@ export default function TemplatePage() {
               )
             })}
           </div>
-        </div>
+        </FitToWidth>
 
         {addingForDay !== null && (
           <div style={{ background: 'var(--t-card)', border: `1px solid ${ACCENT}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
