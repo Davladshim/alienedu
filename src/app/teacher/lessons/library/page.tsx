@@ -14,6 +14,8 @@ interface LibraryLesson {
   block_count: number
   is_own: boolean
   library_description: string | null
+  moderation_status: 'none' | 'pending' | 'approved' | 'rejected'
+  moderation_reason: string | null
 }
 
 export default function LessonLibraryPage() {
@@ -128,12 +130,33 @@ export default function LessonLibraryPage() {
                       мой урок
                     </span>
                   )}
+                  {lesson.is_own && lesson.moderation_status === 'pending' && (
+                    <span style={{
+                      marginLeft: '8px', fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(var(--t-warning-rgb),0.15)', color: 'var(--t-warning)', whiteSpace: 'nowrap',
+                    }}>
+                      ⏳ на модерации
+                    </span>
+                  )}
+                  {lesson.is_own && lesson.moderation_status === 'rejected' && (
+                    <span style={{
+                      marginLeft: '8px', fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(var(--t-danger-rgb),0.15)', color: 'var(--t-danger)', whiteSpace: 'nowrap',
+                    }}>
+                      ❌ отклонён
+                    </span>
+                  )}
                 </div>
                 <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
                   {[lesson.subject, lesson.grade ? `${lesson.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
                   {' · '}{lesson.block_count} {lesson.block_count === 1 ? 'блок' : 'блоков'}
                   {!lesson.is_own && <> · автор: {lesson.author_name}</>}
                 </div>
+                {lesson.is_own && lesson.moderation_status === 'rejected' && lesson.moderation_reason && (
+                  <div style={{ color: 'var(--t-danger)', fontSize: '12px', marginTop: '4px' }}>
+                    Причина: {lesson.moderation_reason}
+                  </div>
+                )}
               </div>
               {lesson.is_own ? (
                 <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>

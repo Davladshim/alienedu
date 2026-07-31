@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { daysWord, daysLeftFrom } from '@/lib/adminFormat'
+import { Formula } from '@/components/lesson-blocks/Formula'
 
 interface PlanCode {
   id: number
@@ -23,7 +24,16 @@ interface ModerationLesson {
   mode: 'quiz' | 'exam'
   author_name: string
   block_count: number
+  library_description: string | null
+  moderation_status: 'pending' | 'approved' | 'rejected'
+  moderation_reason: string | null
 }
+
+const MODERATION_TABS: { key: 'pending' | 'approved' | 'rejected'; label: string }[] = [
+  { key: 'pending', label: 'На модерации' },
+  { key: 'approved', label: 'В библиотеке' },
+  { key: 'rejected', label: 'Отклонённые' },
+]
 
 const DURATION_LABELS: Record<string, string> = { '30': '1 месяц (30 дней)', '365': '1 год (365 дней)' }
 const PLAN_LABELS: Record<string, string> = { pro: 'Pro' }
@@ -58,6 +68,9 @@ export default function AdminPage() {
   const [moderationLessons, setModerationLessons] = useState<ModerationLesson[]>([])
   const [moderationLoading, setModerationLoading] = useState(false)
   const [deletingLessonId, setDeletingLessonId] = useState<number | null>(null)
+  const [moderationTab, setModerationTab] = useState<'pending' | 'approved' | 'rejected'>('pending')
+  const [decidingLessonId, setDecidingLessonId] = useState<number | null>(null)
+  const [descriptionLesson, setDescriptionLesson] = useState<ModerationLesson | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/check')
@@ -87,6 +100,35 @@ export default function AdminPage() {
       setModerationLessons(ls => ls.filter(l => l.id !== id))
     } else {
       alert('Не удалось удалить урок')
+    }
+  }
+
+  async function approveLesson(id: number) {
+    setDecidingLessonId(id)
+    const res = await fetch(`/api/admin/lessons/${id}/approve`, { method: 'POST' })
+    setDecidingLessonId(null)
+    if (res.ok) {
+      setModerationLessons(ls => ls.map(l => l.id === id ? { ...l, moderation_status: 'approved', moderation_reason: null } : l))
+    } else {
+      alert('Не удалось одобрить урок')
+    }
+  }
+
+  async function rejectLesson(id: number) {
+    const reason = window.prompt('Причина отклонения (будет видна автору урока):')
+    if (reason === null) return
+    if (!reason.trim()) { alert('Укажите причину отклонения'); return }
+    setDecidingLessonId(id)
+    const res = await fetch(`/api/admin/lessons/${id}/reject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason }),
+    })
+    setDecidingLessonId(null)
+    if (res.ok) {
+      setModerationLessons(ls => ls.map(l => l.id === id ? { ...l, moderation_status: 'rejected', moderation_reason: reason.trim() } : l))
+    } else {
+      alert('Не удалось отклонить урок')
     }
   }
 
@@ -385,18 +427,42 @@ export default function AdminPage() {
         <div style={cardStyle}>
           <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '4px' }}>Модерация библиотеки</div>
           <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '14px' }}>
-            Все уроки, опубликованные в общую библиотеку. Удаление — полное, для случаев жалоб на содержимое.
+            Уроки, которые репетиторы опубликовали в общую библиотеку. Новая публикация появляется здесь во
+            вкладке «На модерации» и не видна другим репетиторам, пока её не одобрят.
+          </div>
+
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+            {MODERATION_TABS.map(tab => {
+              const count = moderationLessons.filter(l => l.moderation_status === tab.key).length
+              const active = moderationTab === tab.key
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setModerationTab(tab.key)}
+                  style={{
+                    background: active ? 'rgba(var(--t-accent-rgb),0.15)' : 'transparent',
+                    border: `1px solid ${active ? 'var(--t-accent)' : 'var(--t-border)'}`,
+                    color: active ? 'var(--t-accent)' : 'var(--t-text-secondary)',
+                    borderRadius: '8px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer',
+                  }}
+                >
+                  {tab.label} {count > 0 && `(${count})`}
+                </button>
+              )
+            })}
           </div>
 
           {moderationLoading && <p style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>Загрузка...</p>}
-          {!moderationLoading && moderationLessons.length === 0 && (
-            <div style={{ color: 'var(--t-text-faint)', fontSize: '13px' }}>В библиотеке пока пусто</div>
+          {!moderationLoading && moderationLessons.filter(l => l.moderation_status === moderationTab).length === 0 && (
+            <div style={{ color: 'var(--t-text-faint)', fontSize: '13px' }}>
+              {moderationTab === 'pending' ? 'Нечего проверять' : moderationTab === 'approved' ? 'В библиотеке пока пусто' : 'Отклонённых уроков нет'}
+            </div>
           )}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '400px', overflowY: 'auto' }}>
-            {moderationLessons.map(l => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '440px', overflowY: 'auto' }}>
+            {moderationLessons.filter(l => l.moderation_status === moderationTab).map(l => (
               <div key={l.id} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px',
-                fontSize: '13px', padding: '8px 0', borderBottom: '1px solid var(--t-border)',
+                fontSize: '13px', padding: '8px 0', borderBottom: '1px solid var(--t-border)', flexWrap: 'wrap',
               }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 600 }}>{l.title}</div>
@@ -405,24 +471,97 @@ export default function AdminPage() {
                     {' · '}{l.block_count} {l.block_count === 1 ? 'блок' : 'блоков'}
                     {' · '}автор: {l.author_name}
                   </div>
+                  {l.moderation_status === 'rejected' && l.moderation_reason && (
+                    <div style={{ color: 'var(--t-danger)', fontSize: '12px', marginTop: '2px' }}>
+                      Причина: {l.moderation_reason}
+                    </div>
+                  )}
                 </div>
-                <button
-                  onClick={() => deleteLesson(l.id, l.title)}
-                  disabled={deletingLessonId === l.id}
-                  style={{
-                    flexShrink: 0, background: 'rgba(var(--t-danger-rgb),0.1)', border: '1px solid var(--t-danger)', color: 'var(--t-danger)',
-                    borderRadius: '8px', padding: '6px 14px', fontSize: '12px',
-                    cursor: deletingLessonId === l.id ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {deletingLessonId === l.id ? 'Удаляем...' : '🗑 Удалить'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => setDescriptionLesson(l)}
+                    style={{
+                      background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
+                      borderRadius: '8px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer',
+                    }}
+                  >
+                    📄 Описание
+                  </button>
+                  {l.moderation_status !== 'approved' && (
+                    <button
+                      onClick={() => approveLesson(l.id)}
+                      disabled={decidingLessonId === l.id}
+                      style={{
+                        background: 'rgba(var(--t-success-rgb),0.12)', border: '1px solid var(--t-success)', color: 'var(--t-success)',
+                        borderRadius: '8px', padding: '6px 14px', fontSize: '12px',
+                        cursor: decidingLessonId === l.id ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      ✅ Одобрить
+                    </button>
+                  )}
+                  {l.moderation_status !== 'rejected' && (
+                    <button
+                      onClick={() => rejectLesson(l.id)}
+                      disabled={decidingLessonId === l.id}
+                      style={{
+                        background: 'rgba(var(--t-warning-rgb),0.12)', border: '1px solid var(--t-warning)', color: 'var(--t-warning)',
+                        borderRadius: '8px', padding: '6px 14px', fontSize: '12px',
+                        cursor: decidingLessonId === l.id ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      ❌ Отклонить
+                    </button>
+                  )}
+                  <button
+                    onClick={() => deleteLesson(l.id, l.title)}
+                    disabled={deletingLessonId === l.id}
+                    style={{
+                      background: 'rgba(var(--t-danger-rgb),0.1)', border: '1px solid var(--t-danger)', color: 'var(--t-danger)',
+                      borderRadius: '8px', padding: '6px 14px', fontSize: '12px',
+                      cursor: deletingLessonId === l.id ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {deletingLessonId === l.id ? 'Удаляем...' : '🗑 Удалить'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
       </div>
+
+      {descriptionLesson && (
+        <div
+          onClick={() => setDescriptionLesson(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'var(--t-overlay)', zIndex: 1000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px',
+              padding: '1.75rem', width: '100%', maxWidth: '480px', maxHeight: '80vh', overflowY: 'auto',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+              <div style={{ fontWeight: 700, fontSize: '16px' }}>{descriptionLesson.title}</div>
+              <button
+                onClick={() => setDescriptionLesson(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '18px', flexShrink: 0 }}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ color: 'var(--t-text)', fontSize: '14px', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {descriptionLesson.library_description ? <Formula text={descriptionLesson.library_description} /> : 'Автор не оставил описание.'}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

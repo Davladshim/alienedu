@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     const result = await query(
       `SELECT l.id, l.title, l.subject, l.grade, l.status, l.created_at, l.updated_at,
-         l.is_public, l.locked, l.author_name,
+         l.is_public, l.locked, l.author_name, l.moderation_status, l.moderation_reason,
          COALESCE(stats.assigned_count, 0) as assigned_count,
          COALESCE(stats.completed_count, 0) as completed_count
        FROM lessons l
@@ -69,11 +69,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Для публикации в библиотеке нужно заполнить описание урока' }, { status: 400 })
     }
 
+    // Новая публикация сразу уходит на модерацию — в библиотеке появится
+    // только после одобрения администратором (см. /api/admin/lessons)
+    const moderationStatus = isPublic ? 'pending' : 'none'
+
     const lessonResult = await query(
-      `INSERT INTO lessons (teacher_id, title, subject, grade, status, mode, is_public, library_description)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO lessons (teacher_id, title, subject, grade, status, mode, is_public, library_description, moderation_status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id`,
-      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz', isPublic, isPublic ? library_description.trim() : null]
+      [decoded.id, title, subject || null, grade || null, status === 'published' ? 'published' : 'draft', mode === 'exam' ? 'exam' : 'quiz', isPublic, isPublic ? library_description.trim() : null, moderationStatus]
     )
     const lessonId = lessonResult.rows[0].id
 

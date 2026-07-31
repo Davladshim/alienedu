@@ -118,6 +118,8 @@ CREATE TABLE IF NOT EXISTS lessons (
     mode VARCHAR(20) NOT NULL DEFAULT 'quiz', -- 'quiz' (Проверочная — сразу видно верно/неверно), 'exam' (Контрольная — без подсказок по ходу, разбор в конце)
     is_public BOOLEAN NOT NULL DEFAULT false, -- виден в общей библиотеке готовых уроков другим репетиторам
     library_description TEXT, -- описание урока для карточки в библиотеке, обязательно при is_public = true
+    moderation_status VARCHAR(20) NOT NULL DEFAULT 'none', -- 'none' (не публикуется), 'pending' (на модерации), 'approved' (в библиотеке), 'rejected' (отклонён)
+    moderation_reason TEXT, -- причина отклонения администратором, заполняется при moderation_status = 'rejected'
     locked BOOLEAN NOT NULL DEFAULT false, -- это копия чужого урока из библиотеки — нередактируема, можно только назначать своим ученикам
     source_lesson_id INTEGER REFERENCES lessons(id) ON DELETE SET NULL, -- на какой урок в библиотеке ссылается копия
     author_name VARCHAR(255), -- имя автора оригинала, снимок на момент копирования — для карточки копии в чужом списке

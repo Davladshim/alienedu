@@ -18,12 +18,13 @@ export async function GET(request: NextRequest) {
 
     const result = await query(
       `SELECT l.id, l.title, l.subject, l.grade, l.mode, l.created_at, u.full_name as author_name,
-         l.library_description,
+         l.library_description, l.moderation_status, l.moderation_reason,
          (l.teacher_id = $1) as is_own,
          (SELECT COUNT(*) FROM lesson_blocks lb WHERE lb.lesson_id = l.id) as block_count
        FROM lessons l
        JOIN users u ON u.id = l.teacher_id
        WHERE l.is_public = true AND l.status = 'published'
+         AND (l.teacher_id = $1 OR l.moderation_status = 'approved')
          AND ($2 = '' OR l.title ILIKE '%' || $2 || '%' OR l.subject ILIKE '%' || $2 || '%')
        ORDER BY l.created_at DESC
        LIMIT 100`,

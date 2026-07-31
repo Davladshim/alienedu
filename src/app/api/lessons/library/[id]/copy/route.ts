@@ -28,7 +28,7 @@ export async function POST(
     }
     const source = sourceResult.rows[0]
 
-    if (!source.is_public || source.status !== 'published') {
+    if (!source.is_public || source.status !== 'published' || source.moderation_status !== 'approved') {
       return NextResponse.json({ error: 'Урок недоступен в библиотеке' }, { status: 403 })
     }
     if (source.teacher_id === decoded.id) {

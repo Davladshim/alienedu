@@ -88,6 +88,8 @@ export default function EditLessonPage() {
       initialMode={lesson.mode === 'exam' ? 'exam' : 'quiz'}
       initialIsPublic={!!lesson.is_public}
       initialLibraryDescription={lesson.library_description || ''}
+      moderationStatus={lesson.moderation_status || 'none'}
+      moderationReason={lesson.moderation_reason || null}
       initialBlocks={blocks}
       initialAssignedStudentIds={assignedStudentIds}
       locked={!!lesson.locked}

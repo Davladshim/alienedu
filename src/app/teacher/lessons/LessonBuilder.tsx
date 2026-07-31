@@ -43,6 +43,8 @@ export function LessonBuilder({
   initialMode = 'quiz',
   initialIsPublic = false,
   initialLibraryDescription = '',
+  moderationStatus = 'none',
+  moderationReason = null,
   initialBlocks = [],
   initialAssignedStudentIds = [],
   locked = false,
@@ -62,6 +64,8 @@ export function LessonBuilder({
   initialMode?: 'quiz' | 'exam'
   initialIsPublic?: boolean
   initialLibraryDescription?: string
+  moderationStatus?: 'none' | 'pending' | 'approved' | 'rejected'
+  moderationReason?: string | null
   initialBlocks?: LessonBlockData[]
   initialAssignedStudentIds?: number[]
   locked?: boolean
@@ -352,6 +356,21 @@ export function LessonBuilder({
           {canPublishToLibrary && isPublic && status !== 'published' && (
             <div style={{ color: 'var(--t-warning)', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
               Появится в библиотеке только после публикации самого урока (галочка выше)
+            </div>
+          )}
+          {canPublishToLibrary && isPublic && status === 'published' && moderationStatus === 'pending' && (
+            <div style={{ color: 'var(--t-warning)', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
+              ⏳ На модерации — появится в общей библиотеке после проверки администратором
+            </div>
+          )}
+          {canPublishToLibrary && isPublic && status === 'published' && moderationStatus === 'approved' && (
+            <div style={{ color: 'var(--t-success)', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
+              🌐 Одобрен и виден в общей библиотеке
+            </div>
+          )}
+          {canPublishToLibrary && isPublic && status === 'published' && moderationStatus === 'rejected' && (
+            <div style={{ color: 'var(--t-danger)', fontSize: '12px', marginTop: '4px', marginLeft: '24px' }}>
+              ❌ Отклонён модератором{moderationReason ? `: ${moderationReason}` : ''}. Исправь и сохрани — урок снова уйдёт на модерацию
             </div>
           )}
           {canPublishToLibrary && isPublic && (

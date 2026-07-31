@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
   try {
     const result = await query(
       `SELECT l.id, l.title, l.subject, l.grade, l.mode, l.created_at, u.full_name as author_name,
+         l.library_description, l.moderation_status, l.moderation_reason,
          (SELECT COUNT(*) FROM lesson_blocks lb WHERE lb.lesson_id = l.id) as block_count
        FROM lessons l
        JOIN users u ON u.id = l.teacher_id

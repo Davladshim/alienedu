@@ -218,14 +218,6 @@ export default function LessonsPage() {
                       📖 Из библиотеки{lesson.author_name ? ` · ${lesson.author_name}` : ''}
                     </span>
                   )}
-                  {!lesson.locked && lesson.is_public && lesson.status === 'published' && (
-                    <span style={{
-                      fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
-                      background: 'rgba(var(--t-success-rgb),0.15)', color: 'var(--t-success)', whiteSpace: 'nowrap',
-                    }}>
-                      🌐 В библиотеке
-                    </span>
-                  )}
                   {!lesson.locked && lesson.is_public && lesson.status !== 'published' && (
                     <span style={{
                       fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
@@ -234,11 +226,40 @@ export default function LessonsPage() {
                       ⏳ Появится в библиотеке после публикации
                     </span>
                   )}
+                  {!lesson.locked && lesson.is_public && lesson.status === 'published' && lesson.moderation_status === 'pending' && (
+                    <span style={{
+                      fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(var(--t-warning-rgb),0.15)', color: 'var(--t-warning)', whiteSpace: 'nowrap',
+                    }}>
+                      ⏳ На модерации
+                    </span>
+                  )}
+                  {!lesson.locked && lesson.is_public && lesson.status === 'published' && lesson.moderation_status === 'approved' && (
+                    <span style={{
+                      fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(var(--t-success-rgb),0.15)', color: 'var(--t-success)', whiteSpace: 'nowrap',
+                    }}>
+                      🌐 В библиотеке
+                    </span>
+                  )}
+                  {!lesson.locked && lesson.is_public && lesson.status === 'published' && lesson.moderation_status === 'rejected' && (
+                    <span style={{
+                      fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(var(--t-danger-rgb),0.15)', color: 'var(--t-danger)', whiteSpace: 'nowrap',
+                    }}>
+                      ❌ Отклонён модератором
+                    </span>
+                  )}
                 </div>
                 <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
                   {[lesson.subject, lesson.grade ? `${lesson.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
                   {Number(lesson.assigned_count) > 0 && ` · прошли ${lesson.completed_count} из ${lesson.assigned_count}`}
                 </div>
+                {!lesson.locked && lesson.moderation_status === 'rejected' && lesson.moderation_reason && (
+                  <div style={{ color: 'var(--t-danger)', fontSize: '12px', marginTop: '4px' }}>
+                    Причина: {lesson.moderation_reason}
+                  </div>
+                )}
               </div>
               <span style={{
                 fontSize: '11px', padding: '3px 10px', borderRadius: '20px',
