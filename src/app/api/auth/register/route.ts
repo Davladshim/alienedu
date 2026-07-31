@@ -4,11 +4,18 @@ import { query } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
-    const { full_name, login, code, secret_question, secret_answer, role, grade } = await request.json()
+    const { full_name, login, code, secret_question, secret_answer, role, grade, agree_terms } = await request.json()
 
     if (!full_name || !login || !code || !secret_question || !secret_answer) {
       return NextResponse.json(
         { error: 'Заполните все поля' },
+        { status: 400 }
+      )
+    }
+
+    if (!agree_terms) {
+      return NextResponse.json(
+        { error: 'Нужно согласиться с условиями использования и политикой конфиденциальности' },
         { status: 400 }
       )
     }

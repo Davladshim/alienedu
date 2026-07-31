@@ -159,6 +159,16 @@ export default function LoginPage() {
             Зарегистрироваться
           </Link>
         </div>
+
+        <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
+          <Link href="/terms" style={{ color: 'var(--t-text-muted)', fontSize: '11px', textDecoration: 'none' }}>
+            Пользовательское соглашение
+          </Link>
+          <span style={{ color: 'var(--t-border)', margin: '0 8px' }}>·</span>
+          <Link href="/privacy" style={{ color: 'var(--t-text-muted)', fontSize: '11px', textDecoration: 'none' }}>
+            Политика конфиденциальности
+          </Link>
+        </div>
       </div>
     </div>
   )

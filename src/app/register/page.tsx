@@ -16,6 +16,7 @@ export default function RegisterPage() {
     secret_question: '',
     secret_answer: ''
   })
+  const [agreeTerms, setAgreeTerms] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -32,12 +33,17 @@ export default function RegisterPage() {
       return
     }
 
+    if (!agreeTerms) {
+      setError('Нужно согласиться с условиями использования и политикой конфиденциальности')
+      return
+    }
+
     setLoading(true)
 
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
+      body: JSON.stringify({ ...formData, agree_terms: agreeTerms })
     })
 
     const data = await res.json()
@@ -170,6 +176,22 @@ export default function RegisterPage() {
             </p>
           </div>
 
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '1.25rem', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={agreeTerms}
+              onChange={e => setAgreeTerms(e.target.checked)}
+              style={{ marginTop: '3px', flexShrink: 0 }}
+            />
+            <span style={{ color: 'var(--t-text-secondary)', fontSize: '13px', lineHeight: 1.5 }}>
+              Я согласен с{' '}
+              <Link href="/terms" target="_blank" style={{ color: 'var(--t-accent)' }}>Пользовательским соглашением</Link>
+              {' '}и{' '}
+              <Link href="/privacy" target="_blank" style={{ color: 'var(--t-accent)' }}>Политикой конфиденциальности</Link>,
+              а также даю согласие на обработку персональных данных
+            </span>
+          </label>
+
           {error && (
             <div style={{
               background: 'var(--t-danger-bg)',
@@ -184,7 +206,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <button type="submit" disabled={loading} style={{
+          <button type="submit" disabled={loading || !agreeTerms} style={{
             width: '100%',
             background: 'var(--t-accent)',
             color: '#fff',
@@ -193,8 +215,8 @@ export default function RegisterPage() {
             padding: '11px',
             fontSize: '14px',
             fontWeight: 500,
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1
+            cursor: (loading || !agreeTerms) ? 'not-allowed' : 'pointer',
+            opacity: (loading || !agreeTerms) ? 0.6 : 1
           }}>
             {loading ? 'Создаём аккаунт...' : 'Зарегистрироваться'}
           </button>

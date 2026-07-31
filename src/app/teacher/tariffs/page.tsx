@@ -92,6 +92,12 @@ export default function TariffsPage() {
           </div>
         </div>
 
+        <div style={{ marginTop: '2rem' }}>
+          <a href="/oferta" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--t-text-muted)', fontSize: '12px', textDecoration: 'none' }}>
+            Публичная оферта — условия оплаты тарифов
+          </a>
+        </div>
+
       </div>
     </div>
   )
