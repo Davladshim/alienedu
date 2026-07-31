@@ -204,23 +204,42 @@ function injectPaywall(html: string, presentationId: string): string {
 </script>
 `;
 
-  // Вставляем скрипт перед закрывающим </body>
-  const watermark = `
+  return html.replace('</body>', paywallScript + '</body>');
+}
+
+// Одна крупная полупрозрачная надпись по диагонали в центре слайда — без
+// повтора по всей площади, чтобы не забивать красивую презентацию. Размер
+// в vw/clamp подобран с запасом так, чтобы даже с учётом поворота надпись
+// не доставала до краёв экрана — а значит и до краёв слайда, у каждой
+// презентации свой фон и оформление, единого понятия "тема" тут нет.
+// "Объём" — за счёт text-shadow (тёмная тень + светлый блик), а не заливки
+function buildWatermarkHtml(): string {
+  return `
   <div style="
     position: fixed;
-    top: 16px;
-    right: 20px;
-    z-index: 99998;
-    font-family: 'Inter', system-ui, sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 0.05em;
+    inset: 0;
+    z-index: 99997;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
     pointer-events: none;
     user-select: none;
-  ">AlienEdu · AlienTutor</div>
-  `;
-  return html.replace('</body>', watermark + paywallScript + '</body>');
+  ">
+    <div style="
+      transform: rotate(-28deg);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 800;
+      font-size: clamp(20px, 4vw, 56px);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      color: rgba(150,150,170,0.07);
+      text-shadow:
+        1px 1px 0 rgba(0,0,0,0.14),
+        -1px -1px 0 rgba(255,255,255,0.08);
+    ">AlienEdu</div>
+  </div>
+  `
 }
 
 export async function GET(
@@ -270,6 +289,13 @@ export async function GET(
     // Если не админ и нет доступа — добавляем paywall
     if (!isAdmin && !hasAccess) {
       html = injectPaywall(html, id);
+    }
+
+    // Водяная метка — на всех слайдах, а не только на бесплатном превью,
+    // иначе на самом ценном (оплаченном) контенте защиты нет вообще.
+    // Себе (админской сессии) при проверке контента не показываем
+    if (!isAdmin) {
+      html = html.replace('</body>', buildWatermarkHtml() + '</body>');
     }
 
     return new NextResponse(html, {
