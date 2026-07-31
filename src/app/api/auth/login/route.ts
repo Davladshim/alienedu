@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
 import { purgeExpiredDeletedAccounts, daysLeftToRestore } from '@/lib/accountDeletion'
+import { purgeExpiredArchives } from '@/lib/planDowngrade'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +19,9 @@ export async function POST(request: NextRequest) {
     // Раз в попытку входа заодно подчищаем аккаунты, для которых истёк
     // 30-дневный срок восстановления после запроса на удаление
     await purgeExpiredDeletedAccounts()
+    // ...и учеников/уроки, замороженные из-за возврата на Free больше
+    // ARCHIVE_RETENTION_DAYS назад без продления Pro
+    await purgeExpiredArchives()
 
     // Ищем пользователя
     const result = await query(

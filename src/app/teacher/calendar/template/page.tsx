@@ -165,7 +165,7 @@ export default function TemplatePage() {
 
   useEffect(() => {
     loadTemplates()
-    fetch('/api/students').then(r => r.json()).then(data => setRoster(data.students || []))
+    fetch('/api/students').then(r => r.json()).then(data => setRoster((data.students || []).filter((s: any) => !s.archived_at)))
   }, [])
 
   function openAddForm(dayOfWeek: number) {

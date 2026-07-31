@@ -49,6 +49,7 @@ export function LessonBuilder({
   initialBlocks = [],
   initialAssignedStudentIds = [],
   locked = false,
+  archived = false,
   authorName = null,
   canPublishToLibrary = true,
   saving,
@@ -70,6 +71,7 @@ export function LessonBuilder({
   initialBlocks?: LessonBlockData[]
   initialAssignedStudentIds?: number[]
   locked?: boolean
+  archived?: boolean
   authorName?: string | null
   canPublishToLibrary?: boolean
   saving: boolean
@@ -105,7 +107,7 @@ export function LessonBuilder({
     // эффекта — так же, как статус подписки у useLiveChannel приходит через
     // callback, а не прямым вызовом setState в эффекте
     queueMicrotask(() => {
-      if (locked) {
+      if (locked || archived) {
         setDraftChecked(true)
         return
       }
@@ -127,7 +129,7 @@ export function LessonBuilder({
   }, [])
 
   useEffect(() => {
-    if (locked || !draftChecked) return
+    if (locked || archived || !draftChecked) return
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(draftKey, JSON.stringify({ title, subject, grade, status, mode, isPublic, libraryDescription, blocks, savedAt: Date.now() }))
@@ -136,7 +138,7 @@ export function LessonBuilder({
       }
     }, 1000)
     return () => clearTimeout(timer)
-  }, [locked, draftChecked, draftKey, title, subject, grade, status, mode, isPublic, libraryDescription, blocks])
+  }, [locked, archived, draftChecked, draftKey, title, subject, grade, status, mode, isPublic, libraryDescription, blocks])
 
   function restoreDraft() {
     try {
@@ -169,7 +171,7 @@ export function LessonBuilder({
     setDraftChecked(true)
   }
 
-  if (locked) {
+  if (locked || archived) {
     return (
       <LockedLessonView
         backHref={backHref}
@@ -182,6 +184,7 @@ export function LessonBuilder({
         blocks={blocks}
         initialAssignedStudentIds={initialAssignedStudentIds}
         onDelete={onDelete}
+        archived={archived}
       />
     )
   }
@@ -570,7 +573,7 @@ function blockPreviewText(block: LessonBlockData): string {
 // и назначение ученикам, редактировать содержимое нельзя (см. проверку
 // locked на сервере в PUT /api/lessons/[id])
 function LockedLessonView({
-  backHref, lessonId, title, subject, grade, mode, authorName, blocks, initialAssignedStudentIds, onDelete,
+  backHref, lessonId, title, subject, grade, mode, authorName, blocks, initialAssignedStudentIds, onDelete, archived = false,
 }: {
   backHref: string
   lessonId?: string
@@ -582,6 +585,7 @@ function LockedLessonView({
   blocks: LessonBlockData[]
   initialAssignedStudentIds: number[]
   onDelete?: () => void
+  archived?: boolean
 }) {
   const router = useRouter()
   const [previewing, setPreviewing] = useState(false)
@@ -602,23 +606,26 @@ function LockedLessonView({
         </div>
 
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--t-info)',
-          background: 'rgba(var(--t-info-rgb),0.12)', border: '1px solid rgba(var(--t-info-rgb),0.35)',
+          display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px',
+          color: archived ? 'var(--t-text-muted)' : 'var(--t-info)',
+          background: archived ? 'rgba(107,114,128,0.15)' : 'rgba(var(--t-info-rgb),0.12)',
+          border: `1px solid ${archived ? 'var(--t-border)' : 'rgba(var(--t-info-rgb),0.35)'}`,
           borderRadius: '20px', padding: '4px 12px', marginBottom: '1.5rem',
         }}>
-          📖 Из библиотеки{authorName ? ` · автор: ${authorName}` : ''}
+          {archived ? '📦 В архиве' : `📖 Из библиотеки${authorName ? ` · автор: ${authorName}` : ''}`}
         </div>
 
         <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem', color: 'var(--t-text-secondary)', fontSize: '14px' }}>
           <div>{[subject, grade ? `${grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}</div>
           <div style={{ marginTop: '4px' }}>{mode === 'exam' ? 'Контрольная — без подсказок, разбор в конце' : 'Проверочная — сразу видно верно/неверно'}</div>
           <div style={{ marginTop: '10px', color: 'var(--t-text-muted)', fontSize: '12px' }}>
-            Этот урок скопирован из библиотеки и доступен только для просмотра — менять его содержимое нельзя,
-            но можно назначать своим ученикам.
+            {archived
+              ? 'Этот урок в архиве из-за бесплатного тарифа (сверх лимита в 1 свой урок) — доступен только для просмотра, редактировать и назначать ученикам нельзя. Активируйте Pro, чтобы вернуть его в работу.'
+              : 'Этот урок скопирован из библиотеки и доступен только для просмотра — менять его содержимое нельзя, но можно назначать своим ученикам.'}
           </div>
         </div>
 
-        {lessonId && (
+        {lessonId && !archived && (
           <LessonAssignment lessonId={lessonId} initialAssignedIds={initialAssignedStudentIds} />
         )}
 
@@ -641,7 +648,7 @@ function LockedLessonView({
                 background: 'transparent', border: '1px solid var(--t-danger-bg)', color: 'var(--t-danger-soft)',
                 borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer',
               }}>
-                Убрать из своего списка
+                {archived ? 'Удалить урок' : 'Убрать из своего списка'}
               </button>
             )}
           </div>

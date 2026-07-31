@@ -112,7 +112,7 @@ export default function CalendarPage() {
 
   useEffect(() => { loadLessons() }, [loadLessons])
   useEffect(() => {
-    fetch('/api/students').then(r => r.json()).then(data => setRoster(data.students || []))
+    fetch('/api/students').then(r => r.json()).then(data => setRoster((data.students || []).filter((s: any) => !s.archived_at)))
   }, [])
 
   // Статус "проведён" выставляется на сервере в момент окончания занятия,

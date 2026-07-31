@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     const result = await query(
       `SELECT l.id, l.title, l.subject, l.grade, l.status, l.created_at, l.updated_at,
-         l.is_public, l.locked, l.author_name, l.moderation_status, l.moderation_reason,
+         l.is_public, l.locked, l.author_name, l.moderation_status, l.moderation_reason, l.archived_at,
          COALESCE(stats.assigned_count, 0) as assigned_count,
          COALESCE(stats.completed_count, 0) as completed_count
        FROM lessons l
@@ -31,11 +31,17 @@ export async function GET(request: NextRequest) {
          ) per_student
        ) stats ON true
        WHERE l.teacher_id = $1
-       ORDER BY l.updated_at DESC`,
+       ORDER BY (l.archived_at IS NOT NULL), l.updated_at DESC`,
       [decoded.id]
     )
 
-    return NextResponse.json({ lessons: result.rows })
+    const limits = await getTeacherLimits(decoded.id)
+    const activeArchivableCount = result.rows.filter(l =>
+      !l.archived_at && !l.locked && !(l.is_public && l.moderation_status === 'approved')
+    ).length
+    const gate = { needed: activeArchivableCount > limits.maxOwnLessons, limit: limits.maxOwnLessons, activeArchivableCount }
+
+    return NextResponse.json({ lessons: result.rows, gate })
   } catch (error) {
     console.error('Ошибка получения уроков:', error)
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
@@ -51,7 +57,7 @@ export async function POST(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const limits = await getTeacherLimits(decoded.id)
-    const countResult = await query(`SELECT COUNT(*) FROM lessons WHERE teacher_id = $1 AND locked = false`, [decoded.id])
+    const countResult = await query(`SELECT COUNT(*) FROM lessons WHERE teacher_id = $1 AND locked = false AND archived_at IS NULL`, [decoded.id])
     if (Number(countResult.rows[0].count) >= limits.maxOwnLessons) {
       return NextResponse.json({
         error: `На бесплатном тарифе доступен ${limits.maxOwnLessons} собственный урок. Чтобы создавать больше — перейдите на тариф Pro`,

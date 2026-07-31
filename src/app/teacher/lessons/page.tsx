@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { PlanGateModal } from '@/components/PlanGateModal'
 
 const STATUS_LABEL: Record<string, { label: string; color: string; bg: string }> = {
   not_started: { label: 'Не начат', color: 'var(--t-text-secondary)', bg: 'rgba(107,114,128,0.15)' },
@@ -26,14 +27,20 @@ export default function LessonsPage() {
   const [assignmentsLoading, setAssignmentsLoading] = useState(true)
   const [finishingId, setFinishingId] = useState<number | null>(null)
   const [plan, setPlan] = useState<'free' | 'pro' | null>(null)
+  const [gate, setGate] = useState<{ needed: boolean; limit: number; activeArchivableCount: number } | null>(null)
 
-  useEffect(() => {
+  function loadLessons() {
     fetch('/api/lessons')
       .then(r => r.json())
       .then(data => {
         setLessons(data.lessons || [])
+        setGate(data.gate || null)
         setLoading(false)
       })
+  }
+
+  useEffect(() => {
+    loadLessons()
     fetch('/api/lessons/assignments')
       .then(r => r.json())
       .then(data => {
@@ -44,8 +51,28 @@ export default function LessonsPage() {
     fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free'))
   }, [])
 
+  async function resolveLessonsGate(ids: number[]) {
+    const res = await fetch('/api/lessons/resolve-gate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keepId: ids[0] }),
+    })
+    const data = await res.json()
+    if (res.ok) {
+      loadLessons()
+      return { ok: true }
+    }
+    return { ok: false, error: data.error }
+  }
+
+  async function handleGateCodeRedeemed() {
+    fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free'))
+    loadLessons()
+  }
+
   const ownLessonsCount = lessons.filter(l => !l.locked).length
   const libraryLessonsCount = lessons.filter(l => l.locked).length
+  const archivedCount = lessons.filter(l => l.archived_at).length
 
   async function finishAssignment(a: any) {
     if (!confirm(`Завершить урок «${a.lesson_title}» для ${a.student_name}?\n\nОн уйдёт из этой таблицы и будет считаться полностью пройденным и проверенным. Отменить это действие будет нельзя.`)) return
@@ -60,6 +87,20 @@ export default function LessonsPage() {
       minHeight: '100%', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif',
       color: 'var(--t-text)', display: 'flex', justifyContent: 'center',
     }}>
+      {gate?.needed && (
+        <PlanGateModal
+          title="Pro-подписка закончилась"
+          description={`Аккаунт автоматически переключён на бесплатный тариф — на нём доступен только ${gate.limit} собственный урок. Выберите, какой оставить активным: остальные будут временно заморожены (архивированы) на 6 месяцев — ничего не удалится. Уроки, уже одобренные в общей библиотеке, не архивируются — ими продолжают пользоваться другие репетиторы. Как только вы снова активируете Pro, все ваши уроки вернутся.`}
+          items={lessons
+            .filter(l => !l.archived_at && !l.locked && !(l.is_public && l.moderation_status === 'approved'))
+            .map(l => ({ id: l.id, label: l.title, sublabel: l.subject || undefined }))}
+          mode="single"
+          limit={gate.limit}
+          confirmLabel="Оставить этот урок активным"
+          onConfirm={resolveLessonsGate}
+          onCodeRedeemed={handleGateCodeRedeemed}
+        />
+      )}
       <div style={{ width: '100%', maxWidth: '1200px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
@@ -68,6 +109,12 @@ export default function LessonsPage() {
           </Link>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>📚 Мои уроки</h1>
         </div>
+
+        {archivedCount > 0 && !gate?.needed && (
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '1rem' }}>
+            В архиве: {archivedCount} {archivedCount === 1 ? 'урок' : 'уроков'} (заморожены из-за окончания Pro) — вернутся при активации Pro.
+          </div>
+        )}
 
         {!assignmentsLoading && assignments.length > 0 && (
           <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem' }}>
@@ -166,10 +213,14 @@ export default function LessonsPage() {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '1.5rem' }}>
           <button
-            onClick={() => router.push('/teacher/lessons/library')}
+            onClick={() => !gate?.needed && router.push('/teacher/lessons/library')}
+            disabled={gate?.needed}
+            title={gate?.needed ? 'Сначала выберите активный урок' : undefined}
             style={{
-              background: 'transparent', color: 'var(--t-info)', border: '1px solid rgba(var(--t-info-rgb),0.4)',
-              borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+              background: 'transparent', color: gate?.needed ? 'var(--t-text-faint)' : 'var(--t-info)',
+              border: `1px solid ${gate?.needed ? 'var(--t-border)' : 'rgba(var(--t-info-rgb),0.4)'}`,
+              borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 600,
+              cursor: gate?.needed ? 'not-allowed' : 'pointer',
             }}
           >
             📖 Библиотека уроков
@@ -205,11 +256,20 @@ export default function LessonsPage() {
                 background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px',
                 padding: '14px 18px', cursor: 'pointer',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                opacity: lesson.archived_at ? 0.6 : 1,
               }}
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontWeight: 600, fontSize: '15px' }}>{lesson.title}</span>
+                  {lesson.archived_at && (
+                    <span style={{
+                      fontSize: '11px', padding: '2px 8px', borderRadius: '20px',
+                      background: 'rgba(107,114,128,0.15)', color: 'var(--t-text-muted)', whiteSpace: 'nowrap',
+                    }}>
+                      📦 В архиве
+                    </span>
+                  )}
                   {lesson.locked && (
                     <span style={{
                       fontSize: '11px', padding: '2px 8px', borderRadius: '20px',

@@ -14,20 +14,23 @@ export async function PUT(
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     const { id: lessonId } = await params
 
-    const owner = await query(`SELECT teacher_id FROM lessons WHERE id = $1`, [lessonId])
+    const owner = await query(`SELECT teacher_id, archived_at FROM lessons WHERE id = $1`, [lessonId])
     if (owner.rows.length === 0) {
       return NextResponse.json({ error: 'Урок не найден' }, { status: 404 })
     }
     if (owner.rows[0].teacher_id !== decoded.id) {
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 })
     }
+    if (owner.rows[0].archived_at) {
+      return NextResponse.json({ error: 'Урок в архиве из-за бесплатного тарифа — назначать нельзя, пока не активирован Pro' }, { status: 403 })
+    }
 
     const { student_ids } = await request.json()
     const ids: number[] = Array.isArray(student_ids) ? student_ids : []
 
-    // Назначаем только учеников из ростера этого преподавателя
+    // Назначаем только активных учеников из ростера этого преподавателя
     const rosterResult = await query(
-      `SELECT student_id FROM teacher_students WHERE teacher_id = $1`,
+      `SELECT student_id FROM teacher_students WHERE teacher_id = $1 AND archived_at IS NULL`,
       [decoded.id]
     )
     const rosterIds = new Set(rosterResult.rows.map(r => r.student_id))

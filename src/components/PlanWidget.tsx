@@ -56,9 +56,20 @@ export function PlanWidget() {
 
   if (plan === null) return null
 
+  // Скоро истекает — подсвечиваем свечением, чтобы напомнить о продлении
+  const expiringSoon = plan === 'pro' && daysLeft !== null && daysLeft <= 5
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--t-text-muted)' }}>
-      <span>
+      {expiringSoon && (
+        <style>{`
+          @keyframes plan-widget-glow {
+            0%, 100% { text-shadow: 0 0 0 rgba(var(--t-warning-rgb), 0); }
+            50% { text-shadow: 0 0 8px rgba(var(--t-warning-rgb), 0.9); }
+          }
+        `}</style>
+      )}
+      <span style={expiringSoon ? { color: 'var(--t-warning)', fontWeight: 600, animation: 'plan-widget-glow 1.6s ease-in-out infinite' } : undefined}>
         Тариф: {plan === 'pro' ? 'Pro' : 'Free'}
         {plan === 'pro' && daysLeft !== null && ` (осталось ${daysLeft} ${daysWord(daysLeft)})`}
       </span>

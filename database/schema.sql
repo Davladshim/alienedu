@@ -123,6 +123,11 @@ CREATE TABLE IF NOT EXISTS lessons (
     locked BOOLEAN NOT NULL DEFAULT false, -- это копия чужого урока из библиотеки — нередактируема, можно только назначать своим ученикам
     source_lesson_id INTEGER REFERENCES lessons(id) ON DELETE SET NULL, -- на какой урок в библиотеке ссылается копия
     author_name VARCHAR(255), -- имя автора оригинала, снимок на момент копирования — для карточки копии в чужом списке
+    -- Аналогично teacher_students.archived_at, но для собственных уроков
+    -- репетитора при возврате на Free сверх лимита в 1 урок. Уроки, уже
+    -- одобренные в общей библиотеке, никогда не архивируются — ими могут
+    -- пользоваться другие репетиторы независимо от тарифа автора
+    archived_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -182,6 +187,15 @@ CREATE TABLE IF NOT EXISTS teacher_students (
     -- ученик мог указать при регистрации что угодно, а репетитору удобнее
     -- видеть своё. NULL — показываем настоящее имя из users.full_name
     display_name VARCHAR(255),
+    -- Заполняется, когда истёкшая Pro-подписка вернула репетитора на Free
+    -- с числом учеников больше лимита, и этот ученик не попал в число
+    -- оставленных активными — данные не трогаем, просто "замораживаем":
+    -- пропадает из календаря/шаблона, не в счёт лимита. Активируется
+    -- обратно автоматически при следующей активации Pro, либо физически
+    -- удаляется (тем же путём, что и обычное "Убрать") через 180 дней,
+    -- если Pro так и не продлили — см. purgeExpiredArchives() в
+    -- src/lib/planDowngrade.ts
+    archived_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (teacher_id, student_id)
 );

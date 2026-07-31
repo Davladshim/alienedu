@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       `SELECT ts.id, u.id as student_id, COALESCE(ts.display_name, u.full_name) as full_name,
          u.full_name as account_name, ts.display_name, u.login, u.is_placeholder, ts.created_at,
          ts.lesson_price, ts.grade, ts.parent_name, ts.family_id, f.name as family_name,
-         ts.call_link, ts.balance as balance,
+         ts.call_link, ts.balance as balance, ts.archived_at,
          COALESCE(prog.assigned_count, 0) as assigned_count,
          COALESCE(prog.completed_count, 0) as completed_count
        FROM teacher_students ts
@@ -38,11 +38,15 @@ export async function GET(request: NextRequest) {
          ) per_lesson
        ) prog ON true
        WHERE ts.teacher_id = $1
-       ORDER BY COALESCE(ts.display_name, u.full_name)`,
+       ORDER BY (ts.archived_at IS NOT NULL), COALESCE(ts.display_name, u.full_name)`,
       [decoded.id]
     )
 
-    return NextResponse.json({ students: result.rows })
+    const limits = await getTeacherLimits(decoded.id)
+    const activeCount = result.rows.filter(r => !r.archived_at).length
+    const gate = { needed: activeCount > limits.maxStudents, limit: limits.maxStudents, activeCount }
+
+    return NextResponse.json({ students: result.rows, gate })
   } catch (error) {
     console.error('Ошибка получения учеников:', error)
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
@@ -58,7 +62,7 @@ export async function POST(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
     const limits = await getTeacherLimits(decoded.id)
-    const countResult = await query(`SELECT COUNT(*) FROM teacher_students WHERE teacher_id = $1`, [decoded.id])
+    const countResult = await query(`SELECT COUNT(*) FROM teacher_students WHERE teacher_id = $1 AND archived_at IS NULL`, [decoded.id])
     if (Number(countResult.rows[0].count) >= limits.maxStudents) {
       return NextResponse.json({
         error: `На бесплатном тарифе доступно не больше ${limits.maxStudents} учеников. Чтобы добавить больше — перейдите на тариф Pro`,

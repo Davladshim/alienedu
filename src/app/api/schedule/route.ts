@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
        LEFT JOIN users u ON u.id = sl.student_id
        LEFT JOIN teacher_students ts ON ts.teacher_id = sl.teacher_id AND ts.student_id = sl.student_id
        WHERE sl.teacher_id = $1 AND sl.date BETWEEN $2 AND $3
+         AND ts.archived_at IS NULL
        ORDER BY sl.date, sl.time`,
       [decoded.id, from, to]
     )

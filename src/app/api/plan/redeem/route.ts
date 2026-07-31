@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { restoreArchivedForTeacher } from '@/lib/planDowngrade'
 
 // Активация кода перехода на платный тариф — доступно только репетиторам,
 // код привязывается к аккаунту при первом вводе (тот же принцип, что и у
@@ -50,6 +51,12 @@ export async function POST(request: NextRequest) {
       `UPDATE users SET plan = $1, plan_expires_at = $2 WHERE id = $3`,
       [planCode.plan, expiresAt, decoded.id]
     )
+
+    // Возвращаем в активное состояние всё, что было заморожено при
+    // предыдущем возврате на Free (ученики/уроки сверх лимита)
+    if (planCode.plan === 'pro') {
+      await restoreArchivedForTeacher(decoded.id)
+    }
 
     return NextResponse.json({ success: true, plan: planCode.plan, expires_at: expiresAt })
   } catch (error) {

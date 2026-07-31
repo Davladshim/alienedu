@@ -93,6 +93,7 @@ export default function EditLessonPage() {
       initialBlocks={blocks}
       initialAssignedStudentIds={assignedStudentIds}
       locked={!!lesson.locked}
+      archived={!!lesson.archived_at}
       authorName={lesson.author_name}
       canPublishToLibrary={canPublishToLibrary}
       saving={saving}

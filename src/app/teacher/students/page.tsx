@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { inputStyle, labelStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle } from '@/components/lesson-blocks/styles'
+import { PlanGateModal } from '@/components/PlanGateModal'
 
 function formatMoney(n: any): string {
   const num = Number(n) || 0
@@ -47,6 +48,7 @@ export default function StudentsPage() {
   const [familyHistory, setFamilyHistory] = useState<any[] | null>(null)
 
   const [plan, setPlan] = useState<'free' | 'pro' | null>(null)
+  const [gate, setGate] = useState<{ needed: boolean; limit: number; activeCount: number } | null>(null)
   useEffect(() => {
     fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free'))
   }, [])
@@ -57,9 +59,24 @@ export default function StudentsPage() {
       fetch('/api/families').then(r => r.json()),
     ]).then(([studentsData, familiesData]) => {
       setStudents(studentsData.students || [])
+      setGate(studentsData.gate || null)
       setFamilies(familiesData.families || [])
       setLoading(false)
     })
+  }
+
+  async function resolveStudentsGate(keepIds: number[]) {
+    const res = await fetch('/api/students/resolve-gate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keepIds }),
+    })
+    const data = await res.json()
+    if (res.ok) {
+      loadAll()
+      return { ok: true }
+    }
+    return { ok: false, error: data.error }
   }
 
   useEffect(() => { loadAll() }, [])
@@ -248,11 +265,34 @@ export default function StudentsPage() {
       .then(data => setFamilyHistory(data.payments || []))
   }
 
+  const archivedCount = students.filter(s => s.archived_at).length
+
+  async function handleGateCodeRedeemed() {
+    fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free'))
+    loadAll()
+  }
+
   return (
     <div style={{
       minHeight: '100%', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif',
       color: 'var(--t-text)', display: 'flex', justifyContent: 'center',
     }}>
+      {gate?.needed && (
+        <PlanGateModal
+          title="Pro-подписка закончилась"
+          description={`Аккаунт автоматически переключён на бесплатный тариф — на нём доступны только ${gate.limit} учеников. Выберите, кто останется активным: остальные будут временно заморожены (архивированы) на 6 месяцев — их данные, расписание и оплаты никуда не денутся, просто пока не будут видны. Как только вы снова активируете Pro, все вернутся на свои места.`}
+          items={students.filter(s => !s.archived_at).map(s => ({
+            id: s.id,
+            label: s.full_name,
+            sublabel: s.family_name ? `семья: ${s.family_name}` : undefined,
+          }))}
+          mode="multi"
+          limit={gate.limit}
+          confirmLabel="Оставить выбранных активными"
+          onConfirm={resolveStudentsGate}
+          onCodeRedeemed={handleGateCodeRedeemed}
+        />
+      )}
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
@@ -261,6 +301,12 @@ export default function StudentsPage() {
           </Link>
           <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>👥 Мои ученики</h1>
         </div>
+
+        {archivedCount > 0 && !gate?.needed && (
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '1rem' }}>
+            В архиве: {archivedCount} {archivedCount === 1 ? 'ученик' : 'учеников'} (заморожены из-за окончания Pro) — вернутся при активации Pro.
+          </div>
+        )}
 
         {plan === 'free' && (
           <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '1rem' }}>
@@ -464,6 +510,28 @@ export default function StudentsPage() {
   )
 
   function renderStudentCard(student: any) {
+    if (student.archived_at) {
+      return (
+        <div key={student.id} style={{
+          background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px',
+          padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          opacity: 0.5,
+        }}>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '15px' }}>{student.full_name}</div>
+            <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
+              {student.is_placeholder ? 'ждём регистрацию' : `@${student.login}`}
+            </div>
+          </div>
+          <span style={{
+            fontSize: '11px', padding: '3px 10px', borderRadius: '20px',
+            background: 'rgba(107,114,128,0.15)', color: 'var(--t-text-muted)', whiteSpace: 'nowrap',
+          }}>
+            📦 В архиве
+          </span>
+        </div>
+      )
+    }
     const isOpen = expandedId === student.id
     return (
       <div key={student.id} style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px' }}>

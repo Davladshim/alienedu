@@ -17,7 +17,7 @@ export function LessonAssignment({ lessonId, initialAssignedIds }: {
     fetch('/api/students')
       .then(r => r.json())
       .then(data => {
-        setRoster(data.students || [])
+        setRoster((data.students || []).filter((s: any) => !s.archived_at))
         setLoading(false)
       })
   }, [])

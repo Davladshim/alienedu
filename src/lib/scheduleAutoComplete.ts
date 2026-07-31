@@ -23,8 +23,10 @@ export async function autoCompleteDueLessons() {
             sl.date, sl.time, sl.duration_minutes, u.timezone as teacher_timezone
      FROM schedule_lessons sl
      JOIN users u ON u.id = sl.teacher_id
+     LEFT JOIN teacher_students ts ON ts.teacher_id = sl.teacher_id AND ts.student_id = sl.student_id
      WHERE sl.status = 'scheduled'
-       AND sl.date <= (CURRENT_DATE + INTERVAL '1 day')`
+       AND sl.date <= (CURRENT_DATE + INTERVAL '1 day')
+       AND ts.archived_at IS NULL`
   )
 
   const nowMs = Date.now()
