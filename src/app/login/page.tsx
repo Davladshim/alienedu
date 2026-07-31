@@ -10,11 +10,14 @@ export default function LoginPage() {
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [pendingDeletion, setPendingDeletion] = useState<number | null>(null)
+  const [restoring, setRestoring] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setPendingDeletion(null)
 
     const res = await fetch('/api/auth/login', {
       method: 'POST',
@@ -26,11 +29,40 @@ export default function LoginPage() {
     setLoading(false)
 
     if (!res.ok) {
+      if (data.pendingDeletion) {
+        setPendingDeletion(data.daysLeft)
+        return
+      }
       setError(data.error)
       return
     }
 
     // Перенаправляем по роли
+    const role = data.user.role
+    if (role === 'admin') router.push('/admin')
+    else if (role === 'teacher') router.push('/teacher')
+    else router.push('/student')
+  }
+
+  async function handleRestore() {
+    setRestoring(true)
+    setError('')
+
+    const res = await fetch('/api/auth/restore-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login, code })
+    })
+
+    const data = await res.json()
+    setRestoring(false)
+
+    if (!res.ok) {
+      setError(data.error)
+      return
+    }
+
+    setPendingDeletion(null)
     const role = data.user.role
     if (role === 'admin') router.push('/admin')
     else if (role === 'teacher') router.push('/teacher')
@@ -115,6 +147,32 @@ export default function LoginPage() {
               }}
             />
           </div>
+
+          {pendingDeletion !== null && (
+            <div style={{
+              background: 'var(--t-danger-bg)',
+              border: '0.5px solid var(--t-danger)',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              marginBottom: '1rem'
+            }}>
+              <div style={{ color: 'var(--t-danger)', fontSize: '13px', marginBottom: '8px' }}>
+                Этот аккаунт удалён. Осталось дней на восстановление: {pendingDeletion}.
+              </div>
+              <button
+                type="button"
+                onClick={handleRestore}
+                disabled={restoring}
+                style={{
+                  background: 'var(--t-accent)', color: '#fff', border: 'none', borderRadius: '6px',
+                  padding: '8px 14px', fontSize: '13px', fontWeight: 500,
+                  cursor: restoring ? 'not-allowed' : 'pointer', opacity: restoring ? 0.7 : 1,
+                }}
+              >
+                {restoring ? 'Восстанавливаем...' : 'Восстановить аккаунт'}
+              </button>
+            </div>
+          )}
 
           {error && (
             <div style={{

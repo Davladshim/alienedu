@@ -37,6 +37,12 @@ CREATE TABLE IF NOT EXISTS users (
     -- stereo_access_codes — те про магазин презентаций и StereoSpace)
     plan VARCHAR(20) NOT NULL DEFAULT 'free', -- 'free', 'pro'
     plan_expires_at TIMESTAMP, -- NULL пока free; для pro — когда истекает текущий код
+    -- Пользователь запросил удаление аккаунта — до этого момента + 30 дней
+    -- аккаунт заблокирован для входа, но данные ещё не тронуты (можно
+    -- восстановить). После истечения 30 дней purgeExpiredDeletedAccounts()
+    -- физически удаляет аккаунт репетитора (каскадом) либо обезличивает
+    -- аккаунт ученика (см. src/lib/accountDeletion.ts)
+    deleted_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );

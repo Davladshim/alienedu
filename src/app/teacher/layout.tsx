@@ -18,6 +18,9 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
         <Link href="/teacher/tariffs" style={{ color: 'var(--t-text-muted)', fontSize: '13px', textDecoration: 'none' }}>
           Тарифы
         </Link>
+        <Link href="/account" style={{ color: 'var(--t-text-muted)', fontSize: '13px', textDecoration: 'none' }}>
+          Аккаунт
+        </Link>
         <LogoutButton />
       </div>
       {children}

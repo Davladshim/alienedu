@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { LogoutButton } from '@/components/LogoutButton'
 import { TimezoneWidget } from '@/components/TimezoneWidget'
 
@@ -23,6 +24,9 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
           <TimezoneWidget />
+          <Link href="/account" style={{ color: 'var(--t-text-muted)', fontSize: '13px', textDecoration: 'none' }}>
+            Аккаунт
+          </Link>
           <LogoutButton />
         </div>
       </div>

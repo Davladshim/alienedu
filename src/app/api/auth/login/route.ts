@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { query } from '@/lib/db'
+import { purgeExpiredDeletedAccounts, daysLeftToRestore } from '@/lib/accountDeletion'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +14,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Раз в попытку входа заодно подчищаем аккаунты, для которых истёк
+    // 30-дневный срок восстановления после запроса на удаление
+    await purgeExpiredDeletedAccounts()
 
     // Ищем пользователя
     const result = await query(
@@ -41,6 +46,23 @@ export async function POST(request: NextRequest) {
     // Проверяем код
     const codeMatch = await bcrypt.compare(code, user.code_hash)
     if (!codeMatch) {
+      return NextResponse.json(
+        { error: 'Неверный логин или код' },
+        { status: 401 }
+      )
+    }
+
+    // Аккаунт запросил удаление — в течение 30 дней ещё можно восстановить,
+    // паролю мы уже доверяем (проверен строкой выше), поэтому честно
+    // сообщаем об этом, а не притворяемся, что аккаунта не существует
+    if (user.deleted_at) {
+      const daysLeft = daysLeftToRestore(user.deleted_at)
+      if (daysLeft > 0) {
+        return NextResponse.json(
+          { error: 'Аккаунт удалён', pendingDeletion: true, daysLeft },
+          { status: 403 }
+        )
+      }
       return NextResponse.json(
         { error: 'Неверный логин или код' },
         { status: 401 }
