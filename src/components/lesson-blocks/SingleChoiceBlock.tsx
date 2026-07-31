@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import { Formula } from './Formula'
 import { FormulaTextarea } from './FormulaTextarea'
-import { labelStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextInput } from './FormulaTextInput'
+import { labelStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface SingleChoiceContent {
   question: string
@@ -53,10 +54,10 @@ export function SingleChoiceEditor({ content, onChange }: {
       {content.options.map((opt, i) => (
         <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input type="radio" checked={content.correctIndex === i} onChange={() => onChange({ ...content, correctIndex: i })} />
-          <input
+          <FormulaTextInput
             value={opt}
-            onChange={e => updateOption(i, e.target.value)}
-            style={{ ...inputStyle, flex: 1 }}
+            onChange={value => updateOption(i, value)}
+            style={{ flex: 1 }}
             placeholder={`Вариант ${i + 1}`}
           />
           {content.options.length > 2 && (

@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import { Formula } from './Formula'
 import { FormulaTextarea } from './FormulaTextarea'
-import { labelStyle, inputStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextInput } from './FormulaTextInput'
+import { labelStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface FillBlankContent {
   template: string // пропуски отмечаются как ___
@@ -56,11 +57,10 @@ export function FillBlankEditor({ content, onChange }: {
         <>
           <label style={labelStyle}>Правильные ответы для пропусков (по порядку)</label>
           {content.blanks.map((b, i) => (
-            <input
+            <FormulaTextInput
               key={i}
               value={b}
-              onChange={e => updateBlank(i, e.target.value)}
-              style={inputStyle}
+              onChange={value => updateBlank(i, value)}
               placeholder={`Ответ для пропуска ${i + 1}`}
             />
           ))}
@@ -91,11 +91,12 @@ export function FillBlankPlayer({ content, onSubmit, disabled }: {
           <span key={i}>
             <Formula text={segment} />
             {i < segments.length - 1 && (
-              <input
+              <FormulaTextInput
                 value={values[i] || ''}
-                onChange={e => updateValue(i, e.target.value)}
+                onChange={value => updateValue(i, value)}
                 disabled={disabled}
-                style={{ ...inputStyle, display: 'inline-block', width: '140px', margin: '0 6px' }}
+                iconOnly
+                style={{ display: 'inline-flex', width: '140px', margin: '0 6px', verticalAlign: 'middle' }}
               />
             )}
           </span>

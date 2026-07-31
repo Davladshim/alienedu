@@ -1,7 +1,9 @@
 'use client'
 import { useState } from 'react'
 import { Formula } from './Formula'
-import { labelStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextarea } from './FormulaTextarea'
+import { FormulaTextInput } from './FormulaTextInput'
+import { labelStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface OrderingContent {
   instruction: string
@@ -48,20 +50,20 @@ export function OrderingEditor({ content, onChange }: {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
       <label style={labelStyle}>Задание</label>
-      <input
+      <FormulaTextarea
         value={content.instruction}
-        onChange={e => onChange({ ...content, instruction: e.target.value })}
-        style={inputStyle}
+        onChange={instruction => onChange({ ...content, instruction })}
+        rows={2}
         placeholder="Например: Расставь шаги решения в правильном порядке"
       />
       <label style={labelStyle}>Шаги в правильном порядке</label>
       {content.steps.map((step, i) => (
         <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span style={{ color: 'var(--t-text-muted)', fontSize: '13px', width: '18px' }}>{i + 1}.</span>
-          <input
+          <FormulaTextInput
             value={step}
-            onChange={e => updateStep(i, e.target.value)}
-            style={{ ...inputStyle, flex: 1 }}
+            onChange={value => updateStep(i, value)}
+            style={{ flex: 1 }}
             placeholder={`Шаг ${i + 1}`}
           />
           <button type="button" onClick={() => moveStep(i, -1)} disabled={i === 0} style={removeButtonStyle}>↑</button>

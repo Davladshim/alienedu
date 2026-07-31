@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Formula } from './Formula'
 import { FormulaTextarea } from './FormulaTextarea'
+import { FormulaTextInput } from './FormulaTextInput'
 import { labelStyle, inputStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface NumericContent {
@@ -76,11 +77,11 @@ export function NumericEditor({ content, onChange }: {
         </div>
         <div style={{ flex: 1, minWidth: '140px' }}>
           <label style={labelStyle}>Единица измерения</label>
-          <input
+          <FormulaTextInput
             value={content.unit || ''}
-            onChange={e => onChange({ ...content, unit: e.target.value })}
-            style={inputStyle}
+            onChange={unit => onChange({ ...content, unit })}
             placeholder="м/с²"
+            iconOnly
           />
         </div>
       </div>

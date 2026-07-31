@@ -2,6 +2,7 @@
 import { useState, useMemo } from 'react'
 import { Formula } from './Formula'
 import { FormulaTextarea } from './FormulaTextarea'
+import { FormulaTextInput } from './FormulaTextInput'
 import { labelStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface MatchingPair {
@@ -56,18 +57,20 @@ export function MatchingEditor({ content, onChange }: {
       <label style={labelStyle}>Пары «термин — определение» (можно использовать формулы через $...$)</label>
       {content.pairs.map((pair, i) => (
         <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input
+          <FormulaTextInput
             value={pair.term}
-            onChange={e => updatePair(i, 'term', e.target.value)}
-            style={{ ...inputStyle, flex: 1 }}
+            onChange={value => updatePair(i, 'term', value)}
+            style={{ flex: 1 }}
             placeholder="Термин"
+            iconOnly
           />
           <span style={{ color: 'var(--t-text-faint)' }}>—</span>
-          <input
+          <FormulaTextInput
             value={pair.definition}
-            onChange={e => updatePair(i, 'definition', e.target.value)}
-            style={{ ...inputStyle, flex: 1 }}
+            onChange={value => updatePair(i, 'definition', value)}
+            style={{ flex: 1 }}
             placeholder="Определение"
+            iconOnly
           />
           {content.pairs.length > 2 && (
             <button type="button" onClick={() => removePair(i)} style={removeButtonStyle}>✕</button>

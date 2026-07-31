@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import { Formula } from './Formula'
 import { FormulaTextarea } from './FormulaTextarea'
-import { labelStyle, inputStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
+import { FormulaTextInput } from './FormulaTextInput'
+import { labelStyle, smallButtonStyle, removeButtonStyle, submitButtonStyle, submitButtonDisabledStyle } from './styles'
 
 export interface ShortTextContent {
   question: string
@@ -52,10 +53,10 @@ export function ShortTextEditor({ content, onChange }: {
       <label style={labelStyle}>Правильные варианты ответа (регистр и пробелы не важны)</label>
       {content.correctAnswers.map((a, i) => (
         <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input
+          <FormulaTextInput
             value={a}
-            onChange={e => updateAnswer(i, e.target.value)}
-            style={{ ...inputStyle, flex: 1 }}
+            onChange={value => updateAnswer(i, value)}
+            style={{ flex: 1 }}
             placeholder="кинематика"
           />
           {content.correctAnswers.length > 1 && (
@@ -80,11 +81,10 @@ export function ShortTextPlayer({ content, onSubmit, disabled }: {
       <div style={{ marginBottom: '14px', lineHeight: 1.6, fontSize: '15px' }}>
         <Formula text={content.question} />
       </div>
-      <input
+      <FormulaTextInput
         value={value}
-        onChange={e => setValue(e.target.value)}
+        onChange={setValue}
         disabled={disabled}
-        style={inputStyle}
         placeholder="Твой ответ..."
       />
       <button
