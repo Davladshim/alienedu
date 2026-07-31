@@ -93,7 +93,7 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', options: UseGeoGeb
           showMenuBar: false,
           showResetIcon: !readOnly,
           showZoomButtons: !readOnly,
-          enableLabelDrags: false,
+          enableLabelDrags: true,
           appletOnLoad: (api) => {
             if (cancelled) return
             appRef.current = api
