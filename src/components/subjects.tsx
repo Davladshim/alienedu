@@ -79,6 +79,22 @@ function CodeBrackets({ size }: { size: number }) {
     </svg>
   )
 }
+function Columns({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 21 V10 M9 21 V6 M15 21 V6 M20 21 V10 M2 21 H22 M12 3 L20 7 H4 Z" />
+    </svg>
+  )
+}
+// Значок по умолчанию — для предметов, введённых вручную через "Другое"
+function OtherIcon({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
 
 export const SUBJECTS: Subject[] = [
   { label: 'Математика', icon: Triangle, color: '#60a5fa' },
@@ -89,22 +105,43 @@ export const SUBJECTS: Subject[] = [
   { label: 'Английский язык', icon: EnBadge, color: '#22d3ee' },
   { label: 'Биология', icon: Leaf, color: '#84cc16' },
   { label: 'История', icon: Hourglass, color: '#fbbf24' },
+  { label: 'Обществознание', icon: Columns, color: '#fb7185' },
   { label: 'География', icon: Globe, color: '#2dd4bf' },
   { label: 'Информатика', icon: CodeBrackets, color: '#818cf8' },
 ]
 
 const DEFAULT_SUBJECT_COLOR = '#6b7280'
 
+// Палитра для предметов, введённых вручную через "Другое" (не входят в SUBJECTS).
+// Цвет выбирается детерминированно по названию — один и тот же кастомный
+// предмет всегда получает один и тот же цвет, без какого-либо хранения
+const CUSTOM_SUBJECT_PALETTE = [
+  '#eab308', '#ef4444', '#14b8a6', '#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f97316',
+]
+
+function hashString(value: string): number {
+  let hash = 0
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 31 + value.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash)
+}
+
+function customSubjectColor(subject: string): string {
+  return CUSTOM_SUBJECT_PALETTE[hashString(subject) % CUSTOM_SUBJECT_PALETTE.length]
+}
+
 export function SubjectIcon({ subject, size = 14 }: { subject?: string; size?: number }) {
+  if (!subject) return null
   const found = SUBJECTS.find(s => s.label === subject)
-  if (!found) return null
-  const Icon = found.icon
+  const Icon = found ? found.icon : OtherIcon
   return <Icon size={size} />
 }
 
 export function subjectColor(subject?: string): string {
+  if (!subject) return DEFAULT_SUBJECT_COLOR
   const found = SUBJECTS.find(s => s.label === subject)
-  return found ? found.color : DEFAULT_SUBJECT_COLOR
+  return found ? found.color : customSubjectColor(subject)
 }
 
 const pickerButtonStyle: CSSProperties = {
@@ -118,6 +155,8 @@ const pickerButtonStyle: CSSProperties = {
 // внутри <option>, поэтому список строим сами
 export function SubjectPicker({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const [open, setOpen] = useState(false)
+  const [customOpen, setCustomOpen] = useState(false)
+  const [customText, setCustomText] = useState('')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -129,9 +168,30 @@ export function SubjectPicker({ value, onChange }: { value: string; onChange: (v
     return () => document.removeEventListener('mousedown', onDocClick)
   }, [open])
 
+  function toggleOpen() {
+    setOpen(o => {
+      const next = !o
+      if (next) {
+        // Если сейчас выбран предмет, которого нет в фиксированном списке —
+        // это ранее введённый вручную предмет, сразу открываем поле для его правки
+        const isCustom = !!value && !SUBJECTS.some(s => s.label === value)
+        setCustomOpen(isCustom)
+        setCustomText(isCustom ? value : '')
+      }
+      return next
+    })
+  }
+
+  function confirmCustom() {
+    const trimmed = customText.trim()
+    if (!trimmed) return
+    onChange(trimmed)
+    setOpen(false)
+  }
+
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <button type="button" onClick={() => setOpen(o => !o)} style={pickerButtonStyle}>
+      <button type="button" onClick={toggleOpen} style={pickerButtonStyle}>
         {value ? <SubjectIcon subject={value} /> : <span style={{ color: 'var(--t-text-muted)' }} />}
         <span style={{ color: value ? 'var(--t-text)' : 'var(--t-text-muted)' }}>{value || 'Выбери предмет'}</span>
       </button>
@@ -139,7 +199,7 @@ export function SubjectPicker({ value, onChange }: { value: string; onChange: (v
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 20,
           background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '8px',
-          padding: '4px', maxHeight: '280px', overflowY: 'auto',
+          padding: '4px', maxHeight: '340px', overflowY: 'auto',
         }}>
           {value && (
             <button
@@ -161,6 +221,43 @@ export function SubjectPicker({ value, onChange }: { value: string; onChange: (v
               {s.label}
             </button>
           ))}
+          {!customOpen && (
+            <button
+              type="button"
+              onClick={() => { setCustomOpen(true); setCustomText('') }}
+              style={{ ...pickerButtonStyle, background: 'transparent', border: 'none', padding: '8px 10px' }}
+            >
+              <OtherIcon size={16} />
+              Другое...
+            </button>
+          )}
+          {customOpen && (
+            <div style={{ display: 'flex', gap: '6px', padding: '6px 8px' }}>
+              <input
+                autoFocus
+                value={customText}
+                onChange={e => setCustomText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); confirmCustom() } }}
+                placeholder="Название предмета"
+                style={{
+                  flex: 1, background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '6px',
+                  padding: '7px 10px', color: 'var(--t-text)', fontSize: '13px', outline: 'none', minWidth: 0,
+                }}
+              />
+              <button
+                type="button"
+                onClick={confirmCustom}
+                disabled={!customText.trim()}
+                style={{
+                  flexShrink: 0, background: 'var(--t-accent)', border: 'none', borderRadius: '6px', color: '#fff',
+                  padding: '0 12px', fontSize: '13px', cursor: customText.trim() ? 'pointer' : 'not-allowed',
+                  opacity: customText.trim() ? 1 : 0.6,
+                }}
+              >
+                ✓
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

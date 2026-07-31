@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { blockRegistry, blockTypes, groupBlocksIntoPages, getGroupId, GROUP_ID_FIELD, type BlockType, type LessonBlockData } from '@/components/lesson-blocks'
 import { inputStyle, labelStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle } from '@/components/lesson-blocks/styles'
 import { FormulaTextarea } from '@/components/lesson-blocks/FormulaTextarea'
+import { SubjectPicker } from '@/components/subjects'
 import { LessonPreview } from './LessonPreview'
 import { LessonAssignment } from './LessonAssignment'
 
@@ -313,7 +314,7 @@ export function LessonBuilder({
             </div>
             <div style={{ flex: 1, minWidth: '160px' }}>
               <label style={labelStyle}>Предмет</label>
-              <input value={subject} onChange={e => setSubject(e.target.value)} style={inputStyle} placeholder="Математика" />
+              <SubjectPicker value={subject} onChange={setSubject} />
             </div>
             <div style={{ width: '110px' }}>
               <label style={labelStyle}>Класс</label>
