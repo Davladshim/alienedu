@@ -76,9 +76,15 @@ export async function POST(request: NextRequest) {
         if (dateStr < startDateStr) continue
         if (tpl.end_date && dateStr > toISODateStr(tpl.end_date)) continue
 
+        // Тот же слот уже занят — либо ровно на этом месте (неперенесённый урок или
+        // конфликт с чем-то ещё), либо этот же шаблон уже породил занятие на эту дату,
+        // но его потом перенесли на другое время (original_date/time хранит, откуда) —
+        // такое занятие всё равно "закрывает" эту неделю шаблона, повторно создавать не нужно
         const existing = await query(
-          `SELECT 1 FROM schedule_lessons WHERE teacher_id = $1 AND student_id = $2 AND date = $3 AND time = $4`,
-          [decoded.id, tpl.student_id, dateStr, tpl.time]
+          `SELECT 1 FROM schedule_lessons
+           WHERE teacher_id = $1 AND student_id = $2
+             AND ((date = $3 AND time = $4) OR (template_id = $5 AND original_date = $3 AND original_time = $4))`,
+          [decoded.id, tpl.student_id, dateStr, tpl.time, tpl.id]
         )
         if (existing.rows.length > 0) {
           skipped++
