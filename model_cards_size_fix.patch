@@ -1,0 +1,118 @@
+From 445dd04fbd6d279008469ca9f5e05e830983b829 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 2 Aug 2026 17:24:58 +0000
+Subject: [PATCH] =?UTF-8?q?=D0=A4=D0=B8=D0=BA=D1=81:=20=D0=BA=D0=B0=D1=80?=
+ =?UTF-8?q?=D1=82=D0=BE=D1=87=D0=BA=D0=B8=20=D0=BC=D0=BE=D0=B4=D0=B5=D0=BB?=
+ =?UTF-8?q?=D0=B5=D0=B9=20=D0=BF=D0=BB=D1=8B=D0=BB=D0=B8=20=D0=B8=20=D0=B1?=
+ =?UTF-8?q?=D1=8B=D0=BB=D0=B8=20=D1=81=D0=BB=D0=B8=D1=88=D0=BA=D0=BE=D0=BC?=
+ =?UTF-8?q?=20=D0=B2=D1=8B=D1=81=D0=BE=D0=BA=D0=B8=D0=BC=D0=B8?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Превью модели масштабировалось через CSS transform: scale(), но
+контейнер под него не имел собственной высоты — место в разметке
+резервировалось по исходному (немасштабированному) размеру модели
+(frame_width/frame_height, которые у каждой модели свои). Из-за этого
+карточки в банке моделей были разной высоты, а превью могло вылезать
+за границы карточки; в списке выбора модели внутри конструктора урока
+по той же причине карточки сильно вытягивались по вертикали.
+
+Теперь у превью фиксированный размер поля (без учёта исходного размера
+модели), масштаб считается так, чтобы модель полностью вписалась и была
+отцентрована — карточки стали одинаковыми по размеру, сетка ровная,
+лишнее пустое пространство снизу убрано.
+---
+ src/app/admin/models/page.tsx                 | 20 +++++++++++++++----
+ .../lesson-blocks/InteractiveModelBlock.tsx   | 15 ++++++++++++--
+ 2 files changed, 29 insertions(+), 6 deletions(-)
+
+diff --git a/src/app/admin/models/page.tsx b/src/app/admin/models/page.tsx
+index c38c409..18f52fa 100644
+--- a/src/app/admin/models/page.tsx
++++ b/src/app/admin/models/page.tsx
+@@ -24,6 +24,11 @@ const EMPTY_FORM = {
+ const cardStyle: React.CSSProperties = {
+   background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px', padding: '20px',
+ }
++// Фиксированный размер превью в карточке банка моделей — раньше место под
++// картинку резервировалось по исходному (немасштабированному) размеру модели,
++// из-за чего карточки были разной высоты, а превью иногда вылезало за рамку
++const THUMB_WIDTH = 220
++const THUMB_HEIGHT = 130
+ const inputStyle: React.CSSProperties = {
+   width: '100%', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '8px',
+   padding: '9px 12px', color: 'var(--t-text)', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
+@@ -260,10 +265,16 @@ export default function ModelsAdminPage() {
+             {models.length === 0 && (
+               <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Пока нет ни одной модели — добавь первую.</div>
+             )}
+-            {models.map(m => (
++            {models.map(m => {
++              const thumbScale = Math.min(THUMB_WIDTH / m.frame_width, THUMB_HEIGHT / m.frame_height, 1)
++              return (
+               <div key={m.id} style={cardStyle}>
+-                <div style={{ pointerEvents: 'none', marginBottom: '10px', display: 'flex', justifyContent: 'center' }}>
+-                  <div style={{ transform: `scale(${Math.min(1, 220 / m.frame_width)})`, transformOrigin: 'top left', width: `${m.frame_width}px`, height: `${m.frame_height}px` }}>
++                <div style={{
++                  pointerEvents: 'none', marginBottom: '10px', width: `${THUMB_WIDTH}px`, height: `${THUMB_HEIGHT}px`,
++                  maxWidth: '100%', overflow: 'hidden', borderRadius: '6px',
++                  display: 'flex', alignItems: 'center', justifyContent: 'center',
++                }}>
++                  <div style={{ transform: `scale(${thumbScale})`, transformOrigin: 'center center', width: `${m.frame_width}px`, height: `${m.frame_height}px`, flexShrink: 0 }}>
+                     <InteractiveModelFrame
+                       htmlCode={m.html_code} frameWidth={m.frame_width} frameHeight={m.frame_height}
+                       offsetX={m.offset_x} offsetY={m.offset_y} scale={Number(m.scale)}
+@@ -289,7 +300,8 @@ export default function ModelsAdminPage() {
+                   >🗑</button>
+                 </div>
+               </div>
+-            ))}
++              )
++            })}
+           </div>
+         )}
+       </div>
+diff --git a/src/components/lesson-blocks/InteractiveModelBlock.tsx b/src/components/lesson-blocks/InteractiveModelBlock.tsx
+index e37c9b3..cb2dd64 100644
+--- a/src/components/lesson-blocks/InteractiveModelBlock.tsx
++++ b/src/components/lesson-blocks/InteractiveModelBlock.tsx
+@@ -11,6 +11,12 @@ export interface InteractiveModelContent {
+ 
+ export const interactiveModelDefault: InteractiveModelContent = { modelId: null, description: '' }
+ 
++// Фиксированный размер превью в списке выбора модели — без него место под
++// картинку резервировалось по исходному (немасштабированному) размеру модели,
++// из-за чего карточки были разной высоты и сильно вытягивались по вертикали
++const THUMB_WIDTH = 124
++const THUMB_HEIGHT = 80
++
+ interface ModelSummary {
+   id: number
+   title: string
+@@ -74,6 +80,7 @@ export function InteractiveModelEditor({ content, onChange }: {
+         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', maxHeight: '320px', overflowY: 'auto', padding: '2px' }}>
+           {models.map(m => {
+             const isSelected = m.id === content.modelId
++            const thumbScale = Math.min(THUMB_WIDTH / m.frame_width, THUMB_HEIGHT / m.frame_height, 1)
+             return (
+               <div
+                 key={m.id}
+@@ -84,8 +91,12 @@ export function InteractiveModelEditor({ content, onChange }: {
+                   background: isSelected ? 'rgba(var(--t-accent-rgb),0.1)' : 'var(--t-card)',
+                 }}
+               >
+-                <div style={{ pointerEvents: 'none', overflow: 'hidden', borderRadius: '4px', marginBottom: '6px' }}>
+-                  <div style={{ transform: `scale(${Math.min(1, 124 / m.frame_width)})`, transformOrigin: 'top left', width: `${m.frame_width}px`, height: `${m.frame_height}px` }}>
++                <div style={{
++                  pointerEvents: 'none', overflow: 'hidden', borderRadius: '4px', marginBottom: '6px',
++                  width: `${THUMB_WIDTH}px`, height: `${THUMB_HEIGHT}px`, maxWidth: '100%',
++                  display: 'flex', alignItems: 'center', justifyContent: 'center',
++                }}>
++                  <div style={{ transform: `scale(${thumbScale})`, transformOrigin: 'center center', width: `${m.frame_width}px`, height: `${m.frame_height}px`, flexShrink: 0 }}>
+                     <InteractiveModelFrame
+                       htmlCode={m.html_code} frameWidth={m.frame_width} frameHeight={m.frame_height}
+                       offsetX={m.offset_x} offsetY={m.offset_y} scale={Number(m.scale)}
+-- 
+2.43.0
+
