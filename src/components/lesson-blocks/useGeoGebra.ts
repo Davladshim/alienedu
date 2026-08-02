@@ -7,6 +7,7 @@ export interface GeoGebraAppApi {
   setSize: (width: number, height: number) => void
   getBase64: () => string
   setBase64: (base64: string, callback?: () => void) => void
+  setPerspective: (perspective: string) => void
   registerUpdateListener: (fn: () => void) => void
   registerAddListener: (fn: (objName: string) => void) => void
   registerRemoveListener: (fn: (objName: string) => void) => void
@@ -190,7 +191,14 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', options: UseGeoGeb
 
   function loadBase64(base64: string) {
     try {
-      appRef.current?.setBase64(base64)
+      appRef.current?.setBase64(base64, () => {
+        // Сохранённый .ggb-файл несёт и свою раскладку окон (например, у
+        // автора при рисовании могла быть открыта Algebra View) — она
+        // перекрывает perspective, заданный при создании апплета. Если
+        // панель не нужна, принудительно возвращаем нужную раскладку уже
+        // после того, как файл полностью загрузился
+        if (!needsAlgebraPanel) appRef.current?.setPerspective('G')
+      })
     } catch {
       // рассинхронизированное или битое состояние — просто пропускаем
       // этот кадр, следующее обновление от учителя всё поправит
