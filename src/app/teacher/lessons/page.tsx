@@ -99,6 +99,8 @@ export default function LessonsPage() {
           confirmLabel="Оставить этот урок активным"
           onConfirm={resolveLessonsGate}
           onCodeRedeemed={handleGateCodeRedeemed}
+          bypassHref="/teacher/lessons/library"
+          bypassLabel="📖 Открыть библиотеку уроков без выбора →"
         />
       )}
       <div style={{ width: '100%', maxWidth: '1200px', padding: '2rem' }}>
@@ -213,14 +215,12 @@ export default function LessonsPage() {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '1.5rem' }}>
           <button
-            onClick={() => !gate?.needed && router.push('/teacher/lessons/library')}
-            disabled={gate?.needed}
-            title={gate?.needed ? 'Сначала выберите активный урок' : undefined}
+            onClick={() => router.push('/teacher/lessons/library')}
             style={{
-              background: 'transparent', color: gate?.needed ? 'var(--t-text-faint)' : 'var(--t-info)',
-              border: `1px solid ${gate?.needed ? 'var(--t-border)' : 'rgba(var(--t-info-rgb),0.4)'}`,
+              background: 'transparent', color: 'var(--t-info)',
+              border: '1px solid rgba(var(--t-info-rgb),0.4)',
               borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 600,
-              cursor: gate?.needed ? 'not-allowed' : 'pointer',
+              cursor: 'pointer',
             }}
           >
             📖 Библиотека уроков

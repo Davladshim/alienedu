@@ -110,20 +110,18 @@ export async function PUT(
       return NextResponse.json({ error: 'Для публикации в библиотеке нужно заполнить описание урока' }, { status: 400 })
     }
 
-    // Публикация впервые или пересдача после отклонения — снова на модерацию.
-    // Правки уже одобренного или ожидающего рассмотрения урока статус не сбрасывают
-    const prev = owner.rows[0]
+    // Любое сохранение публичного урока (первая публикация, пересдача после
+    // отклонения или правка уже одобренного) снова уходит на модерацию —
+    // иначе одобренный урок можно было бы незаметно подменить содержимым,
+    // и он остался бы доступен в общей библиотеке без повторной проверки
     let moderationStatus: string
     let moderationReason: string | null
     if (!isPublic) {
       moderationStatus = 'none'
       moderationReason = null
-    } else if (!prev.is_public || prev.moderation_status === 'rejected') {
+    } else {
       moderationStatus = 'pending'
       moderationReason = null
-    } else {
-      moderationStatus = prev.moderation_status
-      moderationReason = prev.moderation_reason
     }
 
     await query(

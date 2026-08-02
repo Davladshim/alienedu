@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 
 export interface GateItem {
   id: number
@@ -13,7 +14,7 @@ export interface GateItem {
 // для ввода нового кода, на случай если он уже есть под рукой и выбор
 // вообще не нужен
 export function PlanGateModal({
-  title, description, items, mode, limit, confirmLabel, onConfirm, onCodeRedeemed,
+  title, description, items, mode, limit, confirmLabel, onConfirm, onCodeRedeemed, bypassHref, bypassLabel,
 }: {
   title: string
   description: string
@@ -23,6 +24,12 @@ export function PlanGateModal({
   confirmLabel: string
   onConfirm: (ids: number[]) => Promise<{ ok: boolean; error?: string }>
   onCodeRedeemed: () => void
+  // Необязательная ссылка на действие, которое не связано с выбором активной
+  // записи и поэтому не должно ждать его — например, библиотека готовых
+  // уроков доступна на бесплатном тарифе независимо от того, выбран ли
+  // уже активный собственный урок
+  bypassHref?: string
+  bypassLabel?: string
 }) {
   const [selected, setSelected] = useState<number[]>([])
   const [code, setCode] = useState('')
@@ -152,6 +159,18 @@ export function PlanGateModal({
         >
           {submitting ? 'Сохраняем...' : confirmLabel}
         </button>
+
+        {bypassHref && (
+          <Link
+            href={bypassHref}
+            style={{
+              display: 'block', textAlign: 'center', marginTop: '14px',
+              color: 'var(--t-text-muted)', fontSize: '13px', textDecoration: 'none',
+            }}
+          >
+            {bypassLabel || 'Продолжить без выбора →'}
+          </Link>
+        )}
       </div>
     </div>
   )

@@ -16,35 +16,57 @@ interface LibraryLesson {
   library_description: string | null
   moderation_status: 'none' | 'pending' | 'approved' | 'rejected'
   moderation_reason: string | null
+  likes_count: number
+  liked_by_me: boolean
+}
+
+const selectStyle: React.CSSProperties = {
+  background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '8px',
+  padding: '10px 12px', color: 'var(--t-text)', fontSize: '13px', cursor: 'pointer',
+}
+
+function HeartIcon({ filled, size = 15 }: { filled: boolean; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 21 C12 21 4 15.5 4 9.5 C4 6.5 6.4 4 9.4 4 C10.9 4 12.3 4.8 12 6.2 C11.7 4.8 13.1 4 14.6 4 C17.6 4 20 6.5 20 9.5 C20 15.5 12 21 12 21 Z" />
+    </svg>
+  )
 }
 
 export default function LessonLibraryPage() {
   const router = useRouter()
   const [lessons, setLessons] = useState<LibraryLesson[]>([])
+  const [facets, setFacets] = useState<{ subjects: string[]; grades: number[] }>({ subjects: [], grades: [] })
   const [loading, setLoading] = useState(true)
   const [q, setQ] = useState('')
+  const [subject, setSubject] = useState('')
+  const [grade, setGrade] = useState('')
+  const [sort, setSort] = useState<'new' | 'likes'>('new')
   const [addingId, setAddingId] = useState<number | null>(null)
   const [addError, setAddError] = useState('')
   const [removingId, setRemovingId] = useState<number | null>(null)
+  const [likingId, setLikingId] = useState<number | null>(null)
   const [descriptionLesson, setDescriptionLesson] = useState<LibraryLesson | null>(null)
 
-  const load = useCallback((query: string) => {
+  const load = useCallback((params: { q: string; subject: string; grade: string; sort: string }) => {
     setLoading(true)
-    fetch(`/api/lessons/library?q=${encodeURIComponent(query)}`)
+    const search = new URLSearchParams(params)
+    fetch(`/api/lessons/library?${search.toString()}`)
       .then(r => r.json())
       .then(data => {
         setLessons(data.lessons || [])
+        setFacets(data.facets || { subjects: [], grades: [] })
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
 
-  // Первая загрузка и поиск идут через один и тот же дебаунс — на пустом
-  // q это просто короткая задержка перед начальной загрузкой библиотеки
+  // Первая загрузка и поиск/фильтры идут через один и тот же дебаунс — на
+  // пустых значениях это просто короткая задержка перед начальной загрузкой
   useEffect(() => {
-    const timer = setTimeout(() => load(q), 300)
+    const timer = setTimeout(() => load({ q, subject, grade, sort }), 300)
     return () => clearTimeout(timer)
-  }, [q, load])
+  }, [q, subject, grade, sort, load])
 
   async function addToMyLessons(id: number) {
     setAddError('')
@@ -73,6 +95,21 @@ export default function LessonLibraryPage() {
     }
   }
 
+  async function toggleLike(id: number) {
+    setAddError('')
+    setLikingId(id)
+    const res = await fetch(`/api/lessons/library/${id}/like`, { method: 'POST' })
+    const data = await res.json()
+    setLikingId(null)
+    if (res.ok) {
+      setLessons(ls => ls.map(l => l.id === id ? { ...l, liked_by_me: data.liked, likes_count: data.likes_count } : l))
+    } else {
+      setAddError(data.error || 'Не удалось поставить лайк')
+    }
+  }
+
+  const filtersActive = !!(subject || grade)
+
   return (
     <div style={{ minHeight: '100%', background: 'var(--t-bg)', fontFamily: 'system-ui, sans-serif', color: 'var(--t-text)', display: 'flex', justifyContent: 'center' }}>
       <div style={{ width: '100%', maxWidth: '900px', padding: '2rem' }}>
@@ -93,12 +130,35 @@ export default function LessonLibraryPage() {
         <input
           value={q}
           onChange={e => setQ(e.target.value)}
-          placeholder="Поиск по названию или предмету..."
+          placeholder="Поиск по названию, предмету или описанию..."
           style={{
             width: '100%', background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '8px',
-            padding: '12px 16px', color: 'var(--t-text)', fontSize: '14px', marginBottom: '1.5rem', boxSizing: 'border-box',
+            padding: '12px 16px', color: 'var(--t-text)', fontSize: '14px', marginBottom: '0.75rem', boxSizing: 'border-box',
           }}
         />
+
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          <select value={subject} onChange={e => setSubject(e.target.value)} style={selectStyle}>
+            <option value="">Все предметы</option>
+            {facets.subjects.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <select value={grade} onChange={e => setGrade(e.target.value)} style={selectStyle}>
+            <option value="">Все классы</option>
+            {facets.grades.map(g => <option key={g} value={g}>{g} класс</option>)}
+          </select>
+          <select value={sort} onChange={e => setSort(e.target.value as 'new' | 'likes')} style={selectStyle}>
+            <option value="new">Сначала новые</option>
+            <option value="likes">Сначала популярные</option>
+          </select>
+          {filtersActive && (
+            <button
+              onClick={() => { setSubject(''); setGrade('') }}
+              style={{ ...selectStyle, background: 'transparent', color: 'var(--t-text-muted)' }}
+            >
+              ✕ Сбросить фильтры
+            </button>
+          )}
+        </div>
 
         {addError && <p style={{ color: 'var(--t-danger)', fontSize: '14px', marginBottom: '1rem' }}>{addError}</p>}
 
@@ -109,7 +169,7 @@ export default function LessonLibraryPage() {
             background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px',
             padding: '3rem', textAlign: 'center', color: 'var(--t-text-muted)',
           }}>
-            {q ? 'Ничего не найдено' : 'В библиотеке пока нет ни одного урока'}
+            {q || filtersActive ? 'Ничего не найдено' : 'В библиотеке пока нет ни одного урока'}
           </div>
         )}
 
@@ -147,10 +207,17 @@ export default function LessonLibraryPage() {
                     </span>
                   )}
                 </div>
-                <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
-                  {[lesson.subject, lesson.grade ? `${lesson.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
-                  {' · '}{lesson.block_count} {lesson.block_count === 1 ? 'блок' : 'блоков'}
-                  {!lesson.is_own && <> · автор: {lesson.author_name}</>}
+                <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                  <span>
+                    {[lesson.subject, lesson.grade ? `${lesson.grade} класс` : null].filter(Boolean).join(' · ') || 'Без предмета'}
+                    {' · '}{lesson.block_count} {lesson.block_count === 1 ? 'блок' : 'блоков'}
+                    {!lesson.is_own && <> · автор: {lesson.author_name}</>}
+                  </span>
+                  {lesson.likes_count > 0 && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', color: 'var(--t-danger-soft, var(--t-danger))' }}>
+                      <HeartIcon filled size={12} /> {lesson.likes_count}
+                    </span>
+                  )}
                 </div>
                 {lesson.is_own && lesson.moderation_status === 'rejected' && lesson.moderation_reason && (
                   <div style={{ color: 'var(--t-danger)', fontSize: '12px', marginTop: '4px' }}>
@@ -199,6 +266,21 @@ export default function LessonLibraryPage() {
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+                  <button
+                    onClick={() => toggleLike(lesson.id)}
+                    disabled={likingId === lesson.id}
+                    title={lesson.liked_by_me ? 'Убрать лайк' : 'Нравится'}
+                    style={{
+                      background: lesson.liked_by_me ? 'rgba(var(--t-danger-rgb),0.12)' : 'transparent',
+                      border: `1px solid ${lesson.liked_by_me ? 'var(--t-danger)' : 'var(--t-border)'}`,
+                      color: lesson.liked_by_me ? 'var(--t-danger)' : 'var(--t-text-secondary)',
+                      borderRadius: '8px', padding: '8px 10px', cursor: likingId === lesson.id ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px',
+                    }}
+                  >
+                    <HeartIcon filled={lesson.liked_by_me} />
+                    {lesson.likes_count > 0 && lesson.likes_count}
+                  </button>
                   <button
                     onClick={() => setDescriptionLesson(lesson)}
                     style={{

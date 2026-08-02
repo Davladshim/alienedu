@@ -6,8 +6,8 @@
 -- Перед началом работы в любом из двух чатов — сверяйтесь с этим файлом
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
--- Последнее обновление: 28.07.2026
--- Обновлено модулем: platform (users: класс+часовой пояс, teacher_students: ссылка на звонок)
+-- Последнее обновление: 02.08.2026
+-- Обновлено модулем: platform (lesson_likes: лайки уроков в библиотеке)
 -- ============================================================================
 
 
@@ -232,6 +232,19 @@ CREATE TABLE IF NOT EXISTS lesson_assignments (
 CREATE INDEX IF NOT EXISTS idx_teacher_students_teacher ON teacher_students(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_assignments_lesson ON lesson_assignments(lesson_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_assignments_student ON lesson_assignments(student_id);
+
+-- Лайки уроков в общей библиотеке — только "нравится", без дизлайков.
+-- Репетитор может лайкнуть любой чужой одобренный урок один раз (повторный
+-- запрос снимает лайк). Свой урок лайкнуть нельзя (проверка на бэкенде)
+CREATE TABLE IF NOT EXISTS lesson_likes (
+    id SERIAL PRIMARY KEY,
+    lesson_id INTEGER NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    teacher_id INTEGER NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE (lesson_id, teacher_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_lesson_likes_lesson ON lesson_likes(lesson_id);
 
 -- Шаблон недели — повторяющийся еженедельный слот ученика,
 -- из которого генерируются реальные строки schedule_lessons
