@@ -97,6 +97,7 @@ export function FillBlankPlayer({ content, onSubmit, disabled }: {
                 disabled={disabled}
                 iconOnly
                 style={{ display: 'inline-flex', width: '140px', margin: '0 6px', verticalAlign: 'middle' }}
+                inputStyle={{ padding: '4px 10px' }}
               />
             )}
           </span>
