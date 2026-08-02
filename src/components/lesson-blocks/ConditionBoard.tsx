@@ -16,7 +16,7 @@ export const ConditionBoardEditor = forwardRef<ConditionBoardEditorHandle, {
   initialState?: string | null
   onStateChange: (base64: string) => void
 }>(function ConditionBoardEditor({ appName, initialState, onStateChange }, ref) {
-  const { containerId, wrapperRef, ready, loadError, loadBase64, getBase64, onChange } = useGeoGebra(appName, { height: 360 })
+  const { containerId, wrapperRef, ready, loadError, loadBase64, getBase64, onChange } = useGeoGebra(appName, { height: 360, showAlgebraInput: appName === 'graphing' })
 
   useImperativeHandle(ref, () => ({ getBase64 }))
 

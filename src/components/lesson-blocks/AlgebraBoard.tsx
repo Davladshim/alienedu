@@ -9,7 +9,7 @@ export interface AlgebraBoardHandle {
 
 export const AlgebraBoard = forwardRef<AlgebraBoardHandle, { disabled?: boolean }>(
   function AlgebraBoard({ disabled }, ref) {
-    const { containerId, wrapperRef, ready, loadError, exportSnapshot } = useGeoGebra('graphing')
+    const { containerId, wrapperRef, ready, loadError, exportSnapshot } = useGeoGebra('graphing', { showAlgebraInput: true })
 
     useImperativeHandle(ref, () => ({ exportSnapshot }))
 

@@ -24,6 +24,7 @@ interface GeoGebraAppletParams {
   showResetIcon?: boolean
   showZoomButtons?: boolean
   enableLabelDrags?: boolean
+  perspective?: string
   appletOnLoad?: (api: GeoGebraAppApi) => void
 }
 
@@ -70,6 +71,11 @@ export interface UseGeoGebraOptions {
   // Апплет только для просмотра (трансляция доски учителя ученику) — без
   // тулбара и панели ввода, ученик ничего не может на нём построить сам
   readOnly?: boolean
+  // Строка ввода формул нужна только там, где объекты задаются именно
+  // формулой — доска "Алгебра" (appName "graphing"), где ученик пишет,
+  // например, y=x^2. На геометрических досках ввод не нужен вообще:
+  // там строят циркулем/линейкой через инструменты, а не формулой
+  showAlgebraInput?: boolean
 }
 
 // Общая база для встраивания апплета GeoGebra (алгебра — appName "graphing",
@@ -77,7 +83,12 @@ export interface UseGeoGebraOptions {
 // и подгонка ширины под контейнер — вынесено сюда, чтобы не дублировать
 // одну и ту же обвязку в блоках "Геометрия"/"Алгебра" и в живой доске урока
 export function useGeoGebra(appName: 'geometry' | 'graphing', options: UseGeoGebraOptions = {}) {
-  const { height = 420, readOnly = false } = options
+  const { height = 420, readOnly = false, showAlgebraInput = false } = options
+  // Панель Algebra View (со строкой ввода) занимает весь экран на телефоне и
+  // не даёт увидеть чертёж — прячем её через perspective, если ввод формул и
+  // так не нужен (readOnly-доска или геометрия). Если ввод нужен (доска
+  // "Алгебра"), панель обязана остаться — иначе печатать формулу негде
+  const needsAlgebraPanel = showAlgebraInput && !readOnly
   const reactId = useId()
   const containerId = `ggb-${reactId.replace(/:/g, '')}`
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -110,11 +121,12 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', options: UseGeoGeb
             height,
             language: 'ru',
             showToolBar: !readOnly,
-            showAlgebraInput: false,
+            showAlgebraInput: needsAlgebraPanel,
             showMenuBar: false,
             showResetIcon: !readOnly,
             showZoomButtons: !readOnly,
             enableLabelDrags: true,
+            perspective: needsAlgebraPanel ? undefined : 'G',
             appletOnLoad: (api) => {
               clearTimeout(timeoutId)
               if (!cancelled) {
