@@ -36,6 +36,15 @@ declare global {
 const GGB_SCRIPT_URL = 'https://www.geogebra.org/apps/deployggb.js'
 let ggbScriptPromise: Promise<void> | null = null
 
+// Инициализации апплетов сериализуем через общую очередь: когда на одной
+// странице одновременно монтируются два апплета (например, у ученика —
+// готовый чертёж условия + пустая доска для решения), параллельные вызовы
+// new GGBApplet(...).inject() иногда оставляют один из апплетов пустым —
+// appletOnLoad всё равно срабатывает, но графика не отрисовывается. Поэтому
+// каждый следующий инстанс ждёт, пока предыдущий полностью не инициализируется
+let ggbInjectQueue: Promise<void> = Promise.resolve()
+const GGB_INJECT_TIMEOUT_MS = 15000
+
 function loadGeoGebraScript(): Promise<void> {
   if (typeof window !== 'undefined' && window.GGBApplet) return Promise.resolve()
   if (!ggbScriptPromise) {
@@ -80,27 +89,43 @@ export function useGeoGebra(appName: 'geometry' | 'graphing', options: UseGeoGeb
     let cancelled = false
     loadGeoGebraScript()
       .then(() => {
-        if (cancelled || !wrapperRef.current || !window.GGBApplet) return
-        const width = Math.max(320, wrapperRef.current.clientWidth || 600)
-        const applet = new window.GGBApplet({
-          id: containerId,
-          appName,
-          width,
-          height,
-          language: 'ru',
-          showToolBar: !readOnly,
-          showAlgebraInput: false,
-          showMenuBar: false,
-          showResetIcon: !readOnly,
-          showZoomButtons: !readOnly,
-          enableLabelDrags: true,
-          appletOnLoad: (api) => {
-            if (cancelled) return
-            appRef.current = api
-            setReady(true)
-          },
-        }, true)
-        applet.inject(containerId)
+        // Ставим создание этого апплета в очередь вместо немедленного inject() —
+        // см. комментарий у ggbInjectQueue выше. Каждый инстанс ждёт своей
+        // очереди и сам себя резолвит, как только appletOnLoad сработал
+        // (или по таймауту, чтобы сломанный апплет не заблокировал остальные)
+        ggbInjectQueue = ggbInjectQueue.then(() => new Promise<void>(resolve => {
+          if (cancelled || !wrapperRef.current || !window.GGBApplet) { resolve(); return }
+          let settled = false
+          const finish = () => {
+            if (settled) return
+            settled = true
+            resolve()
+          }
+          const timeoutId = setTimeout(finish, GGB_INJECT_TIMEOUT_MS)
+          const width = Math.max(320, wrapperRef.current.clientWidth || 600)
+          const applet = new window.GGBApplet({
+            id: containerId,
+            appName,
+            width,
+            height,
+            language: 'ru',
+            showToolBar: !readOnly,
+            showAlgebraInput: false,
+            showMenuBar: false,
+            showResetIcon: !readOnly,
+            showZoomButtons: !readOnly,
+            enableLabelDrags: true,
+            appletOnLoad: (api) => {
+              clearTimeout(timeoutId)
+              if (!cancelled) {
+                appRef.current = api
+                setReady(true)
+              }
+              finish()
+            },
+          }, true)
+          applet.inject(containerId)
+        }))
       })
       .catch(() => {
         if (!cancelled) setLoadError(true)
