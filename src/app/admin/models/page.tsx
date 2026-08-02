@@ -24,6 +24,11 @@ const EMPTY_FORM = {
 const cardStyle: React.CSSProperties = {
   background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px', padding: '20px',
 }
+// Фиксированный размер превью в карточке банка моделей — раньше место под
+// картинку резервировалось по исходному (немасштабированному) размеру модели,
+// из-за чего карточки были разной высоты, а превью иногда вылезало за рамку
+const THUMB_WIDTH = 220
+const THUMB_HEIGHT = 130
 const inputStyle: React.CSSProperties = {
   width: '100%', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '8px',
   padding: '9px 12px', color: 'var(--t-text)', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
@@ -260,10 +265,16 @@ export default function ModelsAdminPage() {
             {models.length === 0 && (
               <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Пока нет ни одной модели — добавь первую.</div>
             )}
-            {models.map(m => (
+            {models.map(m => {
+              const thumbScale = Math.min(THUMB_WIDTH / m.frame_width, THUMB_HEIGHT / m.frame_height, 1)
+              return (
               <div key={m.id} style={cardStyle}>
-                <div style={{ pointerEvents: 'none', marginBottom: '10px', display: 'flex', justifyContent: 'center' }}>
-                  <div style={{ transform: `scale(${Math.min(1, 220 / m.frame_width)})`, transformOrigin: 'top left', width: `${m.frame_width}px`, height: `${m.frame_height}px` }}>
+                <div style={{
+                  pointerEvents: 'none', marginBottom: '10px', width: `${THUMB_WIDTH}px`, height: `${THUMB_HEIGHT}px`,
+                  maxWidth: '100%', overflow: 'hidden', borderRadius: '6px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div style={{ transform: `scale(${thumbScale})`, transformOrigin: 'center center', width: `${m.frame_width}px`, height: `${m.frame_height}px`, flexShrink: 0 }}>
                     <InteractiveModelFrame
                       htmlCode={m.html_code} frameWidth={m.frame_width} frameHeight={m.frame_height}
                       offsetX={m.offset_x} offsetY={m.offset_y} scale={Number(m.scale)}
@@ -289,7 +300,8 @@ export default function ModelsAdminPage() {
                   >🗑</button>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

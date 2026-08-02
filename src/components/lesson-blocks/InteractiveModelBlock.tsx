@@ -11,6 +11,12 @@ export interface InteractiveModelContent {
 
 export const interactiveModelDefault: InteractiveModelContent = { modelId: null, description: '' }
 
+// Фиксированный размер превью в списке выбора модели — без него место под
+// картинку резервировалось по исходному (немасштабированному) размеру модели,
+// из-за чего карточки были разной высоты и сильно вытягивались по вертикали
+const THUMB_WIDTH = 124
+const THUMB_HEIGHT = 80
+
 interface ModelSummary {
   id: number
   title: string
@@ -74,6 +80,7 @@ export function InteractiveModelEditor({ content, onChange }: {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px', maxHeight: '320px', overflowY: 'auto', padding: '2px' }}>
           {models.map(m => {
             const isSelected = m.id === content.modelId
+            const thumbScale = Math.min(THUMB_WIDTH / m.frame_width, THUMB_HEIGHT / m.frame_height, 1)
             return (
               <div
                 key={m.id}
@@ -84,8 +91,12 @@ export function InteractiveModelEditor({ content, onChange }: {
                   background: isSelected ? 'rgba(var(--t-accent-rgb),0.1)' : 'var(--t-card)',
                 }}
               >
-                <div style={{ pointerEvents: 'none', overflow: 'hidden', borderRadius: '4px', marginBottom: '6px' }}>
-                  <div style={{ transform: `scale(${Math.min(1, 124 / m.frame_width)})`, transformOrigin: 'top left', width: `${m.frame_width}px`, height: `${m.frame_height}px` }}>
+                <div style={{
+                  pointerEvents: 'none', overflow: 'hidden', borderRadius: '4px', marginBottom: '6px',
+                  width: `${THUMB_WIDTH}px`, height: `${THUMB_HEIGHT}px`, maxWidth: '100%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <div style={{ transform: `scale(${thumbScale})`, transformOrigin: 'center center', width: `${m.frame_width}px`, height: `${m.frame_height}px`, flexShrink: 0 }}>
                     <InteractiveModelFrame
                       htmlCode={m.html_code} frameWidth={m.frame_width} frameHeight={m.frame_height}
                       offsetX={m.offset_x} offsetY={m.offset_y} scale={Number(m.scale)}
