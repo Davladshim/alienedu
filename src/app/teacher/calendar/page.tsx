@@ -61,7 +61,7 @@ function hasConflict(lesson: any, dayLessons: any[]): boolean {
 
 // Цвет рамки карточки целиком — состояние занятия
 function lessonColor(lesson: any, dayLessons: any[]): string {
-  if (lesson.status === 'cancelled') return 'var(--t-text-muted)'
+  if (lesson.status === 'cancelled' || lesson.status === 'completed') return 'var(--t-text-muted)'
   if (hasConflict(lesson, dayLessons)) return 'var(--t-pink)'
   if (lesson.is_trial) return 'var(--t-trial)'
   // Урок из шаблона, но перенесённый (original_date заполняется при первом
@@ -379,9 +379,10 @@ export default function CalendarPage() {
                             border: `2px solid ${color}`,
                             boxShadow: isSelected ? `0 0 0 3px ${color}4D` : 'none',
                             borderRadius: '8px', cursor: 'pointer', textAlign: 'center',
+                            opacity: lesson.status === 'completed' ? 0.55 : 1,
                           }}
                         >
-                          {lesson.status !== 'scheduled' && (
+                          {lesson.status === 'cancelled' && (
                             <span style={{ position: 'absolute', top: '4px', right: '6px', fontSize: '9px', color: 'var(--t-text-muted)' }}>
                               {STATUS_SHORT[lesson.status]}
                             </span>
