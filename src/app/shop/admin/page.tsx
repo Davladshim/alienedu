@@ -680,9 +680,21 @@ function EditPresentation({ presentation, onSave, onCancel }: {
           <label style={labelStyle}>Предмет</label>
           <select style={{ ...inputStyle, marginBottom: "12px", cursor: "pointer" }} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}>
             <option>Математика</option>
+            <option>Алгебра</option>
+            <option>Геометрия</option>
+            <option>Вероятность и статистика</option>
             <option>Физика</option>
             <option>Химия</option>
+            <option>Биология</option>
             <option>Информатика</option>
+            <option>Русский язык</option>
+            <option>Литература</option>
+            <option>Английский язык</option>
+            <option>История</option>
+            <option>Обществознание</option>
+            <option>География</option>
+            <option>Черчение</option>
+            <option>Астрономия</option>
           </select>
         </div>
         <div style={{ flex: 1 }}>
