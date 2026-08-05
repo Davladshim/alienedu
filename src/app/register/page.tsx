@@ -127,6 +127,7 @@ export default function RegisterPage() {
               style={{ ...inputStyle, cursor: 'pointer' }}>
               <option value="student">Ученик</option>
               <option value="teacher">Преподаватель</option>
+              <option value="parent">Родитель</option>
             </select>
           </div>
 

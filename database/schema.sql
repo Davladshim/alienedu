@@ -233,6 +233,23 @@ CREATE INDEX IF NOT EXISTS idx_teacher_students_teacher ON teacher_students(teac
 CREATE INDEX IF NOT EXISTS idx_lesson_assignments_lesson ON lesson_assignments(lesson_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_assignments_student ON lesson_assignments(student_id);
 
+-- Связь родитель-ребёнок (роль users.role = 'parent'). Аккаунт ребёнка
+-- в этом случае заводит сам родитель (логин/пароль придумывает родитель) —
+-- несовершеннолетний не проходит через самостоятельную регистрацию.
+-- Один ребёнок теоретически может быть привязан к нескольким родителям
+-- (мама и папа по отдельности) — поэтому связка отдельной таблицей, а не
+-- полем parent_id в users
+CREATE TABLE IF NOT EXISTS parent_children (
+    id SERIAL PRIMARY KEY,
+    parent_id INTEGER NOT NULL REFERENCES users(id),
+    student_id INTEGER NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE (parent_id, student_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_parent_children_parent ON parent_children(parent_id);
+CREATE INDEX IF NOT EXISTS idx_parent_children_student ON parent_children(student_id);
+
 -- Лайки уроков в общей библиотеке — только "нравится", без дизлайков.
 -- Репетитор может лайкнуть любой чужой одобренный урок один раз (повторный
 -- запрос снимает лайк). Свой урок лайкнуть нельзя (проверка на бэкенде)

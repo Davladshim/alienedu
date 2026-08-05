@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const userRole = role === 'teacher' ? 'teacher' : 'student'
+    const userRole = role === 'teacher' ? 'teacher' : role === 'parent' ? 'parent' : 'student'
     if (userRole === 'student' && !grade) {
       return NextResponse.json(
         { error: 'Выберите класс' },

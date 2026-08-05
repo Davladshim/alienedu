@@ -41,6 +41,7 @@ export default function LoginPage() {
     const role = data.user.role
     if (role === 'admin') router.push('/admin')
     else if (role === 'teacher') router.push('/teacher')
+    else if (role === 'parent') router.push('/parent')
     else router.push('/student')
   }
 
@@ -66,6 +67,7 @@ export default function LoginPage() {
     const role = data.user.role
     if (role === 'admin') router.push('/admin')
     else if (role === 'teacher') router.push('/teacher')
+    else if (role === 'parent') router.push('/parent')
     else router.push('/student')
   }
 
