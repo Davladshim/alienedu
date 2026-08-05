@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 interface Child {
   id: number
@@ -16,8 +17,6 @@ const inputStyle: React.CSSProperties = {
   padding: '10px 14px', color: 'var(--t-text)', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
 }
 
-// Пока только список детей и создание нового аккаунта — расписание,
-// баланс и стоимость занятий по каждому ребёнку появятся отдельным патчем
 export default function ParentPage() {
   const [children, setChildren] = useState<Child[]>([])
   const [loading, setLoading] = useState(true)
@@ -84,12 +83,15 @@ export default function ParentPage() {
         {!loading && children.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.5rem' }}>
             {children.map(c => (
-              <div key={c.id} style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px', padding: '14px 18px' }}>
+              <Link key={c.id} href={`/parent/child/${c.id}`} style={{
+                display: 'block', background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px',
+                padding: '14px 18px', textDecoration: 'none', color: 'inherit',
+              }}>
                 <div style={{ fontWeight: 600, fontSize: '15px' }}>{c.full_name}</div>
                 <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
-                  Логин: {c.login}{c.grade ? ` · ${c.grade} класс` : ''}
+                  Логин: {c.login}{c.grade ? ` · ${c.grade} класс` : ''} · Расписание и баланс →
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
