@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PasswordInput } from '@/components/PasswordInput'
+import { MIN_STUDENT_SELF_REGISTER_AGE } from '@/lib/ageGate'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -13,6 +14,7 @@ export default function RegisterPage() {
     code_confirm: '',
     role: 'student',
     grade: '',
+    birth_date: '',
     secret_question: '',
     secret_answer: ''
   })
@@ -142,6 +144,19 @@ export default function RegisterPage() {
                   <option key={g} value={g}>{g} класс</option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {formData.role === 'student' && (
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={labelStyle}>Дата рождения</label>
+              <input type="date" name="birth_date" value={formData.birth_date}
+                onChange={handleChange}
+                max={new Date().toISOString().slice(0, 10)}
+                required style={inputStyle} />
+              <p style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '6px' }}>
+                Самостоятельная регистрация доступна с {MIN_STUDENT_SELF_REGISTER_AGE} лет — если тебе меньше, попроси родителя зарегистрироваться и завести тебе аккаунт из своего кабинета
+              </p>
             </div>
           )}
 

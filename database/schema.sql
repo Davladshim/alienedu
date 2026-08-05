@@ -26,6 +26,11 @@ CREATE TABLE IF NOT EXISTS users (
     secret_question VARCHAR(255),
     secret_answer_hash VARCHAR(255),
     grade INTEGER, -- класс ученика, указывается при регистрации (только role='student')
+    -- Дата рождения — обязательна при самостоятельной регистрации ученика
+    -- (используется для возрастного гейта, см. src/lib/ageGate.ts), у
+    -- остальных ролей необязательна. Пригодится и для напоминаний о днях
+    -- рождения в будущем
+    birth_date DATE,
     -- IANA-имя часового пояса пользователя (например 'Europe/Samara') — по
     -- умолчанию МСК, дальше уточняется автоопределением в браузере или вручную
     timezone VARCHAR(64) NOT NULL DEFAULT 'Europe/Moscow',

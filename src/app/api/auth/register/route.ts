@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { query } from '@/lib/db'
+import { MIN_STUDENT_SELF_REGISTER_AGE, calculateAge } from '@/lib/ageGate'
 
 export async function POST(request: NextRequest) {
   try {
-    const { full_name, login, code, secret_question, secret_answer, role, grade, agree_terms } = await request.json()
+    const { full_name, login, code, secret_question, secret_answer, role, grade, birth_date, agree_terms } = await request.json()
 
     if (!full_name || !login || !code || !secret_question || !secret_answer) {
       return NextResponse.json(
@@ -28,6 +29,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (userRole === 'student') {
+      if (!birth_date) {
+        return NextResponse.json(
+          { error: 'Укажите дату рождения' },
+          { status: 400 }
+        )
+      }
+      const age = calculateAge(birth_date)
+      if (Number.isNaN(age) || age < 0 || age > 120) {
+        return NextResponse.json(
+          { error: 'Проверьте дату рождения' },
+          { status: 400 }
+        )
+      }
+      // Несовершеннолетний младше порога не может пройти регистрацию сам —
+      // аккаунт для него должен завести родитель из своего кабинета (роль
+      // "Родитель"), где ребёнок не проходит самостоятельную регистрацию вообще
+      if (age < MIN_STUDENT_SELF_REGISTER_AGE) {
+        return NextResponse.json(
+          { error: `Самостоятельная регистрация доступна с ${MIN_STUDENT_SELF_REGISTER_AGE} лет. Если тебе меньше — попроси родителя зарегистрироваться на платформе как «Родитель» и завести тебе аккаунт из своего кабинета.` },
+          { status: 403 }
+        )
+      }
+    }
+
     // Проверяем что логин не занят
     const existing = await query(
       'SELECT id FROM users WHERE login = $1',
@@ -48,10 +74,14 @@ export async function POST(request: NextRequest) {
 
     const result = await query(
       `INSERT INTO users
-        (full_name, login, code_hash, role, secret_question, secret_answer_hash, grade)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+        (full_name, login, code_hash, role, secret_question, secret_answer_hash, grade, birth_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id, full_name, login, role`,
-      [full_name, login, code_hash, userRole, secret_question, secret_answer_hash, userRole === 'student' ? Number(grade) : null]
+      [
+        full_name, login, code_hash, userRole, secret_question, secret_answer_hash,
+        userRole === 'student' ? Number(grade) : null,
+        userRole === 'student' ? birth_date : null,
+      ]
     )
 
     return NextResponse.json({
