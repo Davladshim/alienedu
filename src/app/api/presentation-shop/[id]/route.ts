@@ -9,9 +9,25 @@ function checkAdminCookie(req: NextRequest): boolean {
   return session?.value === process.env.ADMIN_SECRET;
 }
 
+// Значение куки — либо ISO-дата истечения (актуальный формат), либо
+// legacy-строка "granted" (куки, выданные до перехода на дату истечения) —
+// им доверяем без проверки даты, maxAge самой куки на браузере всё равно
+// не даст ей пережить положенный срок
+function isAccessCookieValid(value: string | undefined): boolean {
+  if (!value) return false;
+  if (value === "granted") return true;
+  const expiresAt = new Date(value);
+  return !isNaN(expiresAt.getTime()) && expiresAt.getTime() > Date.now();
+}
+
 function verifyAccessCookie(req: NextRequest, presentationId: string): boolean {
-  const cookie = req.cookies.get(`access_shop_${presentationId}`);
-  return cookie?.value === "granted";
+  // Подписка на весь магазин (access_shop_all) тоже должна открывать
+  // конкретную презентацию — раньше проверялась только персональная кука,
+  // из-за чего подписчик всё равно упирался в пейвол
+  return (
+    isAccessCookieValid(req.cookies.get(`access_shop_${presentationId}`)?.value) ||
+    isAccessCookieValid(req.cookies.get("access_shop_all")?.value)
+  );
 }
 
 function injectPaywall(html: string, presentationId: string): string {

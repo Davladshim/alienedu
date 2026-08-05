@@ -41,11 +41,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Неверный токен" }, { status: 403 });
     }
 
-    const response = NextResponse.json({ ok: true, isSubscription });
-
     const maxAge = 60 * 60 * 24 * decoded.validDays;
+    // Значение куки — момент истечения (ISO), а не просто флаг "granted":
+    // без этого негде хранить дату для счётчика "осталось N дней" на витрине
+    const expiresAt = new Date(Date.now() + maxAge * 1000);
+    const response = NextResponse.json({ ok: true, isSubscription, daysLeft: decoded.validDays });
+
     const cookieName = isSubscription ? "access_shop_all" : `access_shop_${presentationId}`;
-    response.cookies.set(cookieName, "granted", {
+    response.cookies.set(cookieName, expiresAt.toISOString(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",

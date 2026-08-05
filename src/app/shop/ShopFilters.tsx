@@ -14,45 +14,76 @@ type Presentation = {
   content_description: string | null;
 };
 
-const GRADES = [5, 6, 7, 8, 9, 10, 11];
-const SUBJECTS = ["Математика", "Физика", "Химия", "Информатика"];
+const selectStyle: React.CSSProperties = {
+  background: "var(--t-card)", border: "1px solid var(--t-border)", borderRadius: 8,
+  padding: "8px 12px", color: "var(--t-text)", fontSize: "0.85rem", cursor: "pointer", outline: "none",
+};
 
 export default function ShopFilters({ presentations }: { presentations: Presentation[] }) {
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [keyword, setKeyword] = useState("");
   const [popupPresentation, setPopupPresentation] = useState<Presentation | null>(null);
 
+  // Списки для выпадающих списков — только те предметы/классы, что реально
+  // встречаются среди презентаций, обновляются сами по мере добавления новых
+  const subjects = Array.from(new Set(presentations.map((p) => p.subject))).sort();
+  const grades = Array.from(new Set(presentations.map((p) => p.grade))).sort((a, b) => a - b);
+
+  const q = keyword.trim().toLowerCase();
   const filtered = presentations.filter((p) => {
     if (selectedGrade && p.grade !== selectedGrade) return false;
     if (selectedSubject && p.subject !== selectedSubject) return false;
+    if (q) {
+      const haystack = `${p.title} ${p.description} ${p.content_description || ""}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
     return true;
   });
 
+  const hasActiveFilters = selectedGrade !== null || selectedSubject !== null || q !== "";
+
   return (
     <>
-      <div style={{ marginBottom: 32, display: "flex", flexWrap: "wrap", gap: 24 }}>
+      <div style={{ marginBottom: 32, display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-end" }}>
+        <div>
+          <div style={{ color: "var(--t-text-muted)", fontSize: "0.75rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            Ключевые слова
+          </div>
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="Поиск по названию и описанию..."
+            style={{ ...selectStyle, width: 260, cursor: "text" }}
+          />
+        </div>
+
         <div>
           <div style={{ color: "var(--t-text-muted)", fontSize: "0.75rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}>
             Предмет
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <FilterButton label="Все" active={selectedSubject === null} onClick={() => setSelectedSubject(null)} />
-            {SUBJECTS.map((s) => (
-              <FilterButton key={s} label={s} active={selectedSubject === s} onClick={() => setSelectedSubject(selectedSubject === s ? null : s)} />
-            ))}
-          </div>
+          <select
+            value={selectedSubject ?? ""}
+            onChange={(e) => setSelectedSubject(e.target.value || null)}
+            style={selectStyle}
+          >
+            <option value="">Все предметы</option>
+            {subjects.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
         </div>
 
         <div>
           <div style={{ color: "var(--t-text-muted)", fontSize: "0.75rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}>
             Класс
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <FilterButton label="Все" active={selectedGrade === null} onClick={() => setSelectedGrade(null)} />
-            {GRADES.map((g) => (
-              <FilterButton key={g} label={`${g} кл`} active={selectedGrade === g} onClick={() => setSelectedGrade(selectedGrade === g ? null : g)} />
-            ))}
-          </div>
+          <select
+            value={selectedGrade ?? ""}
+            onChange={(e) => setSelectedGrade(e.target.value ? Number(e.target.value) : null)}
+            style={selectStyle}
+          >
+            <option value="">Все классы</option>
+            {grades.map((g) => <option key={g} value={g}>{g} класс</option>)}
+          </select>
         </div>
       </div>
 
@@ -63,12 +94,14 @@ export default function ShopFilters({ presentations }: { presentations: Presenta
       {filtered.length === 0 ? (
         <div style={{ textAlign: "center", padding: "80px 0", color: "var(--t-text-faint)" }}>
           <p style={{ fontSize: "1.1rem", marginBottom: 8 }}>По этим фильтрам ничего нет</p>
-          <button
-            onClick={() => { setSelectedGrade(null); setSelectedSubject(null); }}
-            style={{ color: "var(--t-info)", background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}
-          >
-            Сбросить фильтры
-          </button>
+          {hasActiveFilters && (
+            <button
+              onClick={() => { setSelectedGrade(null); setSelectedSubject(null); setKeyword(""); }}
+              style={{ color: "var(--t-info)", background: "none", border: "none", cursor: "pointer", fontSize: "0.9rem" }}
+            >
+              Сбросить фильтры
+            </button>
+          )}
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
@@ -98,26 +131,6 @@ export default function ShopFilters({ presentations }: { presentations: Presenta
         </div>
       )}
     </>
-  );
-}
-
-function FilterButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: "6px 14px",
-        borderRadius: 8,
-        border: active ? "1px solid var(--t-accent)" : "1px solid var(--t-card)",
-        background: active ? "rgba(var(--t-accent-rgb),0.15)" : "var(--t-card)",
-        color: active ? "var(--t-info)" : "var(--t-text-muted)",
-        fontSize: "0.85rem",
-        cursor: "pointer",
-        transition: "all 0.15s ease",
-      }}
-    >
-      {label}
-    </button>
   );
 }
 

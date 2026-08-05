@@ -2,6 +2,7 @@ import Link from "next/link";
 export const dynamic = 'force-dynamic';
 import { query } from "@/lib/db";
 import ShopFilters from "./ShopFilters";
+import ShopPlanWidget from "./ShopPlanWidget";
 
 type Presentation = {
   id: number;
@@ -54,6 +55,8 @@ export default async function ShopPage() {
             Авторские материалы по точным предметам. Купи код доступа — открой презентацию на 10 дней.
           </p>
         </div>
+
+        <ShopPlanWidget />
 
         <ShopFilters presentations={presentations} />
       </main>
