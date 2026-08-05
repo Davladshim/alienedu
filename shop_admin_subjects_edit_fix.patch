@@ -1,0 +1,51 @@
+From d168691dca02e27b24041d702be23a9b6fe6551c Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 5 Aug 2026 12:03:02 +0000
+Subject: [PATCH] =?UTF-8?q?=D0=A4=D0=B8=D0=BA=D1=81:=20=D1=81=D0=BF=D0=B8?=
+ =?UTF-8?q?=D1=81=D0=BE=D0=BA=20=D0=BF=D1=80=D0=B5=D0=B4=D0=BC=D0=B5=D1=82?=
+ =?UTF-8?q?=D0=BE=D0=B2=20=D0=BD=D0=B5=20=D0=BE=D0=B1=D0=BD=D0=BE=D0=B2?=
+ =?UTF-8?q?=D0=B8=D0=BB=D1=81=D1=8F=20=D0=B2=20=D1=84=D0=BE=D1=80=D0=BC?=
+ =?UTF-8?q?=D0=B5=20=D1=80=D0=B5=D0=B4=D0=B0=D0=BA=D1=82=D0=B8=D1=80=D0=BE?=
+ =?UTF-8?q?=D0=B2=D0=B0=D0=BD=D0=B8=D1=8F=20=D0=BF=D1=80=D0=B5=D0=B7=D0=B5?=
+ =?UTF-8?q?=D0=BD=D1=82=D0=B0=D1=86=D0=B8=D0=B8?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+В прошлом патче список предметов расширили только в форме добавления —
+в файле два похожих select'а (добавление и редактирование) с разным
+отступом, из-за чего правка задела не оба места. Теперь оба списка
+одинаковые.
+---
+ src/app/shop/admin/page.tsx | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/app/shop/admin/page.tsx b/src/app/shop/admin/page.tsx
+index 8cc89b0..74063a7 100644
+--- a/src/app/shop/admin/page.tsx
++++ b/src/app/shop/admin/page.tsx
+@@ -680,9 +680,21 @@ function EditPresentation({ presentation, onSave, onCancel }: {
+           <label style={labelStyle}>Предмет</label>
+           <select style={{ ...inputStyle, marginBottom: "12px", cursor: "pointer" }} value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}>
+             <option>Математика</option>
++            <option>Алгебра</option>
++            <option>Геометрия</option>
++            <option>Вероятность и статистика</option>
+             <option>Физика</option>
+             <option>Химия</option>
++            <option>Биология</option>
+             <option>Информатика</option>
++            <option>Русский язык</option>
++            <option>Литература</option>
++            <option>Английский язык</option>
++            <option>История</option>
++            <option>Обществознание</option>
++            <option>География</option>
++            <option>Черчение</option>
++            <option>Астрономия</option>
+           </select>
+         </div>
+         <div style={{ flex: 1 }}>
+-- 
+2.43.0
+
