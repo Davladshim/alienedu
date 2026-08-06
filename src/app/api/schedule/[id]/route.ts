@@ -32,6 +32,10 @@ export async function PUT(
 
     const { date, time, duration_minutes, subject, status, notes, price, is_paid } = await request.json()
 
+    if (price !== undefined && price !== null && Number(price) < 0) {
+      return NextResponse.json({ error: 'Цена не может быть отрицательной' }, { status: 400 })
+    }
+
     const isMoved = (date && date !== toDateOnlyString(existing.date)) || (time && time !== existing.time)
 
     // Занятие, которое уже прошло, переносить нельзя — только менять статус

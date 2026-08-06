@@ -81,11 +81,13 @@ function lessonColor(lesson: any, dayLessons: any[]): string {
   return 'var(--t-success)'
 }
 
-// Карточка одного занятия в колонке дня — время начала и конца друг под
-// другом без подписей (просто числа), имя ученика ниже. На широких
-// экранах ссылка на звонок и значок предмета — в верхних углах; на узких
-// (narrow) им там нет места, поэтому они переезжают в общую строку над
-// временем
+// Карточка одного занятия в колонке дня. На широких экранах время — одной
+// строкой через точку ("10:00 · 11:00"), как было исторически — так
+// удобнее читать, когда места достаточно. На узких (narrow) экранах
+// вместо этого начало и конец идут друг под другом без подписей — так
+// они умещаются в узкую колонку. Ссылка на звонок и значок предмета на
+// широких экранах — в верхних углах; на узких им там нет места, поэтому
+// они переезжают в общую строку над временем
 function LessonCard({ lesson, dayLessons, isSelected, narrow, onClick }: {
   lesson: any
   dayLessons: any[]
@@ -163,8 +165,7 @@ function LessonCard({ lesson, dayLessons, isSelected, narrow, onClick }: {
       {lesson.subject && (
         <span style={{ position: 'absolute', top: '5px', right: '6px' }}>{subjectIcon}</span>
       )}
-      <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '10px' }}>{formatClock(start)}</div>
-      <div style={{ fontWeight: 600, fontSize: '14px', borderTop: '1px solid var(--t-border)', marginTop: '4px', paddingTop: '4px' }}>{formatClock(end)}</div>
+      <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '10px' }}>{formatClock(start)} · {formatClock(end)}</div>
       <div style={{ color: 'var(--t-text-secondary)', fontSize: '13px', marginTop: '6px' }}>{studentLabel}</div>
     </div>
   )
@@ -253,6 +254,10 @@ export default function CalendarPage() {
       setError('Выбери ученика и время')
       return
     }
+    if (addForm.price !== '' && Number(addForm.price) < 0) {
+      setError('Цена не может быть отрицательной')
+      return
+    }
     setSaving(true)
     const res = await fetch('/api/schedule', {
       method: 'POST',
@@ -327,6 +332,10 @@ export default function CalendarPage() {
 
   async function submitEdit() {
     if (!editingId) return
+    if (editForm.price !== '' && Number(editForm.price) < 0) {
+      setError('Цена не может быть отрицательной')
+      return
+    }
     setSaving(true)
     setError('')
     const res = await fetch(`/api/schedule/${editingId}`, {
@@ -540,9 +549,17 @@ export default function CalendarPage() {
                   </div>
                   <div>
                     <label style={labelStyle}>Цена, ₽</label>
-                    <input type="number" value={addForm.price} onChange={e => setAddForm({ ...addForm, price: e.target.value })} style={{ ...inputStyle, width: '100px' }} placeholder="по умолчанию" />
+                    <input type="number" min="0" value={addForm.price} onChange={e => setAddForm({ ...addForm, price: e.target.value })} style={{ ...inputStyle, width: '100px' }} placeholder="по умолчанию" />
                   </div>
                 </div>
+                {addForm.price === '' && (() => {
+                  const selected = roster.find(s => String(s.student_id) === addForm.student_id)
+                  return selected && selected.lesson_price === null
+                })() && (
+                  <p style={{ color: 'var(--t-danger-soft)', fontSize: '13px', marginBottom: '10px' }}>
+                    У этого ученика не задана стандартная стоимость занятия — укажи цену вручную (или 0, если урок бесплатный), иначе занятие сохранится без цены.
+                  </p>
+                )}
                 {roster.length === 0 && (
                   <p style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginBottom: '10px' }}>
                     В твоём списке пока нет учеников. <Link href="/teacher/students" style={{ color: 'var(--t-accent)' }}>Добавить учеников →</Link>
@@ -621,11 +638,16 @@ export default function CalendarPage() {
                       </div>
                       <div>
                         <label style={labelStyle}>Цена, ₽</label>
-                        <input type="number" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: e.target.value })} style={{ ...inputStyle, width: '100px' }} />
+                        <input type="number" min="0" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: e.target.value })} style={{ ...inputStyle, width: '100px' }} />
                       </div>
                     </>
                   )}
                 </div>
+                {!editForm.is_trial && editForm.price === '' && (
+                  <p style={{ color: 'var(--t-danger-soft)', fontSize: '13px', marginBottom: '10px' }}>
+                    У этого занятия не задана цена — укажи стоимость (или 0, если урок бесплатный), иначе занятие сохранится без цены.
+                  </p>
+                )}
                 <div style={{ marginBottom: '10px' }}>
                   <label style={labelStyle}>Заметка</label>
                   <textarea value={editForm.notes} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} rows={2} style={textareaStyle} />

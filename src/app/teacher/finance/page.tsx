@@ -31,6 +31,7 @@ export default function FinancePage() {
   const [payAmount, setPayAmount] = useState('')
   const [payDescription, setPayDescription] = useState('')
   const [paying, setPaying] = useState(false)
+  const [history, setHistory] = useState<any[] | null>(null)
 
   function load() {
     fetch('/api/finance/overview')
@@ -58,6 +59,14 @@ export default function FinancePage() {
     setPayingKey(payingKey === key ? null : key)
     setPayAmount('')
     setPayDescription('')
+    setHistory(null)
+  }
+
+  function loadHistory(d: any) {
+    const query = d.kind === 'family' ? `family_id=${d.familyId}` : `teacher_student_id=${d.teacherStudentId}`
+    fetch(`/api/payments?${query}`)
+      .then(r => r.json())
+      .then(data => setHistory(data.payments || []))
   }
 
   // Дублирует "Пополнить баланс" из /teacher/students — независимая копия,
@@ -141,14 +150,14 @@ export default function FinancePage() {
 
             <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '15px' }}>Должники</div>
+                <div style={{ fontWeight: 600, fontSize: '15px' }}>Не оплачено</div>
                 {data.debtors.length > 0 && (
                   <span style={{ color: 'var(--t-danger-soft)', fontSize: '14px' }}>Итого: {formatMoney(data.debtTotal)} ₽</span>
                 )}
               </div>
 
               {data.debtors.length === 0 && (
-                <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Должников нет 🎉</div>
+                <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Всё оплачено 🎉</div>
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -169,12 +178,30 @@ export default function FinancePage() {
                         </div>
                       </div>
                       {isPaying && (
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--t-border)' }}>
-                          <input type="number" value={payAmount} onChange={e => setPayAmount(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="Сумма" />
-                          <input value={payDescription} onChange={e => setPayDescription(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '160px' }} placeholder="Комментарий (необязательно)" />
-                          <button onClick={() => submitPay(d)} disabled={paying || !payAmount} style={paying || !payAmount ? submitButtonDisabledStyle : submitButtonStyle}>
-                            {paying ? 'Сохраняем...' : '+ Оплата'}
-                          </button>
+                        <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--t-border)' }}>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                            <input type="number" value={payAmount} onChange={e => setPayAmount(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="Сумма" />
+                            <input value={payDescription} onChange={e => setPayDescription(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '160px' }} placeholder="Комментарий (необязательно)" />
+                            <button onClick={() => submitPay(d)} disabled={paying || !payAmount} style={paying || !payAmount ? submitButtonDisabledStyle : submitButtonStyle}>
+                              {paying ? 'Сохраняем...' : '+ Оплата'}
+                            </button>
+                          </div>
+
+                          {history === null ? (
+                            <button onClick={() => loadHistory(d)} style={{ background: 'none', border: 'none', color: 'var(--t-accent)', cursor: 'pointer', fontSize: '13px', padding: 0 }}>
+                              Показать историю пополнений
+                            </button>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              {history.length === 0 && <div style={{ color: 'var(--t-text-faint)', fontSize: '13px' }}>Платежей ещё не было</div>}
+                              {history.map(p => (
+                                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--t-text-secondary)' }}>
+                                  <span>{p.description || 'Пополнение'} · {new Date(p.payment_date).toLocaleDateString('ru-RU')}</span>
+                                  <span style={{ color: 'var(--t-success)' }}>+{formatMoney(p.amount)} ₽</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

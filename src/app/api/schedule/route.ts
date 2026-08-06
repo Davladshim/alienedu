@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
     if (!date || !time) {
       return NextResponse.json({ error: 'Укажите дату и время' }, { status: 400 })
     }
+    if (price !== undefined && price !== '' && price !== null && Number(price) < 0) {
+      return NextResponse.json({ error: 'Цена не может быть отрицательной' }, { status: 400 })
+    }
 
     if (is_trial) {
       const result = await query(

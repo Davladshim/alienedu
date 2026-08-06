@@ -25,6 +25,10 @@ export async function PUT(
 
     const { lesson_price, family_id, grade, parent_name, call_link, display_name } = await request.json()
 
+    if (lesson_price !== undefined && lesson_price !== null && Number(lesson_price) < 0) {
+      return NextResponse.json({ error: 'Стоимость занятия не может быть отрицательной' }, { status: 400 })
+    }
+
     if (family_id !== undefined && family_id !== null) {
       const family = await query(`SELECT teacher_id FROM families WHERE id = $1`, [family_id])
       if (family.rows.length === 0 || family.rows[0].teacher_id !== decoded.id) {

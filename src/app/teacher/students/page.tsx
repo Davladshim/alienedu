@@ -9,6 +9,33 @@ function formatMoney(n: any): string {
   return num.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
+// Пояснение фиксированного размера над значком вместо нативного title —
+// у браузерного title длинная подсказка растягивается в одну неудобную
+// строку. Работает и по наведению (десктоп), и по тапу (телефон)
+function HoverHint({ text, children }: { text: string; children: React.ReactNode }) {
+  const [show, setShow] = useState(false)
+  return (
+    <span
+      style={{ position: 'relative', display: 'inline-flex', cursor: 'help' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      onClick={e => { e.stopPropagation(); setShow(v => !v) }}
+    >
+      {children}
+      {show && (
+        <span style={{
+          position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)',
+          width: '170px', background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '8px',
+          padding: '8px 10px', fontSize: '12px', lineHeight: 1.4, color: 'var(--t-text-secondary)',
+          textAlign: 'left', whiteSpace: 'normal', zIndex: 300, boxShadow: '0 8px 20px rgba(0,0,0,0.35)', cursor: 'default',
+        }}>
+          {text}
+        </span>
+      )}
+    </span>
+  )
+}
+
 // Сетка по 3 карточки в ряд — но на портретных телефонах/планшетах
 // (<=900px) карточки слишком узкие даже для двух колонок, поэтому там
 // список остаётся одной колонкой, как раньше
@@ -55,6 +82,7 @@ export default function StudentsPage() {
   const [savedId, setSavedId] = useState<number | null>(null)
   const [savedFading, setSavedFading] = useState(false)
   const [history, setHistory] = useState<any[] | null>(null)
+  const [rowError, setRowError] = useState('')
 
   const [expandedFamilyId, setExpandedFamilyId] = useState<number | null>(null)
   const [familyPaymentAmount, setFamilyPaymentAmount] = useState('')
@@ -198,9 +226,15 @@ export default function StudentsPage() {
     setPaymentAmount('')
     setPaymentDescription('')
     setHistory(null)
+    setRowError('')
   }
 
   async function saveRowSettings(studentRowId: number) {
+    if (priceDraft !== '' && Number(priceDraft) < 0) {
+      setRowError('Стоимость занятия не может быть отрицательной')
+      return
+    }
+    setRowError('')
     setSavingRow(true)
     const res = await fetch(`/api/students/${studentRowId}`, {
       method: 'PUT',
@@ -221,6 +255,9 @@ export default function StudentsPage() {
       setSavedFading(false)
       setTimeout(() => setSavedFading(true), 1200)
       setTimeout(() => setSavedId(id => (id === studentRowId ? null : id)), 2000)
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setRowError(data.error || 'Не удалось сохранить')
     }
     loadAll()
   }
@@ -562,12 +599,9 @@ export default function StudentsPage() {
         <div style={{ fontWeight: 600, fontSize: '15px' }}>
           {student.full_name}{' '}
           {student.is_placeholder && (
-            <span
-              title="Карточку завёл репетитор — ученик ещё не зарегистрировался и не привязан к своему аккаунту"
-              style={{ color: 'var(--t-warning)', fontSize: '13px', cursor: 'help' }}
-            >
-              ⏳
-            </span>
+            <HoverHint text="Карточку завёл репетитор — ученик ещё не зарегистрировался и не привязан к своему аккаунту">
+              <span style={{ color: 'var(--t-warning)', fontSize: '13px' }}>⏳</span>
+            </HoverHint>
           )}
           {savedId === student.id && (
             <span style={{ color: 'var(--t-success)', fontSize: '12px', fontWeight: 500, transition: 'opacity 0.8s', opacity: savedFading ? 0 : 1 }}>
@@ -583,6 +617,11 @@ export default function StudentsPage() {
         <div style={{ marginTop: '8px', fontSize: '14px', whiteSpace: 'nowrap', color: Number(student.balance) < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
           {formatMoney(student.balance)} ₽
         </div>
+        {student.lesson_price === null && (
+          <div style={{ color: 'var(--t-danger-soft)', fontSize: '12px', marginTop: '4px' }}>
+            Стоимость занятия не указана
+          </div>
+        )}
       </div>
     )
   }
@@ -603,7 +642,12 @@ export default function StudentsPage() {
           </div>
           <div>
             <label style={labelStyle}>Стоимость занятия, ₽</label>
-            <input type="number" value={priceDraft} onChange={e => setPriceDraft(e.target.value)} style={{ ...inputStyle, width: '120px' }} />
+            <input type="number" min="0" value={priceDraft} onChange={e => setPriceDraft(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="не задана" />
+            {priceDraft === '' && (
+              <div style={{ color: 'var(--t-danger-soft)', fontSize: '12px', marginTop: '4px', maxWidth: '160px' }}>
+                Стоимость не указана
+              </div>
+            )}
           </div>
           <div>
             <label style={labelStyle}>Класс</label>
@@ -616,7 +660,7 @@ export default function StudentsPage() {
           <div>
             <label style={labelStyle}>Семья</label>
             <select value={familyDraft} onChange={e => setFamilyDraft(e.target.value)} style={inputStyle}>
-              <option value="">Без семьи</option>
+              <option value="">Выбрать</option>
               {families.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
           </div>
@@ -630,6 +674,8 @@ export default function StudentsPage() {
             </button>
           </div>
         </div>
+
+        {rowError && <p style={{ color: 'var(--t-danger)', fontSize: '13px', marginTop: '-6px', marginBottom: '14px' }}>{rowError}</p>}
 
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid var(--t-border)' }}>
           {student.is_placeholder && (
