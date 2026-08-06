@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { query } from '@/lib/db'
+import { requestAccountDeletion, DELETION_GRACE_DAYS } from '@/lib/accountDeletion'
 
 // Обзор одного ребёнка для кабинета родителя: репетиторы (с балансом
 // и стоимостью занятия у каждого) и расписание. Ребёнок может заниматься
@@ -123,6 +124,44 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Ошибка сброса пароля ребёнка:', error)
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
+  }
+}
+
+// Родитель как законный представитель реализует право ребёнка на удаление
+// его персональных данных — та же механика, что и у самостоятельного
+// удаления аккаунта (блокировка входа сразу, 30 дней на восстановление
+// логином/паролем, затем безвозвратное обезличивание)
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    const studentId = Number(id)
+    if (!studentId) {
+      return NextResponse.json({ error: 'Некорректный id' }, { status: 400 })
+    }
+
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+    if (decoded.role !== 'parent') {
+      return NextResponse.json({ error: 'Доступно только родителям' }, { status: 403 })
+    }
+
+    const link = await query(
+      `SELECT 1 FROM parent_children WHERE parent_id = $1 AND student_id = $2`,
+      [decoded.id, studentId]
+    )
+    if (link.rows.length === 0) {
+      return NextResponse.json({ error: 'Этот ребёнок не привязан к вашему аккаунту' }, { status: 403 })
+    }
+
+    await requestAccountDeletion(studentId)
+
+    return NextResponse.json({ success: true, graceDays: DELETION_GRACE_DAYS })
+  } catch (error) {
+    console.error('Ошибка удаления аккаунта ребёнка:', error)
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
   }
 }

@@ -6,8 +6,8 @@
 -- Перед началом работы в любом из двух чатов — сверяйтесь с этим файлом
 -- (git pull + открыть файл), чтобы видеть последние изменения от другого модуля.
 --
--- Последнее обновление: 02.08.2026
--- Обновлено модулем: platform (lesson_likes: лайки уроков в библиотеке)
+-- Последнее обновление: 06.08.2026
+-- Обновлено модулем: platform (parent_consent_log: журнал согласий родителя)
 -- ============================================================================
 
 
@@ -254,6 +254,21 @@ CREATE TABLE IF NOT EXISTS parent_children (
 
 CREATE INDEX IF NOT EXISTS idx_parent_children_parent ON parent_children(parent_id);
 CREATE INDEX IF NOT EXISTS idx_parent_children_student ON parent_children(student_id);
+
+-- Журнал согласий родителя на обработку персональных данных ребёнка —
+-- фиксируется отдельным явным чекбоксом (не тем же, что при собственной
+-- регистрации родителя) в момент, когда родитель заводит ребёнку новый
+-- аккаунт или привязывается к уже существующему. Строки не удаляются
+-- и не редактируются — это именно журнал, история согласий
+CREATE TABLE IF NOT EXISTS parent_consent_log (
+    id SERIAL PRIMARY KEY,
+    parent_id INTEGER NOT NULL REFERENCES users(id),
+    student_id INTEGER NOT NULL REFERENCES users(id),
+    action VARCHAR(50) NOT NULL, -- 'child_account_created' | 'child_account_linked'
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_parent_consent_log_parent ON parent_consent_log(parent_id);
 
 -- Лайки уроков в общей библиотеке — только "нравится", без дизлайков.
 -- Репетитор может лайкнуть любой чужой одобренный урок один раз (повторный

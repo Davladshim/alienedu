@@ -44,13 +44,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Доступно только родителям' }, { status: 403 })
     }
 
-    const { full_name, login, code, grade } = await request.json()
+    const { full_name, login, code, grade, consent } = await request.json()
 
     if (!full_name?.trim() || !login?.trim() || !code || !grade) {
       return NextResponse.json({ error: 'Заполните все поля' }, { status: 400 })
     }
     if (String(code).length < 4) {
       return NextResponse.json({ error: 'Пароль слишком короткий' }, { status: 400 })
+    }
+    if (!consent) {
+      return NextResponse.json({ error: 'Нужно подтвердить согласие на обработку персональных данных ребёнка' }, { status: 400 })
     }
 
     const existing = await query(`SELECT id FROM users WHERE login = $1`, [login.trim()])
@@ -70,6 +73,10 @@ export async function POST(request: NextRequest) {
 
     await query(
       `INSERT INTO parent_children (parent_id, student_id) VALUES ($1, $2)`,
+      [decoded.id, child.id]
+    )
+    await query(
+      `INSERT INTO parent_consent_log (parent_id, student_id, action) VALUES ($1, $2, 'child_account_created')`,
       [decoded.id, child.id]
     )
 

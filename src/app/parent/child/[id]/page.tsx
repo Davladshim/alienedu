@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PasswordInput } from '@/components/PasswordInput'
 
@@ -122,6 +122,51 @@ function ResetPasswordBox({ childId }: { childId: string }) {
   )
 }
 
+function DeleteAccountBox({ childId, childName }: { childId: string; childName: string }) {
+  const router = useRouter()
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleDelete() {
+    const warning = `Удалить аккаунт «${childName}»? Через 30 дней он будет удалён безвозвратно. В течение этого срока можно восстановить его, войдя с тем же логином и паролем ребёнка. Продолжить?`
+    if (!confirm(warning)) return
+
+    setDeleting(true)
+    setError('')
+    const res = await fetch(`/api/parent/child/${childId}`, { method: 'DELETE' })
+    setDeleting(false)
+    if (!res.ok) {
+      const data = await res.json()
+      setError(data.error || 'Не удалось удалить аккаунт')
+      return
+    }
+    router.push('/parent')
+  }
+
+  return (
+    <div style={{ background: 'var(--t-danger-bg)', border: '1px solid var(--t-danger)', borderRadius: '16px', padding: '1.25rem' }}>
+      <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '6px' }}>Удаление аккаунта ребёнка</div>
+      <p style={{ color: 'var(--t-text-secondary)', fontSize: '13px', lineHeight: 1.6, margin: '0 0 1rem' }}>
+        Как законный представитель вы можете удалить персональные данные ребёнка. Аккаунт блокируется
+        сразу, данные хранятся ещё 30 дней — в этот срок можно восстановить его, войдя с тем же логином
+        и паролем. По истечении 30 дней данные удаляются безвозвратно.
+      </p>
+      {error && <div style={{ color: 'var(--t-danger)', fontSize: '13px', marginBottom: '10px' }}>{error}</div>}
+      <button
+        onClick={handleDelete}
+        disabled={deleting}
+        style={{
+          background: 'var(--t-danger)', color: '#fff', border: 'none', borderRadius: '8px',
+          padding: '10px 18px', fontSize: '14px', fontWeight: 600,
+          cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.7 : 1,
+        }}
+      >
+        {deleting ? 'Удаляем...' : 'Удалить аккаунт ребёнка'}
+      </button>
+    </div>
+  )
+}
+
 function ScheduleRow({ item }: { item: ScheduleItem }) {
   return (
     <div style={{
@@ -237,7 +282,7 @@ export default function ParentChildPage() {
               </div>
             </div>
 
-            <div style={cardStyle}>
+            <div style={{ ...cardStyle, marginBottom: '1.25rem' }}>
               <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '12px' }}>Недавние занятия</div>
               {data.recent.length === 0 && (
                 <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Пока не было занятий</div>
@@ -246,6 +291,8 @@ export default function ParentChildPage() {
                 {data.recent.map(item => <ScheduleRow key={item.id} item={item} />)}
               </div>
             </div>
+
+            <DeleteAccountBox childId={id} childName={data.child.full_name} />
           </>
         )}
       </div>
