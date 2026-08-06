@@ -33,6 +33,93 @@ function formatTimeRange(time: string, durationMinutes: number): string {
   return `${formatClock(start)} · ${formatClock(start + Number(durationMinutes || 0))}`
 }
 
+// На узких экранах (телефон/планшет портретом) поля идут друг под другом
+// обычным шрифтом, вместо сжатого центрированного блока — см. подробный
+// комментарий у одноимённого хука в src/app/teacher/calendar/page.tsx
+function useNarrowScreen(breakpoint = 900): boolean {
+  const [narrow, setNarrow] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`)
+    const update = () => setNarrow(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [breakpoint])
+  return narrow
+}
+
+function TemplateCard({ tpl, narrow, onClick, onDelete }: {
+  tpl: any
+  narrow: boolean
+  onClick: () => void
+  onDelete: (e: React.MouseEvent) => void
+}) {
+  const startDateStr = toISODateStr(tpl.start_date)
+  const endDateStr = tpl.end_date ? toISODateStr(tpl.end_date) : null
+  const isUpcoming = startDateStr > todayISO()
+  const isEnding = endDateStr !== null
+  const start = (() => { const [h, m] = tpl.time.split(':').map(Number); return h * 60 + m })()
+  const end = start + Number(tpl.duration_minutes || 0)
+  const dateRange = (isUpcoming || isEnding) && (
+    <>
+      {isUpcoming && `с ${formatDateRu(startDateStr)}`}
+      {isUpcoming && isEnding && ' · '}
+      {isEnding && `до ${formatDateRu(endDateStr!)}`}
+    </>
+  )
+
+  if (narrow) {
+    return (
+      <div
+        onClick={onClick}
+        style={{
+          position: 'relative', padding: '16px 44px 14px 18px', background: 'var(--t-bg)',
+          border: `2px solid ${ACCENT}`, borderRadius: '10px', textAlign: 'left', cursor: 'pointer',
+        }}
+      >
+        <button
+          onClick={onDelete}
+          style={{ position: 'absolute', top: '10px', right: '12px', background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '16px', padding: 0 }}
+        >
+          ✕
+        </button>
+        {tpl.subject && (
+          <span style={{ position: 'absolute', top: '10px', left: '18px', display: 'flex', lineHeight: 0 }}>
+            <SubjectIcon subject={tpl.subject} size={18} />
+          </span>
+        )}
+        <div style={{ fontWeight: 600, fontSize: '15px', marginTop: tpl.subject ? '26px' : 0 }}>Начало: {formatClock(start)}</div>
+        <div style={{ fontWeight: 600, fontSize: '15px', marginTop: '4px' }}>Конец: {formatClock(end)}</div>
+        <div style={{ color: 'var(--t-text-secondary)', fontSize: '14px', marginTop: '8px' }}>{tpl.student_name}</div>
+        {dateRange && <div style={{ color: ACCENT, fontSize: '13px', marginTop: '6px' }}>{dateRange}</div>}
+      </div>
+    )
+  }
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        position: 'relative', padding: '8px', background: 'var(--t-bg)',
+        border: `2px solid ${ACCENT}`, borderRadius: '8px', textAlign: 'center', cursor: 'pointer',
+      }}
+    >
+      <button
+        onClick={onDelete}
+        style={{ position: 'absolute', top: '2px', right: '6px', background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '12px', padding: 0 }}
+      >
+        ✕
+      </button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 600, fontSize: '12px' }}>
+        <span>{formatTimeRange(tpl.time, tpl.duration_minutes)}</span>
+        {tpl.subject && <SubjectIcon subject={tpl.subject} size={13} />}
+      </div>
+      <div style={{ color: 'var(--t-text-secondary)', fontSize: '11px', marginTop: '3px' }}>{tpl.student_name}</div>
+      {dateRange && <div style={{ color: ACCENT, fontSize: '10px', marginTop: '3px' }}>{dateRange}</div>}
+    </div>
+  )
+}
+
 function todayISO(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -274,6 +361,7 @@ export default function TemplatePage() {
   }
 
   const todayDow = (new Date().getDay() + 6) % 7 // 0=понедельник
+  const narrow = useNarrowScreen()
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
@@ -305,65 +393,50 @@ export default function TemplatePage() {
 
         {loading && <p style={{ color: 'var(--t-text-muted)' }}>Загрузка...</p>}
 
-        <FitToWidth style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(160px, 1fr))', gap: '10px', minWidth: '1120px' }}>
-            {WEEKDAYS.map((weekday, dow) => {
-              const dayTemplates = templates.filter(t => t.day_of_week === dow)
-              const isToday = dow === todayDow
+        {(() => {
+          const dayCards = WEEKDAYS.map((weekday, dow) => {
+            const dayTemplates = templates.filter(t => t.day_of_week === dow)
+            const isToday = dow === todayDow
 
-              return (
-                <div key={dow} style={{
-                  background: 'var(--t-card)', border: `1px solid ${isToday ? ACCENT : 'var(--t-border)'}`,
-                  borderRadius: '12px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px',
-                }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? ACCENT : 'var(--t-text)', textAlign: 'center' }}>
-                    {WEEKDAYS_SHORT[dow]}
-                  </div>
-
-                  <button onClick={() => openAddForm(dow)} style={{ ...accentButtonStyle, fontSize: '11px', padding: '5px 8px' }}>+ Добавить</button>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {dayTemplates.map(tpl => {
-                      const startDateStr = toISODateStr(tpl.start_date)
-                      const endDateStr = tpl.end_date ? toISODateStr(tpl.end_date) : null
-                      const isUpcoming = startDateStr > todayISO()
-                      const isEnding = endDateStr !== null
-                      return (
-                        <div
-                          key={tpl.id}
-                          onClick={() => openEditForm(tpl)}
-                          style={{
-                            position: 'relative', padding: '8px', background: 'var(--t-bg)',
-                            border: `2px solid ${ACCENT}`, borderRadius: '8px', textAlign: 'center', cursor: 'pointer',
-                          }}
-                        >
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDelete(tpl.id) }}
-                            style={{ position: 'absolute', top: '2px', right: '6px', background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '12px', padding: 0 }}
-                          >
-                            ✕
-                          </button>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 600, fontSize: '12px' }}>
-                            <span>{formatTimeRange(tpl.time, tpl.duration_minutes)}</span>
-                            {tpl.subject && <SubjectIcon subject={tpl.subject} size={13} />}
-                          </div>
-                          <div style={{ color: 'var(--t-text-secondary)', fontSize: '11px', marginTop: '3px' }}>{tpl.student_name}</div>
-                          {(isUpcoming || isEnding) && (
-                            <div style={{ color: ACCENT, fontSize: '10px', marginTop: '3px' }}>
-                              {isUpcoming && `с ${formatDateRu(startDateStr)}`}
-                              {isUpcoming && isEnding && ' · '}
-                              {isEnding && `до ${formatDateRu(endDateStr!)}`}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
+            return (
+              <div key={dow} style={{
+                background: 'var(--t-card)', border: `1px solid ${isToday ? ACCENT : 'var(--t-border)'}`,
+                borderRadius: '12px', padding: narrow ? '14px' : '10px', display: 'flex', flexDirection: 'column',
+                gap: '8px', width: '100%',
+              }}>
+                <div style={{ fontWeight: 600, fontSize: narrow ? '15px' : '13px', color: isToday ? ACCENT : 'var(--t-text)', textAlign: narrow ? 'left' : 'center' }}>
+                  {WEEKDAYS_SHORT[dow]}
                 </div>
-              )
-            })}
-          </div>
-        </FitToWidth>
+
+                <button onClick={() => openAddForm(dow)} style={{ ...accentButtonStyle, fontSize: narrow ? '13px' : '11px', padding: narrow ? '8px' : '5px 8px' }}>+ Добавить</button>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? '10px' : '6px' }}>
+                  {dayTemplates.map(tpl => (
+                    <TemplateCard
+                      key={tpl.id}
+                      tpl={tpl}
+                      narrow={narrow}
+                      onClick={() => openEditForm(tpl)}
+                      onDelete={e => { e.stopPropagation(); handleDelete(tpl.id) }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })
+
+          return narrow ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '1.5rem' }}>
+              {dayCards}
+            </div>
+          ) : (
+            <FitToWidth style={{ marginBottom: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(160px, 1fr))', gap: '10px', minWidth: '1120px' }}>
+                {dayCards}
+              </div>
+            </FitToWidth>
+          )
+        })()}
 
         {addingForDay !== null && (
           <div style={{ background: 'var(--t-card)', border: `1px solid ${ACCENT}`, borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
