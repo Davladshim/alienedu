@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { inputStyle, labelStyle, textareaStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle, removeButtonStyle } from '@/components/lesson-blocks/styles'
 import { SubjectPicker, SubjectIcon } from '@/components/subjects'
-import { FitToWidth } from '@/components/FitToWidth'
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 const WEEKDAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -40,29 +39,7 @@ function formatClock(minutes: number): string {
   const m = ((minutes % 60) + 60) % 60
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
-function formatTimeRange(time: string, durationMinutes: number): string {
-  const start = toMinutes(time)
-  return `${formatClock(start)} · ${formatClock(start + Number(durationMinutes || 0))}`
-}
-
 const STATUS_SHORT: Record<string, string> = { scheduled: 'план', completed: 'проведён', cancelled: 'отменён' }
-
-// На телефонах и планшетах в портретной ориентации семь колонок с сеткой
-// расписания, сжатые через FitToWidth до ширины экрана, превращались в
-// нечитаемую мелочь — вместо сжатия на таких экранах показываем дни одной
-// колонкой на всю ширину, а внутри карточки занятия поля идут друг под
-// другом обычным (не уменьшенным) шрифтом
-function useNarrowScreen(breakpoint = 900): boolean {
-  const [narrow, setNarrow] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`)
-    const update = () => setNarrow(mq.matches)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [breakpoint])
-  return narrow
-}
 
 function hasConflict(lesson: any, dayLessons: any[]): boolean {
   if (lesson.status === 'cancelled') return false
@@ -87,14 +64,15 @@ function lessonColor(lesson: any, dayLessons: any[]): string {
   return 'var(--t-success)'
 }
 
-// Карточка одного занятия в календаре — на узких экранах (narrow) поля
-// идут друг под другом обычным шрифтом вместо сжатого центрированного
-// блока, который на телефоне ещё и масштабировался FitToWidth до нечитаемости
-function LessonCard({ lesson, dayLessons, isSelected, narrow, onClick }: {
+// Карточка одного занятия в колонке дня — время начала и конца друг под
+// другом без подписей (просто числа), имя ученика ниже; ссылка на звонок
+// и значок предмета — в верхних углах. Колонки дней всегда в семь штук
+// в ряд (см. ниже) — на узких экранах ряд прокручивается по горизонтали,
+// а не сжимается, чтобы шрифт не становился нечитаемым
+function LessonCard({ lesson, dayLessons, isSelected, onClick }: {
   lesson: any
   dayLessons: any[]
   isSelected: boolean
-  narrow: boolean
   onClick: () => void
 }) {
   const color = lessonColor(lesson, dayLessons)
@@ -104,77 +82,45 @@ function LessonCard({ lesson, dayLessons, isSelected, narrow, onClick }: {
     ? `Пробный${lesson.student_name && lesson.student_name !== 'Пробный урок' ? ` · ${lesson.student_name}` : ''}`
     : lesson.student_name
 
-  const cancelledBadge = lesson.status === 'cancelled' && (
-    <span style={{
-      position: 'absolute', top: narrow ? '10px' : '4px', right: narrow ? '40px' : '6px',
-      fontSize: narrow ? '12px' : '9px', color: 'var(--t-text-muted)',
-    }}>
-      {STATUS_SHORT[lesson.status]}
-    </span>
-  )
-
-  const callLink = !lesson.is_trial && lesson.call_link && (
-    <a
-      href={lesson.call_link}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={e => e.stopPropagation()}
-      title="Перейти по ссылке урока"
-      style={{
-        position: 'absolute', top: narrow ? '12px' : '3px', left: narrow ? '12px' : '5px',
-        color: 'var(--t-accent)', display: 'flex', lineHeight: 0,
-      }}
-    >
-      <svg width={narrow ? 16 : 11} height={narrow ? 16 : 11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-        <path d="M9 15 L15 9" />
-        <path d="M13 6.5 L14.5 5 A4 4 0 0 1 20 10.5 L18.5 12" />
-        <path d="M11 17.5 L9.5 19 A4 4 0 0 1 4 13.5 L5.5 12" />
-      </svg>
-    </a>
-  )
-
-  if (narrow) {
-    return (
-      <div
-        onClick={onClick}
-        style={{
-          position: 'relative', padding: '16px 44px 14px 18px', background: 'var(--t-bg)',
-          border: `2px solid ${color}`, boxShadow: isSelected ? `0 0 0 3px ${color}4D` : 'none',
-          borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
-          opacity: lesson.status === 'completed' ? 0.55 : 1,
-        }}
-      >
-        {cancelledBadge}
-        {callLink}
-        {lesson.subject && (
-          <span style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', lineHeight: 0 }}>
-            <SubjectIcon subject={lesson.subject} size={18} />
-          </span>
-        )}
-        <div style={{ fontWeight: 600, fontSize: '15px' }}>Начало: {formatClock(start)}</div>
-        <div style={{ fontWeight: 600, fontSize: '15px', marginTop: '4px' }}>Конец: {formatClock(end)}</div>
-        <div style={{ color: 'var(--t-text-secondary)', fontSize: '14px', marginTop: '8px' }}>{studentLabel}</div>
-      </div>
-    )
-  }
-
   return (
     <div
       onClick={onClick}
       style={{
-        position: 'relative', padding: '8px', background: 'var(--t-bg)',
+        position: 'relative', padding: '10px 8px', background: 'var(--t-bg)',
         border: `2px solid ${color}`, boxShadow: isSelected ? `0 0 0 3px ${color}4D` : 'none',
         borderRadius: '8px', cursor: 'pointer', textAlign: 'center',
         opacity: lesson.status === 'completed' ? 0.55 : 1,
       }}
     >
-      {cancelledBadge}
-      {callLink}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontWeight: 600, fontSize: '12px' }}>
-        <span>{formatTimeRange(lesson.time, lesson.duration_minutes)}</span>
-        {lesson.subject && <SubjectIcon subject={lesson.subject} size={13} />}
-      </div>
-      <div style={{ color: 'var(--t-text-secondary)', fontSize: '11px', marginTop: '3px' }}>{studentLabel}</div>
+      {lesson.status === 'cancelled' && (
+        <span style={{ position: 'absolute', top: '4px', right: '6px', fontSize: '9px', color: 'var(--t-text-muted)' }}>
+          {STATUS_SHORT[lesson.status]}
+        </span>
+      )}
+      {!lesson.is_trial && lesson.call_link && (
+        <a
+          href={lesson.call_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={e => e.stopPropagation()}
+          title="Перейти по ссылке урока"
+          style={{ position: 'absolute', top: '5px', left: '6px', color: 'var(--t-accent)', display: 'flex', lineHeight: 0 }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+            <path d="M9 15 L15 9" />
+            <path d="M13 6.5 L14.5 5 A4 4 0 0 1 20 10.5 L18.5 12" />
+            <path d="M11 17.5 L9.5 19 A4 4 0 0 1 4 13.5 L5.5 12" />
+          </svg>
+        </a>
+      )}
+      {lesson.subject && (
+        <span style={{ position: 'absolute', top: '5px', right: lesson.status === 'cancelled' ? '32px' : '6px', display: 'flex', lineHeight: 0 }}>
+          <SubjectIcon subject={lesson.subject} size={13} />
+        </span>
+      )}
+      <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '10px' }}>{formatClock(start)}</div>
+      <div style={{ fontWeight: 600, fontSize: '14px', borderTop: '1px solid var(--t-border)', marginTop: '4px', paddingTop: '4px' }}>{formatClock(end)}</div>
+      <div style={{ color: 'var(--t-text-secondary)', fontSize: '13px', marginTop: '6px' }}>{studentLabel}</div>
     </div>
   )
 }
@@ -383,7 +329,6 @@ export default function CalendarPage() {
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
   const today = new Date()
-  const narrow = useNarrowScreen()
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
@@ -446,63 +391,53 @@ export default function CalendarPage() {
 
         {loading && <p style={{ color: 'var(--t-text-muted)' }}>Загрузка...</p>}
 
-        {(() => {
-          const dayCards = days.map((day, i) => {
-            const dateStr = toISODate(day)
-            const dayLessons = lessons.filter(l => String(l.date).slice(0, 10) === dateStr)
-            const isToday = isSameDay(day, today)
+        {/* На узких экранах сетка не сжимается (шрифт не мельчает), а
+            прокручивается по горизонтали — overflow-контейнер вместо FitToWidth */}
+        <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(150px, 1fr))', gap: '10px', minWidth: '1050px' }}>
+            {days.map((day, i) => {
+              const dateStr = toISODate(day)
+              const dayLessons = lessons.filter(l => String(l.date).slice(0, 10) === dateStr)
+              const isToday = isSameDay(day, today)
 
-            return (
-              <div key={dateStr} style={{
-                background: 'var(--t-card)', border: `1px solid ${isToday ? 'var(--t-accent)' : 'var(--t-border)'}`,
-                borderRadius: '12px', padding: narrow ? '14px' : '10px', display: 'flex', flexDirection: 'column',
-                gap: '8px', width: '100%',
-              }}>
-                <div style={{ fontWeight: 600, fontSize: narrow ? '15px' : '13px', color: isToday ? 'var(--t-accent)' : 'var(--t-text)', textAlign: narrow ? 'left' : 'center' }}>
-                  {WEEKDAYS_SHORT[i]}, {day.getDate()} {MONTHS[day.getMonth()].slice(0, 3)}
+              return (
+                <div key={dateStr} style={{
+                  background: 'var(--t-card)', border: `1px solid ${isToday ? 'var(--t-accent)' : 'var(--t-border)'}`,
+                  borderRadius: '12px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px',
+                }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? 'var(--t-accent)' : 'var(--t-text)', textAlign: 'center' }}>
+                    {WEEKDAYS_SHORT[i]}, {day.getDate()} {MONTHS[day.getMonth()].slice(0, 3)}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button onClick={() => openAddForm(dateStr)} style={{ ...smallButtonStyle, flex: 1, fontSize: '11px', padding: '5px 6px' }}>+ Добавить</button>
+                    <button
+                      onClick={() => openTrialForm(dateStr)}
+                      style={{
+                        background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
+                        borderRadius: '8px', fontSize: '11px', padding: '5px 6px', cursor: 'pointer',
+                      }}
+                    >
+                      Пробный
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {dayLessons.map(lesson => (
+                      <LessonCard
+                        key={lesson.id}
+                        lesson={lesson}
+                        dayLessons={dayLessons}
+                        isSelected={editingId === lesson.id}
+                        onClick={() => (editingId === lesson.id ? closePanel() : openEdit(lesson))}
+                      />
+                    ))}
+                  </div>
                 </div>
-
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button onClick={() => openAddForm(dateStr)} style={{ ...smallButtonStyle, flex: 1, fontSize: narrow ? '13px' : '11px', padding: narrow ? '8px 6px' : '5px 6px' }}>+ Добавить</button>
-                  <button
-                    onClick={() => openTrialForm(dateStr)}
-                    style={{
-                      background: 'transparent', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
-                      borderRadius: '8px', fontSize: narrow ? '13px' : '11px', padding: narrow ? '8px 6px' : '5px 6px', cursor: 'pointer',
-                    }}
-                  >
-                    Пробный
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? '10px' : '6px' }}>
-                  {dayLessons.map(lesson => (
-                    <LessonCard
-                      key={lesson.id}
-                      lesson={lesson}
-                      dayLessons={dayLessons}
-                      narrow={narrow}
-                      isSelected={editingId === lesson.id}
-                      onClick={() => (editingId === lesson.id ? closePanel() : openEdit(lesson))}
-                    />
-                  ))}
-                </div>
-              </div>
-            )
-          })
-
-          return narrow ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '1.5rem' }}>
-              {dayCards}
-            </div>
-          ) : (
-            <FitToWidth style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(160px, 1fr))', gap: '10px', minWidth: '1120px' }}>
-                {dayCards}
-              </div>
-            </FitToWidth>
-          )
-        })()}
+              )
+            })}
+          </div>
+        </div>
 
         {(addingForDate || addingTrialForDate || (editingId && editForm)) && (
           <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem' }}>
