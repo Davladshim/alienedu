@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { submitButtonStyle } from '@/components/lesson-blocks/styles'
+import { submitButtonStyle, submitButtonDisabledStyle, inputStyle } from '@/components/lesson-blocks/styles'
 
 function formatMoney(n: any): string {
   const num = Number(n) || 0
@@ -17,11 +17,20 @@ const COUNTER_GROUPS = [
   { key: 'total', label: 'всего', color: 'var(--t-success)' },
 ] as const
 
+// Ключ должника — ученик и семья используют разные id-пространства
+function debtorKey(d: any): string {
+  return d.kind === 'family' ? `family-${d.familyId}` : `student-${d.teacherStudentId}`
+}
+
 export default function FinancePage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [markingId, setMarkingId] = useState<number | null>(null)
+
+  const [payingKey, setPayingKey] = useState<string | null>(null)
+  const [payAmount, setPayAmount] = useState('')
+  const [payDescription, setPayDescription] = useState('')
+  const [paying, setPaying] = useState(false)
 
   function load() {
     fetch('/api/finance/overview')
@@ -44,14 +53,32 @@ export default function FinancePage() {
 
   useEffect(() => { load() }, [])
 
-  async function markPaid(id: number) {
-    setMarkingId(id)
-    await fetch(`/api/schedule/${id}`, {
-      method: 'PUT',
+  function togglePay(d: any) {
+    const key = debtorKey(d)
+    setPayingKey(payingKey === key ? null : key)
+    setPayAmount('')
+    setPayDescription('')
+  }
+
+  // Дублирует "Пополнить баланс" из /teacher/students — независимая копия,
+  // которая просто зовёт тот же POST /api/payments, что и там. Ничего не
+  // блокирует и не пересекается с формой на странице учеников — это два
+  // равноправных места, откуда удобно пополнять один и тот же баланс
+  async function submitPay(d: any) {
+    if (!payAmount || Number.isNaN(Number(payAmount))) return
+    setPaying(true)
+    await fetch('/api/payments', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ is_paid: true }),
+      body: JSON.stringify({
+        teacher_student_id: d.kind === 'student' ? d.teacherStudentId : undefined,
+        family_id: d.kind === 'family' ? d.familyId : undefined,
+        amount: Number(payAmount),
+        description: payDescription || null,
+      }),
     })
-    setMarkingId(null)
+    setPaying(false)
+    setPayingKey(null)
     load()
   }
 
@@ -114,30 +141,45 @@ export default function FinancePage() {
 
             <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '15px' }}>Нужно напомнить об оплате</div>
-                {data.unpaidLessons.length > 0 && (
-                  <span style={{ color: 'var(--t-danger-soft)', fontSize: '14px' }}>Итого: {formatMoney(data.unpaidTotal)} ₽</span>
+                <div style={{ fontWeight: 600, fontSize: '15px' }}>Должники</div>
+                {data.debtors.length > 0 && (
+                  <span style={{ color: 'var(--t-danger-soft)', fontSize: '14px' }}>Итого: {formatMoney(data.debtTotal)} ₽</span>
                 )}
               </div>
 
-              {data.unpaidLessons.length === 0 && (
-                <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Все проведённые занятия оплачены 🎉</div>
+              {data.debtors.length === 0 && (
+                <div style={{ color: 'var(--t-text-muted)', fontSize: '14px' }}>Должников нет 🎉</div>
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {data.unpaidLessons.map((l: any) => (
-                  <div key={l.id} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '10px 14px', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '10px',
-                  }}>
-                    <div style={{ fontSize: '14px' }}>
-                      {l.student_name} <span style={{ color: 'var(--t-text-muted)' }}>· {new Date(l.date).toLocaleDateString('ru-RU')} {l.time} · {formatMoney(l.price)} ₽</span>
+                {data.debtors.map((d: any) => {
+                  const key = debtorKey(d)
+                  const isPaying = payingKey === key
+                  return (
+                    <div key={key} style={{ background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '10px', padding: '10px 14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ fontSize: '14px' }}>
+                          {d.name}{d.kind === 'family' && <span style={{ color: 'var(--t-text-muted)' }}> · семья</span>}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ color: 'var(--t-danger-soft)', fontSize: '14px', whiteSpace: 'nowrap' }}>{formatMoney(d.balance)} ₽</span>
+                          <button onClick={() => togglePay(d)} style={{ ...submitButtonStyle, padding: '6px 14px', fontSize: '12px' }}>
+                            💰 Пополнить баланс
+                          </button>
+                        </div>
+                      </div>
+                      {isPaying && (
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--t-border)' }}>
+                          <input type="number" value={payAmount} onChange={e => setPayAmount(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="Сумма" />
+                          <input value={payDescription} onChange={e => setPayDescription(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '160px' }} placeholder="Комментарий (необязательно)" />
+                          <button onClick={() => submitPay(d)} disabled={paying || !payAmount} style={paying || !payAmount ? submitButtonDisabledStyle : submitButtonStyle}>
+                            {paying ? 'Сохраняем...' : '+ Оплата'}
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <button onClick={() => markPaid(l.id)} disabled={markingId === l.id} style={{ ...submitButtonStyle, padding: '6px 14px', fontSize: '12px' }}>
-                      {markingId === l.id ? '...' : '💰 Отметить оплаченным'}
-                    </button>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </>

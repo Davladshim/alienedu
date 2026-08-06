@@ -1,12 +1,27 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { inputStyle, labelStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle } from '@/components/lesson-blocks/styles'
+import { inputStyle, labelStyle, submitButtonStyle, submitButtonDisabledStyle, smallButtonStyle, removeButtonStyle } from '@/components/lesson-blocks/styles'
 import { PlanGateModal } from '@/components/PlanGateModal'
 
 function formatMoney(n: any): string {
   const num = Number(n) || 0
   return num.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+// Сетка по 3 карточки в ряд — но на портретных телефонах/планшетах
+// (<=900px) карточки слишком узкие даже для двух колонок, поэтому там
+// список остаётся одной колонкой, как раньше
+function useColumnCount(breakpoint = 900): number {
+  const [cols, setCols] = useState(3)
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`)
+    const update = () => setCols(mq.matches ? 1 : 3)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [breakpoint])
+  return cols
 }
 
 export default function StudentsPage() {
@@ -266,6 +281,7 @@ export default function StudentsPage() {
   }
 
   const archivedCount = students.filter(s => s.archived_at).length
+  const cols = useColumnCount()
 
   async function handleGateCodeRedeemed() {
     fetch('/api/me').then(r => r.json()).then(data => setPlan(data.plan === 'pro' ? 'pro' : 'free'))
@@ -498,35 +514,60 @@ export default function StudentsPage() {
                 )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {members.map(student => renderStudentCard(student))}
+                  {members.map(student => (
+                    <div key={student.id}>
+                      {renderStudentHeader(student)}
+                      {expandedId === student.id && renderStudentDetail(student)}
+                    </div>
+                  ))}
                 </div>
               </div>
             )
           })}
 
-          {students.filter(s => !s.family_id).map(student => renderStudentCard(student))}
+          {(() => {
+            const standalone = students.filter(s => !s.family_id)
+            const rows: any[][] = []
+            for (let i = 0; i < standalone.length; i += cols) rows.push(standalone.slice(i, i + cols))
+            return rows.map((row, ri) => {
+              const openStudent = row.find(s => s.id === expandedId)
+              return (
+                <div key={ri}>
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '10px' }}>
+                    {row.map(student => renderStudentHeader(student))}
+                  </div>
+                  {openStudent && (
+                    <div style={{ marginTop: '10px' }}>
+                      {renderStudentDetail(openStudent)}
+                    </div>
+                  )}
+                </div>
+              )
+            })
+          })()}
         </div>
 
       </div>
     </div>
   )
 
-  function renderStudentCard(student: any) {
+  // Компактная карточка-заголовок — только то, что нужно для узнавания
+  // ученика и клика для разворачивания. Кнопки "Убрать"/"Привязать аккаунт"
+  // теперь внутри развёрнутой карточки (renderStudentDetail), чтобы здесь
+  // оставалось больше места для ФИО и статуса
+  function renderStudentHeader(student: any) {
     if (student.archived_at) {
       return (
         <div key={student.id} style={{
           background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px',
-          padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          opacity: 0.5,
+          padding: '14px 18px', opacity: 0.5,
         }}>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: '15px' }}>{student.full_name}</div>
-            <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
-              {student.is_placeholder ? 'ждём регистрацию' : `@${student.login}`}
-            </div>
+          <div style={{ fontWeight: 600, fontSize: '15px' }}>{student.full_name}</div>
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
+            {student.is_placeholder ? 'ждём регистрацию' : `@${student.login}`}
           </div>
           <span style={{
-            fontSize: '11px', padding: '3px 10px', borderRadius: '20px',
+            display: 'inline-block', marginTop: '8px', fontSize: '11px', padding: '3px 10px', borderRadius: '20px',
             background: 'rgba(107,114,128,0.15)', color: 'var(--t-text-muted)', whiteSpace: 'nowrap',
           }}>
             📦 В архиве
@@ -536,152 +577,155 @@ export default function StudentsPage() {
     }
     const isOpen = expandedId === student.id
     return (
-      <div key={student.id} style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px' }}>
-                <div
-                  onClick={() => openRow(student)}
-                  style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', cursor: 'pointer' }}
-                >
-                  <div style={{ minWidth: 0, flex: '1 1 160px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '15px' }}>
-                      {student.full_name}{' '}
-                      {student.is_placeholder && (
-                        <span
-                          title="Карточку завёл репетитор — ученик ещё не зарегистрировался и не привязан к своему аккаунту"
-                          style={{ color: 'var(--t-warning)', fontSize: '13px', cursor: 'help' }}
-                        >
-                          ⏳
-                        </span>
-                      )}
-                      {savedId === student.id && (
-                        <span style={{ color: 'var(--t-success)', fontSize: '12px', fontWeight: 500, transition: 'opacity 0.8s', opacity: savedFading ? 0 : 1 }}>
-                          {' '}✓ Сохранено
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
-                      {student.is_placeholder ? 'ждём регистрацию' : `@${student.login}`}{student.family_name ? ` · семья: ${student.family_name}` : ''}
-                      {student.display_name && ` · настоящее имя: ${student.account_name}`}
-                      {Number(student.assigned_count) > 0 && ` · уроков пройдено: ${student.completed_count}/${student.assigned_count}`}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
-                    <span style={{ fontSize: '14px', whiteSpace: 'nowrap', color: Number(student.balance) < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
-                      {formatMoney(student.balance)} ₽
-                    </span>
-                    {student.is_placeholder && (
-                      <button
-                        onClick={e => { e.stopPropagation(); openLinkForm(student.id) }}
-                        style={{ background: 'none', border: '1px solid var(--t-accent)', color: 'var(--t-accent)', cursor: 'pointer', fontSize: '12px', borderRadius: '6px', padding: '4px 10px' }}
-                      >
-                        Привязать аккаунт
-                      </button>
-                    )}
-                    <button
-                      onClick={e => { e.stopPropagation(); handleRemove(student.id) }}
-                      style={{ background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '13px' }}
-                    >
-                      Убрать
-                    </button>
-                  </div>
-                </div>
+      <div
+        key={student.id}
+        onClick={() => openRow(student)}
+        style={{
+          background: 'var(--t-card)', border: `2px solid ${isOpen ? 'var(--t-accent)' : 'var(--t-border)'}`,
+          borderRadius: '12px', padding: '14px 18px', cursor: 'pointer',
+        }}
+      >
+        <div style={{ fontWeight: 600, fontSize: '15px' }}>
+          {student.full_name}{' '}
+          {student.is_placeholder && (
+            <span
+              title="Карточку завёл репетитор — ученик ещё не зарегистрировался и не привязан к своему аккаунту"
+              style={{ color: 'var(--t-warning)', fontSize: '13px', cursor: 'help' }}
+            >
+              ⏳
+            </span>
+          )}
+          {savedId === student.id && (
+            <span style={{ color: 'var(--t-success)', fontSize: '12px', fontWeight: 500, transition: 'opacity 0.8s', opacity: savedFading ? 0 : 1 }}>
+              {' '}✓ Сохранено
+            </span>
+          )}
+        </div>
+        <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
+          {student.is_placeholder ? 'ждём регистрацию' : `@${student.login}`}{student.family_name ? ` · семья: ${student.family_name}` : ''}
+          {student.display_name && ` · настоящее имя: ${student.account_name}`}
+          {Number(student.assigned_count) > 0 && ` · уроков пройдено: ${student.completed_count}/${student.assigned_count}`}
+        </div>
+        <div style={{ marginTop: '8px', fontSize: '14px', whiteSpace: 'nowrap', color: Number(student.balance) < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
+          {formatMoney(student.balance)} ₽
+        </div>
+      </div>
+    )
+  }
 
-                {linkingId === student.id && (
-                  <div style={{ borderTop: '1px solid var(--t-border)', padding: '14px 18px', display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: '180px' }}>
-                      <label style={labelStyle}>Логин реального аккаунта ученика</label>
-                      <input
-                        value={linkLogin}
-                        onChange={e => setLinkLogin(e.target.value)}
-                        style={inputStyle}
-                        placeholder="Логин, который ученик указал при регистрации"
-                      />
-                    </div>
-                    <button
-                      onClick={() => submitLink(student.id)}
-                      disabled={linking || !linkLogin.trim()}
-                      style={linking || !linkLogin.trim() ? submitButtonDisabledStyle : submitButtonStyle}
-                    >
-                      {linking ? 'Привязываем...' : 'Привязать'}
-                    </button>
-                    {linkError && <p style={{ color: 'var(--t-danger)', fontSize: '13px', width: '100%', margin: 0 }}>{linkError}</p>}
+  // Развёрнутая карточка — настройки, привязка аккаунта, удаление, оплата
+  // и история. Появляется на всю ширину под строкой, где стоит карточка
+  // открытого ученика (см. вызовы renderStudentDetail выше)
+  function renderStudentDetail(student: any) {
+    return (
+      <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-accent)', borderRadius: '12px', padding: '14px 18px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
+          <div style={{ minWidth: '200px' }}>
+            <label style={labelStyle}>Отображаемое имя (видно только тебе)</label>
+            <input
+              type="text" value={displayNameDraft} onChange={e => setDisplayNameDraft(e.target.value)}
+              style={inputStyle} placeholder={student.account_name || student.full_name}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Стоимость занятия, ₽</label>
+            <input type="number" value={priceDraft} onChange={e => setPriceDraft(e.target.value)} style={{ ...inputStyle, width: '120px' }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Класс</label>
+            <input type="number" value={gradeDraft} onChange={e => setGradeDraft(e.target.value)} style={{ ...inputStyle, width: '80px' }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Имя родителя</label>
+            <input type="text" value={parentNameDraft} onChange={e => setParentNameDraft(e.target.value)} style={{ ...inputStyle, width: '160px' }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Семья</label>
+            <select value={familyDraft} onChange={e => setFamilyDraft(e.target.value)} style={inputStyle}>
+              <option value="">Без семьи</option>
+              {families.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: 1, minWidth: '220px' }}>
+            <label style={labelStyle}>Ссылка на звонок (необязательно)</label>
+            <input type="text" value={callLinkDraft} onChange={e => setCallLinkDraft(e.target.value)} style={inputStyle} placeholder="Zoom / Телемост / Telegram и т.д." />
+          </div>
+          <div style={{ alignSelf: 'flex-end' }}>
+            <button onClick={() => saveRowSettings(student.id)} disabled={savingRow} style={savingRow ? submitButtonDisabledStyle : smallButtonStyle}>
+              Сохранить
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid var(--t-border)' }}>
+          {student.is_placeholder && (
+            <button
+              onClick={() => openLinkForm(student.id)}
+              style={{ background: 'none', border: '1px solid var(--t-accent)', color: 'var(--t-accent)', cursor: 'pointer', fontSize: '13px', borderRadius: '8px', padding: '6px 14px' }}
+            >
+              {linkingId === student.id ? 'Отменить привязку' : 'Привязать аккаунт'}
+            </button>
+          )}
+          <button onClick={() => handleRemove(student.id)} style={removeButtonStyle}>
+            Убрать ученика из списка
+          </button>
+        </div>
+
+        {linkingId === student.id && (
+          <div style={{ background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '10px', padding: '14px', marginBottom: '14px', display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: '180px' }}>
+              <label style={labelStyle}>Логин реального аккаунта ученика</label>
+              <input
+                value={linkLogin}
+                onChange={e => setLinkLogin(e.target.value)}
+                style={inputStyle}
+                placeholder="Логин, который ученик указал при регистрации"
+              />
+            </div>
+            <button
+              onClick={() => submitLink(student.id)}
+              disabled={linking || !linkLogin.trim()}
+              style={linking || !linkLogin.trim() ? submitButtonDisabledStyle : submitButtonStyle}
+            >
+              {linking ? 'Привязываем...' : 'Привязать'}
+            </button>
+            {linkError && <p style={{ color: 'var(--t-danger)', fontSize: '13px', width: '100%', margin: 0 }}>{linkError}</p>}
+          </div>
+        )}
+
+        {student.family_id ? (
+          <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>
+            Баланс пополняется на уровне семьи — кнопка «Пополнить баланс» в шапке семьи выше.
+            Здесь виден только личный долг ученика за уже проведённые занятия.
+          </div>
+        ) : (
+          <>
+            <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '8px', textTransform: 'uppercase' }}>Пополнить баланс</div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+              <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="Сумма" />
+              <input value={paymentDescription} onChange={e => setPaymentDescription(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '160px' }} placeholder="Комментарий (необязательно)" />
+              <button onClick={() => submitPayment(student.id)} disabled={savingRow || !paymentAmount} style={savingRow || !paymentAmount ? submitButtonDisabledStyle : submitButtonStyle}>
+                + Оплата
+              </button>
+            </div>
+
+            {history === null ? (
+              <button onClick={() => loadHistory(student.id)} style={{ background: 'none', border: 'none', color: 'var(--t-accent)', cursor: 'pointer', fontSize: '13px', padding: 0 }}>
+                Показать историю платежей
+              </button>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                {history.length === 0 && <div style={{ color: 'var(--t-text-faint)', fontSize: '13px' }}>Платежей ещё не было</div>}
+                {history.map(p => (
+                  <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--t-text-secondary)' }}>
+                    <span>{p.description || 'Пополнение'} · {new Date(p.payment_date).toLocaleDateString('ru-RU')}</span>
+                    <span style={{ color: 'var(--t-success)' }}>+{formatMoney(p.amount)} ₽</span>
                   </div>
-                )}
-
-                {isOpen && (
-                  <div style={{ borderTop: '1px solid var(--t-border)', padding: '14px 18px' }}>
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
-                      <div style={{ minWidth: '200px' }}>
-                        <label style={labelStyle}>Отображаемое имя (видно только тебе)</label>
-                        <input
-                          type="text" value={displayNameDraft} onChange={e => setDisplayNameDraft(e.target.value)}
-                          style={inputStyle} placeholder={student.account_name || student.full_name}
-                        />
-                      </div>
-                      <div>
-                        <label style={labelStyle}>Стоимость занятия, ₽</label>
-                        <input type="number" value={priceDraft} onChange={e => setPriceDraft(e.target.value)} style={{ ...inputStyle, width: '120px' }} />
-                      </div>
-                      <div>
-                        <label style={labelStyle}>Класс</label>
-                        <input type="number" value={gradeDraft} onChange={e => setGradeDraft(e.target.value)} style={{ ...inputStyle, width: '80px' }} />
-                      </div>
-                      <div>
-                        <label style={labelStyle}>Имя родителя</label>
-                        <input type="text" value={parentNameDraft} onChange={e => setParentNameDraft(e.target.value)} style={{ ...inputStyle, width: '160px' }} />
-                      </div>
-                      <div>
-                        <label style={labelStyle}>Семья</label>
-                        <select value={familyDraft} onChange={e => setFamilyDraft(e.target.value)} style={inputStyle}>
-                          <option value="">Без семьи</option>
-                          {families.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                        </select>
-                      </div>
-                      <div style={{ flex: 1, minWidth: '220px' }}>
-                        <label style={labelStyle}>Ссылка на звонок (необязательно)</label>
-                        <input type="text" value={callLinkDraft} onChange={e => setCallLinkDraft(e.target.value)} style={inputStyle} placeholder="Zoom / Телемост / Telegram и т.д." />
-                      </div>
-                      <div style={{ alignSelf: 'flex-end' }}>
-                        <button onClick={() => saveRowSettings(student.id)} disabled={savingRow} style={savingRow ? submitButtonDisabledStyle : smallButtonStyle}>
-                          Сохранить
-                        </button>
-                      </div>
-                    </div>
-
-                    {student.family_id ? (
-                      <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>
-                        Баланс пополняется на уровне семьи — кнопка «Пополнить баланс» в шапке семьи выше.
-                        Здесь виден только личный долг ученика за уже проведённые занятия.
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginBottom: '8px', textTransform: 'uppercase' }}>Пополнить баланс</div>
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                          <input type="number" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} style={{ ...inputStyle, width: '120px' }} placeholder="Сумма" />
-                          <input value={paymentDescription} onChange={e => setPaymentDescription(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: '160px' }} placeholder="Комментарий (необязательно)" />
-                          <button onClick={() => submitPayment(student.id)} disabled={savingRow || !paymentAmount} style={savingRow || !paymentAmount ? submitButtonDisabledStyle : submitButtonStyle}>
-                            + Оплата
-                          </button>
-                        </div>
-
-                        {history === null ? (
-                          <button onClick={() => loadHistory(student.id)} style={{ background: 'none', border: 'none', color: 'var(--t-accent)', cursor: 'pointer', fontSize: '13px', padding: 0 }}>
-                            Показать историю платежей
-                          </button>
-                        ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
-                            {history.length === 0 && <div style={{ color: 'var(--t-text-faint)', fontSize: '13px' }}>Платежей ещё не было</div>}
-                            {history.map(p => (
-                              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--t-text-secondary)' }}>
-                                <span>{p.description || 'Пополнение'} · {new Date(p.payment_date).toLocaleDateString('ru-RU')}</span>
-                                <span style={{ color: 'var(--t-success)' }}>+{formatMoney(p.amount)} ₽</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     )
   }

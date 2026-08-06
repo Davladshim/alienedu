@@ -50,15 +50,37 @@ export async function GET(request: NextRequest) {
       [decoded.id]
     )
 
-    const unpaid = await query(
-      `SELECT sl.id, sl.date, sl.time, sl.price, COALESCE(ts.display_name, u.full_name) as student_name
-       FROM schedule_lessons sl
-       JOIN users u ON u.id = sl.student_id
-       LEFT JOIN teacher_students ts ON ts.teacher_id = sl.teacher_id AND ts.student_id = sl.student_id
-       WHERE sl.teacher_id = $1 AND sl.status = 'completed' AND sl.is_paid = false AND sl.price IS NOT NULL
-       ORDER BY sl.date`,
+    // "Напомнить об оплате" раньше строился на schedule_lessons.is_paid, но
+    // этот флаг выставляется в true автоматически при списании урока (см.
+    // autoCompleteDueLessons) независимо от того, ушёл ли ученик в минус —
+    // is_paid здесь означает "списание обработано", а не "долгов нет". Из-за
+    // этого список почти всегда был пуст, даже если у учеников реальный
+    // долг. Показываем вместо этого настоящих должников — по актуальному
+    // балансу (teacher_students.balance для учеников без семьи, и общий
+    // net-баланс семьи — пул минус долги её учеников, см. Патч 7)
+    const studentDebtors = await query(
+      `SELECT ts.id AS teacher_student_id, COALESCE(ts.display_name, u.full_name) AS name, ts.balance
+       FROM teacher_students ts
+       JOIN users u ON u.id = ts.student_id
+       WHERE ts.teacher_id = $1 AND ts.family_id IS NULL AND ts.archived_at IS NULL AND ts.balance < 0
+       ORDER BY ts.balance ASC`,
       [decoded.id]
     )
+    const familyDebtors = await query(
+      `SELECT f.id AS family_id, f.name, f.balance + COALESCE(SUM(ts.balance), 0) AS balance
+       FROM families f
+       LEFT JOIN teacher_students ts ON ts.family_id = f.id
+       WHERE f.teacher_id = $1
+       GROUP BY f.id
+       HAVING f.balance + COALESCE(SUM(ts.balance), 0) < 0
+       ORDER BY 2 ASC`,
+      [decoded.id]
+    )
+    const debtors = [
+      ...studentDebtors.rows.map(r => ({ kind: 'student' as const, teacherStudentId: r.teacher_student_id, name: r.name, balance: Number(r.balance) })),
+      ...familyDebtors.rows.map(r => ({ kind: 'family' as const, familyId: r.family_id, name: r.name, balance: Number(r.balance) })),
+    ].sort((a, b) => a.balance - b.balance)
+    const debtTotal = debtors.reduce((sum, d) => sum + d.balance, 0)
 
     // Личный баланс учеников без семьи (может быть и +, и -) + долги учеников
     // в семьях (только <= 0) + общий пул семей (только >= 0)
@@ -87,8 +109,8 @@ export async function GET(request: NextRequest) {
         cancelledMoney: s.cancelled_money,
         totalMoney: s.total_money,
       },
-      unpaidLessons: unpaid.rows,
-      unpaidTotal: unpaid.rows.reduce((sum, r) => sum + Number(r.price || 0), 0),
+      debtors,
+      debtTotal,
       totalBalance: Number(studentsBalance.rows[0].total) + Number(familyBalance.rows[0].total),
     })
   } catch (error) {
