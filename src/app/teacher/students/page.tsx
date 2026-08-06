@@ -487,7 +487,7 @@ export default function StudentsPage() {
             background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px',
             padding: '3rem', textAlign: 'center', color: 'var(--t-text-muted)',
           }}>
-            Пока нет учеников — добавь по логину выше, если ученик уже зарегистрирован,
+            Пока нет учеников — добавьте по логину выше, если ученик уже зарегистрирован,
             <br />
             или просто по имени, если ещё нет — аккаунт можно будет привязать позже.
           </div>
@@ -610,9 +610,12 @@ export default function StudentsPage() {
           )}
         </div>
         <div style={{ color: 'var(--t-text-muted)', fontSize: '13px', marginTop: '2px' }}>
-          {student.is_placeholder ? 'ждём регистрацию' : `@${student.login}`}{student.family_name ? ` · семья: ${student.family_name}` : ''}
-          {student.display_name && ` · настоящее имя: ${student.account_name}`}
-          {Number(student.assigned_count) > 0 && ` · уроков пройдено: ${student.completed_count}/${student.assigned_count}`}
+          {[
+            student.is_placeholder ? null : `@${student.login}`,
+            student.family_name ? `семья: ${student.family_name}` : null,
+            student.display_name ? `настоящее имя: ${student.account_name}` : null,
+            Number(student.assigned_count) > 0 ? `уроков пройдено: ${student.completed_count}/${student.assigned_count}` : null,
+          ].filter(Boolean).join(' · ')}
         </div>
         <div style={{ marginTop: '8px', fontSize: '14px', whiteSpace: 'nowrap', color: Number(student.balance) < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
           {formatMoney(student.balance)} ₽
@@ -634,7 +637,7 @@ export default function StudentsPage() {
       <div style={{ background: 'var(--t-card)', border: '1px solid var(--t-accent)', borderRadius: '12px', padding: '14px 18px' }}>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
           <div style={{ minWidth: '200px' }}>
-            <label style={labelStyle}>Отображаемое имя (видно только тебе)</label>
+            <label style={labelStyle}>Отображаемое имя</label>
             <input
               type="text" value={displayNameDraft} onChange={e => setDisplayNameDraft(e.target.value)}
               style={inputStyle} placeholder={student.account_name || student.full_name}
@@ -694,7 +697,7 @@ export default function StudentsPage() {
         {linkingId === student.id && (
           <div style={{ background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '10px', padding: '14px', marginBottom: '14px', display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '180px' }}>
-              <label style={labelStyle}>Логин реального аккаунта ученика</label>
+              <label style={labelStyle}>Логин аккаунта ученика</label>
               <input
                 value={linkLogin}
                 onChange={e => setLinkLogin(e.target.value)}
@@ -716,7 +719,7 @@ export default function StudentsPage() {
         {student.family_id ? (
           <div style={{ color: 'var(--t-text-muted)', fontSize: '13px' }}>
             Баланс пополняется на уровне семьи — кнопка «Пополнить баланс» в шапке семьи выше.
-            Здесь виден только личный долг ученика за уже проведённые занятия.
+            Здесь виден только личный баланс ученика за уже проведённые занятия.
           </div>
         ) : (
           <>
