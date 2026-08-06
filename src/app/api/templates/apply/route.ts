@@ -47,11 +47,23 @@ export async function POST(request: NextRequest) {
     const todayStr = toISODate(today)
     const currentWeekStart = startOfWeek(today)
 
+    // weekCount — верхняя граница числа итераций на каждый шаблон. Раньше
+    // недели считались календарно от понедельника ТЕКУЩЕЙ недели: если день
+    // недели шаблона в этой неделе уже прошёл (например, сегодня четверг,
+    // а урок по понедельникам), эта неделя вхолостую "съедала" одну из N
+    // недель, не породив ни одного занятия — на выходе получалось N-1
+    // занятие вместо N. Теперь для каждого шаблона первое занятие ищется
+    // от сегодняшнего дня (а не от начала недели), поэтому такой недостачи
+    // больше не бывает — см. цикл ниже
     let weekCount: number
     if (endDate) {
       const end = new Date(`${endDate}T00:00:00`)
       const diffDays = Math.ceil((end.getTime() - currentWeekStart.getTime()) / (1000 * 60 * 60 * 24))
-      weekCount = Math.min(Math.max(Math.ceil((diffDays + 1) / 7), 1), 120)
+      // +1 неделя про запас: якорь первого занятия шаблона теперь считается
+      // от today, а не от currentWeekStart, и может уйти на до 13 дней позже
+      // currentWeekStart — без запаса можно не дотянуть до endDate ровно на
+      // одно занятие. Настоящая отсечка всё равно ниже, по самой дате endDate
+      weekCount = Math.min(Math.max(Math.ceil((diffDays + 1) / 7) + 1, 1), 121)
     } else {
       weekCount = Math.min(Math.max(Number(weeks) || 4, 1), 120)
     }
@@ -65,16 +77,23 @@ export async function POST(request: NextRequest) {
     let created = 0
     let skipped = 0
 
-    for (let w = 0; w < weekCount; w++) {
-      const weekStart = addDays(currentWeekStart, w * 7)
-      for (const tpl of templates) {
-        const targetDate = addDays(weekStart, tpl.day_of_week)
-        const dateStr = toISODate(targetDate)
-        if (dateStr < todayStr) continue
+    for (const tpl of templates) {
+      const startDateStr = toISODateStr(tpl.start_date)
+      const effectiveStartStr = startDateStr > todayStr ? startDateStr : todayStr
+      const effectiveStart = new Date(`${effectiveStartStr}T00:00:00`)
+      const effectiveStartDow = (effectiveStart.getDay() + 6) % 7 // 0=понедельник, как и tpl.day_of_week
+      const daysUntilFirst = (tpl.day_of_week - effectiveStartDow + 7) % 7
+      const firstOccurrence = addDays(effectiveStart, daysUntilFirst)
 
-        const startDateStr = toISODateStr(tpl.start_date)
-        if (dateStr < startDateStr) continue
-        if (tpl.end_date && dateStr > toISODateStr(tpl.end_date)) continue
+      for (let w = 0; w < weekCount; w++) {
+        const targetDate = addDays(firstOccurrence, w * 7)
+        const dateStr = toISODate(targetDate)
+
+        // Даты только растут с каждой итерацией — как только упёрлись
+        // в end_date шаблона (если задан) или в дедлайн из endDate пресета,
+        // дальше для этого шаблона смысла продолжать нет
+        if (tpl.end_date && dateStr > toISODateStr(tpl.end_date)) break
+        if (endDate && dateStr > endDate) break
 
         // Тот же слот уже занят — либо ровно на этом месте (неперенесённый урок или
         // конфликт с чем-то ещё), либо этот же шаблон уже породил занятие на эту дату,
