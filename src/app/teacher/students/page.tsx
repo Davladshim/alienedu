@@ -394,15 +394,16 @@ export default function StudentsPage() {
           {families.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
               {families.map(f => {
-                const balance = Number(f.balance)
+                const pool = Number(f.balance)
+                const netBalance = Number(f.net_balance)
                 const avgPrice = Number(f.avg_lesson_price)
-                const available = balance > 0 && avgPrice > 0 ? Math.floor(balance / avgPrice) : 0
+                const available = pool > 0 && avgPrice > 0 ? Math.floor(pool / avgPrice) : 0
                 return (
                   <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '6px 0' }}>
                     <span>{f.name}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ whiteSpace: 'nowrap', color: balance < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
-                        {formatMoney(f.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
+                      <span style={{ whiteSpace: 'nowrap', color: netBalance < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
+                        {formatMoney(netBalance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
                       </span>
                       <button
                         onClick={() => handleDeleteFamily(f.id)}
@@ -443,16 +444,17 @@ export default function StudentsPage() {
           {families.map(family => {
             const members = students.filter(s => s.family_id === family.id)
             if (members.length === 0) return null
-            const balance = Number(family.balance)
+            const pool = Number(family.balance)
+            const netBalance = Number(family.net_balance)
             const avgPrice = Number(family.avg_lesson_price)
-            const available = balance > 0 && avgPrice > 0 ? Math.floor(balance / avgPrice) : 0
+            const available = pool > 0 && avgPrice > 0 ? Math.floor(pool / avgPrice) : 0
             return (
               <div key={`family-${family.id}`} style={{ border: '1px solid var(--t-accent)', borderRadius: '16px', padding: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px 10px', flexWrap: 'wrap', gap: '8px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--t-accent)' }}>👪 {family.name}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '13px', whiteSpace: 'nowrap', color: balance < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
-                      {formatMoney(family.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
+                    <span style={{ fontSize: '13px', whiteSpace: 'nowrap', color: netBalance < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
+                      {formatMoney(netBalance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
                     </span>
                     <button
                       onClick={() => openFamilyPayment(family.id)}

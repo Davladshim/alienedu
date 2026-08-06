@@ -33,10 +33,14 @@ export async function GET(request: NextRequest) {
       await reconcileNegativeFamilyBalance(family.id)
     }
 
-    // Баланс семьи — реальный пул ещё не распределённых денег (families.balance,
-    // всегда >= 0). Долги за проведённые занятия — отдельно, у каждого ученика лично
+    // f.balance — реальный пул ещё не распределённых денег (всегда >= 0).
+    // Долги за проведённые занятия — отдельно, у каждого ученика лично
+    // (teacher_students.balance, всегда <= 0 у членов семьи). net_balance —
+    // общий баланс семьи целиком (пул минус долги всех её учеников) — то,
+    // что видно родителю и должно уходить в минус, если семья должна деньги
     const result = await query(
       `SELECT f.id, f.name, f.created_at, f.balance,
+         f.balance + COALESCE(SUM(ts.balance), 0) as net_balance,
          COALESCE(AVG(ts.lesson_price) FILTER (WHERE ts.lesson_price IS NOT NULL), 0) as avg_lesson_price
        FROM families f
        LEFT JOIN teacher_students ts ON ts.family_id = f.id
