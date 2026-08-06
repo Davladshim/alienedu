@@ -513,38 +513,12 @@ export default function StudentsPage() {
                   </div>
                 )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {members.map(student => (
-                    <div key={student.id}>
-                      {renderStudentHeader(student)}
-                      {expandedId === student.id && renderStudentDetail(student)}
-                    </div>
-                  ))}
-                </div>
+                {renderStudentGrid(members)}
               </div>
             )
           })}
 
-          {(() => {
-            const standalone = students.filter(s => !s.family_id)
-            const rows: any[][] = []
-            for (let i = 0; i < standalone.length; i += cols) rows.push(standalone.slice(i, i + cols))
-            return rows.map((row, ri) => {
-              const openStudent = row.find(s => s.id === expandedId)
-              return (
-                <div key={ri}>
-                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '10px' }}>
-                    {row.map(student => renderStudentHeader(student))}
-                  </div>
-                  {openStudent && (
-                    <div style={{ marginTop: '10px' }}>
-                      {renderStudentDetail(openStudent)}
-                    </div>
-                  )}
-                </div>
-              )
-            })
-          })()}
+          {renderStudentGrid(students.filter(s => !s.family_id))}
         </div>
 
       </div>
@@ -726,6 +700,34 @@ export default function StudentsPage() {
             )}
           </>
         )}
+      </div>
+    )
+  }
+
+  // Список учеников сеткой по `cols` в ряд — используется и для учеников
+  // без семьи, и для членов одной семьи (каждая семья — свой вызов, так
+  // что у неё всегда отдельная строка/строки, даже если она не заполнена
+  // до полного ряда). Открытая карточка разворачивается под своим рядом
+  function renderStudentGrid(list: any[]) {
+    const rows: any[][] = []
+    for (let i = 0; i < list.length; i += cols) rows.push(list.slice(i, i + cols))
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {rows.map((row, ri) => {
+          const openStudent = row.find(s => s.id === expandedId)
+          return (
+            <div key={ri}>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: '10px' }}>
+                {row.map(student => renderStudentHeader(student))}
+              </div>
+              {openStudent && (
+                <div style={{ marginTop: '10px' }}>
+                  {renderStudentDetail(openStudent)}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     )
   }

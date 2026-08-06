@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { subjectColor } from '@/components/subjects'
+import { subjectColor, SubjectIcon } from '@/components/subjects'
 
 const WEEKDAYS = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
@@ -107,16 +107,23 @@ export default function StudentSchedulePage() {
                     const color = subjectColor(lesson.subject)
                     return (
                       <div key={lesson.id} style={{
-                        background: 'var(--t-card)', border: '1px solid var(--t-border)', borderLeft: `3px solid ${color}`, borderRadius: '12px',
+                        background: 'var(--t-card)', border: `2px solid ${color}`, borderRadius: '12px',
                         padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
                       }}>
                         <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                           <span style={{ fontWeight: 600, fontSize: '14px', whiteSpace: 'nowrap' }}>{lesson.time} · {lesson.end_time}</span>
                           <div>
                             <div style={{ fontSize: '14px' }}>{lesson.teacher_name}</div>
-                            <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '2px' }}>
-                              {[lesson.subject, `${lesson.duration_minutes} мин`].filter(Boolean).join(' · ')}
-                              {lesson.original_date && ' · перенесён'}
+                            <div style={{ color: 'var(--t-text-muted)', fontSize: '12px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              {lesson.subject && (
+                                <span style={{ color, display: 'flex', lineHeight: 0 }}>
+                                  <SubjectIcon subject={lesson.subject} size={12} />
+                                </span>
+                              )}
+                              <span>
+                                {[lesson.subject, `${lesson.duration_minutes} мин`].filter(Boolean).join(' · ')}
+                                {lesson.original_date && ' · перенесён'}
+                              </span>
                             </div>
                           </div>
                         </div>

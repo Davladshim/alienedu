@@ -134,13 +134,10 @@ function LessonCard({ lesson, dayLessons, isSelected, narrow, onClick }: {
           opacity: lesson.status === 'completed' ? 0.55 : 1,
         }}
       >
-        {(callLinkIcon || subjectIcon || lesson.status === 'cancelled') && (
+        {(callLinkIcon || subjectIcon) && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', marginBottom: '2px' }}>
             {callLinkIcon}
             {subjectIcon}
-            {lesson.status === 'cancelled' && (
-              <span style={{ fontSize: '7px', color: 'var(--t-text-muted)' }}>{STATUS_SHORT[lesson.status]}</span>
-            )}
           </div>
         )}
         <div style={{ fontWeight: 600, fontSize: '11px', lineHeight: 1.3 }}>{formatClock(start)}</div>
@@ -160,16 +157,11 @@ function LessonCard({ lesson, dayLessons, isSelected, narrow, onClick }: {
         opacity: lesson.status === 'completed' ? 0.55 : 1,
       }}
     >
-      {lesson.status === 'cancelled' && (
-        <span style={{ position: 'absolute', top: '4px', right: '6px', fontSize: '9px', color: 'var(--t-text-muted)' }}>
-          {STATUS_SHORT[lesson.status]}
-        </span>
-      )}
       {!lesson.is_trial && lesson.call_link && (
         <span style={{ position: 'absolute', top: '5px', left: '6px' }}>{callLinkIcon}</span>
       )}
       {lesson.subject && (
-        <span style={{ position: 'absolute', top: '5px', right: lesson.status === 'cancelled' ? '32px' : '6px' }}>{subjectIcon}</span>
+        <span style={{ position: 'absolute', top: '5px', right: '6px' }}>{subjectIcon}</span>
       )}
       <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '10px' }}>{formatClock(start)}</div>
       <div style={{ fontWeight: 600, fontSize: '14px', borderTop: '1px solid var(--t-border)', marginTop: '4px', paddingTop: '4px' }}>{formatClock(end)}</div>

@@ -10,6 +10,24 @@ function daysWord(n: number): string {
   return 'дней'
 }
 
+// Компактный режим (короче текст, уже поле кода) — нужен в шапке кабинета
+// репетитора на узких экранах, где высоту шапки трогать нельзя: обычная
+// подпись "Тариф: Pro (осталось N дней)" переносится на несколько строк
+// и раздувает шапку. На /teacher/tariffs, где виджет стоит в отдельной
+// карточке с запасом места, эта проблема не возникает вне зависимости
+// от ширины экрана
+function useNarrowScreen(breakpoint = 700): boolean {
+  const [narrow, setNarrow] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`)
+    const update = () => setNarrow(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [breakpoint])
+  return narrow
+}
+
 // Тихий индикатор тарифа + поле ввода кода — виден в шапке кабинета
 // репетитора на любой странице, специально сделан неярким (просто текст +
 // маленькое поле), чтобы не выглядеть навязчивой рекламой
@@ -19,6 +37,7 @@ export function PlanWidget() {
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const narrow = useNarrowScreen()
 
   function applyPlanData(data: { plan: string; plan_expires_at: string | null }) {
     setPlan(data.plan === 'pro' ? 'pro' : 'free')
@@ -60,7 +79,7 @@ export function PlanWidget() {
   const expiringSoon = plan === 'pro' && daysLeft !== null && daysLeft <= 5
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--t-text-muted)' }}>
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: narrow ? '6px' : '8px', fontSize: '12px', color: 'var(--t-text-muted)', whiteSpace: 'nowrap' }}>
       {expiringSoon && (
         <style>{`
           @keyframes plan-widget-glow {
@@ -70,8 +89,9 @@ export function PlanWidget() {
         `}</style>
       )}
       <span style={expiringSoon ? { color: 'var(--t-warning)', fontWeight: 600, animation: 'plan-widget-glow 1.6s ease-in-out infinite' } : undefined}>
-        Тариф: {plan === 'pro' ? 'Pro' : 'Free'}
-        {plan === 'pro' && daysLeft !== null && ` (осталось ${daysLeft} ${daysWord(daysLeft)})`}
+        {narrow
+          ? <>{plan === 'pro' ? 'Pro' : 'Free'}{plan === 'pro' && daysLeft !== null && ` · ${daysLeft}д`}</>
+          : <>Тариф: {plan === 'pro' ? 'Pro' : 'Free'}{plan === 'pro' && daysLeft !== null && ` (осталось ${daysLeft} ${daysWord(daysLeft)})`}</>}
       </span>
       <input
         value={code}
@@ -79,7 +99,7 @@ export function PlanWidget() {
         onKeyDown={e => e.key === 'Enter' && redeem()}
         placeholder="Код"
         style={{
-          width: '80px', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '6px',
+          width: narrow ? '52px' : '80px', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '6px',
           padding: '4px 8px', color: 'var(--t-text-secondary)', fontSize: '12px',
         }}
       />
@@ -87,14 +107,24 @@ export function PlanWidget() {
         onClick={redeem}
         disabled={busy || !code.trim()}
         style={{
-          background: 'none', border: '1px solid var(--t-border)', borderRadius: '6px', padding: '4px 10px',
+          background: 'none', border: '1px solid var(--t-border)', borderRadius: '6px', padding: narrow ? '4px 6px' : '4px 10px',
           color: busy || !code.trim() ? 'var(--t-text-faint)' : 'var(--t-text-secondary)', fontSize: '12px',
           cursor: busy || !code.trim() ? 'not-allowed' : 'pointer',
         }}
       >
-        Ввести
+        {narrow ? 'OK' : 'Ввести'}
       </button>
-      {msg && <span style={{ color: msg.ok ? 'var(--t-success)' : 'var(--t-danger-soft)' }}>{msg.text}</span>}
+      {msg && (narrow ? (
+        <span style={{
+          position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 150, whiteSpace: 'nowrap',
+          background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '6px', padding: '4px 8px',
+          color: msg.ok ? 'var(--t-success)' : 'var(--t-danger-soft)',
+        }}>
+          {msg.text}
+        </span>
+      ) : (
+        <span style={{ color: msg.ok ? 'var(--t-success)' : 'var(--t-danger-soft)' }}>{msg.text}</span>
+      ))}
     </div>
   )
 }

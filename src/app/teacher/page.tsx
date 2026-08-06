@@ -34,10 +34,13 @@ export default function TeacherPage() {
           </p>
         </div>
 
-        {/* Первый ряд — три равные карточки */}
+        {/* Первый ряд — три равные карточки. minmax(0, 1fr) вместо
+            голого 1fr — иначе колонка не может сжаться уже min-content
+            самого длинного слова в карточке, и весь ряд вылезает за
+            экран на узких телефонах */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
           gap: '16px',
           marginBottom: '16px'
         }}>
@@ -95,7 +98,7 @@ export default function TeacherPage() {
         {/* Второй ряд — две карточки на всю ширину */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
           gap: '16px',
           marginBottom: '2rem'
         }}>
