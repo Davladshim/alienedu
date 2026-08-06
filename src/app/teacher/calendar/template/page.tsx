@@ -28,10 +28,11 @@ function formatClock(minutes: number): string {
 }
 // Время начала и конца друг под другом без подписей (просто числа), имя
 // ученика ниже — как в LessonCard настоящего расписания. Колонки дней
-// всегда в семь штук в ряд, на узких экранах ряд прокручивается по
-// горизонтали, а не сжимается
-function TemplateCard({ tpl, onClick, onDelete }: {
+// всегда в семь штук в ряд и всегда помещаются на экран — на узких
+// экранах (narrow) они просто уже, а шрифт чуть меньше (не через scale)
+function TemplateCard({ tpl, narrow, onClick, onDelete }: {
   tpl: any
+  narrow: boolean
   onClick: () => void
   onDelete: (e: React.MouseEvent) => void
 }) {
@@ -48,6 +49,34 @@ function TemplateCard({ tpl, onClick, onDelete }: {
       {isEnding && `до ${formatDateRu(endDateStr!)}`}
     </>
   )
+
+  if (narrow) {
+    return (
+      <div
+        onClick={onClick}
+        style={{
+          position: 'relative', padding: '5px 2px', background: 'var(--t-bg)',
+          border: `1px solid ${ACCENT}`, borderRadius: '6px', textAlign: 'center', cursor: 'pointer',
+        }}
+      >
+        <button
+          onClick={onDelete}
+          style={{ position: 'absolute', top: '1px', right: '2px', background: 'none', border: 'none', color: 'var(--t-text-muted)', cursor: 'pointer', fontSize: '10px', padding: 0, lineHeight: 1 }}
+        >
+          ✕
+        </button>
+        {tpl.subject && (
+          <div style={{ display: 'flex', justifyContent: 'center', lineHeight: 0, marginBottom: '2px' }}>
+            <SubjectIcon subject={tpl.subject} size={10} />
+          </div>
+        )}
+        <div style={{ fontWeight: 600, fontSize: '11px', lineHeight: 1.3, marginTop: tpl.subject ? 0 : '8px' }}>{formatClock(start)}</div>
+        <div style={{ fontWeight: 600, fontSize: '11px', lineHeight: 1.3, borderTop: '1px solid var(--t-border)', marginTop: '2px', paddingTop: '2px' }}>{formatClock(end)}</div>
+        <div style={{ color: 'var(--t-text-secondary)', fontSize: '10px', lineHeight: 1.25, marginTop: '3px', wordBreak: 'break-word' }}>{tpl.student_name}</div>
+        {dateRange && <div style={{ color: ACCENT, fontSize: '8px', marginTop: '3px' }}>{dateRange}</div>}
+      </div>
+    )
+  }
 
   return (
     <div
@@ -74,6 +103,22 @@ function TemplateCard({ tpl, onClick, onDelete }: {
       {dateRange && <div style={{ color: ACCENT, fontSize: '11px', marginTop: '4px' }}>{dateRange}</div>}
     </div>
   )
+}
+
+// На узких экранах (портретный телефон/планшет, <=900px) колонки дней
+// становятся уже, а шрифт — совсем немного меньше (фиксированный
+// размер, не сжатие через scale) — см. подробный комментарий у
+// одноимённого хука в src/app/teacher/calendar/page.tsx
+function useNarrowScreen(breakpoint = 900): boolean {
+  const [narrow, setNarrow] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`)
+    const update = () => setNarrow(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [breakpoint])
+  return narrow
 }
 
 function todayISO(): string {
@@ -317,10 +362,11 @@ export default function TemplatePage() {
   }
 
   const todayDow = (new Date().getDay() + 6) % 7 // 0=понедельник
+  const narrow = useNarrowScreen()
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--t-bg)', color: 'var(--t-text)', fontFamily: 'system-ui, sans-serif', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ width: '95%', maxWidth: '1600px', padding: '2rem' }}>
+      <div style={{ width: '95%', maxWidth: '1600px', padding: narrow ? '0.75rem' : '2rem' }}>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
           <Link href="/teacher" style={{ color: 'var(--t-text-muted)', textDecoration: 'none', fontSize: '14px' }}>← Кабинет</Link>
@@ -348,39 +394,45 @@ export default function TemplatePage() {
 
         {loading && <p style={{ color: 'var(--t-text-muted)' }}>Загрузка...</p>}
 
-        {/* На узких экранах сетка не сжимается (шрифт не мельчает), а
-            прокручивается по горизонтали — overflow-контейнер вместо FitToWidth */}
-        <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(150px, 1fr))', gap: '10px', minWidth: '1050px' }}>
-            {WEEKDAYS.map((weekday, dow) => {
-              const dayTemplates = templates.filter(t => t.day_of_week === dow)
-              const isToday = dow === todayDow
+        {/* Семь колонок всегда помещаются на экран без горизонтальной
+            прокрутки — см. подробный комментарий в calendar/page.tsx */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: narrow ? '4px' : '10px', marginBottom: '1.5rem' }}>
+          {WEEKDAYS.map((weekday, dow) => {
+            const dayTemplates = templates.filter(t => t.day_of_week === dow)
+            const isToday = dow === todayDow
 
-              return (
-                <div key={dow} style={{
-                  background: 'var(--t-card)', border: `1px solid ${isToday ? ACCENT : 'var(--t-border)'}`,
-                  borderRadius: '12px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px',
-                }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', color: isToday ? ACCENT : 'var(--t-text)', textAlign: 'center' }}>
-                    {WEEKDAYS_SHORT[dow]}
-                  </div>
-
-                  <button onClick={() => openAddForm(dow)} style={{ ...accentButtonStyle, fontSize: '11px', padding: '5px 8px' }}>+ Добавить</button>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {dayTemplates.map(tpl => (
-                      <TemplateCard
-                        key={tpl.id}
-                        tpl={tpl}
-                        onClick={() => openEditForm(tpl)}
-                        onDelete={e => { e.stopPropagation(); handleDelete(tpl.id) }}
-                      />
-                    ))}
-                  </div>
+            return (
+              <div key={dow} style={narrow ? {
+                display: 'flex', flexDirection: 'column', gap: '4px',
+                borderTop: `2px solid ${isToday ? ACCENT : 'var(--t-border)'}`, paddingTop: '4px',
+              } : {
+                background: 'var(--t-card)', border: `1px solid ${isToday ? ACCENT : 'var(--t-border)'}`,
+                borderRadius: '12px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px',
+              }}>
+                <div style={{ fontWeight: 600, fontSize: narrow ? '10px' : '13px', color: isToday ? ACCENT : 'var(--t-text)', textAlign: 'center' }}>
+                  {WEEKDAYS_SHORT[dow]}
                 </div>
-              )
-            })}
-          </div>
+
+                <button onClick={() => openAddForm(dow)} style={narrow
+                  ? { ...accentButtonStyle, fontSize: '13px', padding: '3px', lineHeight: 1 }
+                  : { ...accentButtonStyle, fontSize: '11px', padding: '5px 8px' }}>
+                  {narrow ? '+' : '+ Добавить'}
+                </button>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: narrow ? '4px' : '6px' }}>
+                  {dayTemplates.map(tpl => (
+                    <TemplateCard
+                      key={tpl.id}
+                      tpl={tpl}
+                      narrow={narrow}
+                      onClick={() => openEditForm(tpl)}
+                      onDelete={e => { e.stopPropagation(); handleDelete(tpl.id) }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         {addingForDay !== null && (
