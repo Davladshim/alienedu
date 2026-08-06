@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
 import { query } from '@/lib/db'
 
 // Обзор одного ребёнка для кабинета родителя: репетиторы (с балансом
@@ -79,6 +80,49 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     })
   } catch (error) {
     console.error('Ошибка получения обзора ребёнка:', error)
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
+  }
+}
+
+// Родитель сбрасывает пароль ребёнку (ребёнок мог его забыть) — секретный
+// вопрос при регистрации через роль "Родитель" не задаётся вовсе, так что
+// это единственный способ восстановить доступ
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    const studentId = Number(id)
+    if (!studentId) {
+      return NextResponse.json({ error: 'Некорректный id' }, { status: 400 })
+    }
+
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+    if (decoded.role !== 'parent') {
+      return NextResponse.json({ error: 'Доступно только родителям' }, { status: 403 })
+    }
+
+    const link = await query(
+      `SELECT 1 FROM parent_children WHERE parent_id = $1 AND student_id = $2`,
+      [decoded.id, studentId]
+    )
+    if (link.rows.length === 0) {
+      return NextResponse.json({ error: 'Этот ребёнок не привязан к вашему аккаунту' }, { status: 403 })
+    }
+
+    const { code } = await request.json()
+    if (!code || String(code).length < 4) {
+      return NextResponse.json({ error: 'Пароль слишком короткий' }, { status: 400 })
+    }
+
+    const code_hash = await bcrypt.hash(String(code), 10)
+    await query(`UPDATE users SET code_hash = $1 WHERE id = $2`, [code_hash, studentId])
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Ошибка сброса пароля ребёнка:', error)
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
   }
 }

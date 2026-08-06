@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { PasswordInput } from '@/components/PasswordInput'
 
 interface Tutor {
   id: number
@@ -44,6 +45,81 @@ function formatMoney(n: number | null): string {
 
 const cardStyle: React.CSSProperties = {
   background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '16px', padding: '1.25rem',
+}
+
+const passwordInputStyle: React.CSSProperties = {
+  width: '100%', background: 'var(--t-bg)', border: '1px solid var(--t-border)', borderRadius: '8px',
+  padding: '10px 14px', color: 'var(--t-text)', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
+}
+
+function ResetPasswordBox({ childId }: { childId: string }) {
+  const [open, setOpen] = useState(false)
+  const [code, setCode] = useState('')
+  const [codeConfirm, setCodeConfirm] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    if (code !== codeConfirm) {
+      setError('Пароли не совпадают')
+      return
+    }
+    setSaving(true)
+    const res = await fetch(`/api/parent/child/${childId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    })
+    const data = await res.json()
+    setSaving(false)
+    if (res.ok) {
+      setSuccess(true)
+      setCode('')
+      setCodeConfirm('')
+    } else {
+      setError(data.error || 'Не удалось сбросить пароль')
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => { setOpen(true); setSuccess(false) }}
+        style={{
+          background: 'none', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
+          borderRadius: '8px', padding: '9px 18px', fontSize: '14px', cursor: 'pointer',
+        }}
+      >
+        🔑 Сбросить пароль
+      </button>
+    )
+  }
+
+  return (
+    <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '320px' }}>
+      <PasswordInput value={code} onChange={e => setCode(e.target.value)} placeholder="Новый пароль" required style={passwordInputStyle} autoComplete="new-password" />
+      <PasswordInput value={codeConfirm} onChange={e => setCodeConfirm(e.target.value)} placeholder="Повторите пароль" required style={passwordInputStyle} autoComplete="new-password" />
+      {error && <div style={{ color: 'var(--t-danger)', fontSize: '13px' }}>{error}</div>}
+      {success && <div style={{ color: 'var(--t-success)', fontSize: '13px' }}>Пароль обновлён — сообщите его ребёнку.</div>}
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button type="submit" disabled={saving} style={{
+          background: 'var(--t-accent)', color: '#fff', border: 'none', borderRadius: '8px',
+          padding: '9px 18px', fontSize: '14px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer',
+        }}>
+          {saving ? 'Сохраняем...' : 'Сохранить'}
+        </button>
+        <button type="button" onClick={() => { setOpen(false); setError('') }} style={{
+          background: 'none', border: '1px solid var(--t-border)', color: 'var(--t-text-secondary)',
+          borderRadius: '8px', padding: '9px 18px', fontSize: '14px', cursor: 'pointer',
+        }}>
+          Отмена
+        </button>
+      </div>
+    </form>
+  )
 }
 
 function ScheduleRow({ item }: { item: ScheduleItem }) {
@@ -116,9 +192,13 @@ export default function ParentChildPage() {
         {!loading && !error && data && (
           <>
             <h1 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '4px' }}>{data.child.full_name}</h1>
-            <p style={{ color: 'var(--t-text-muted)', fontSize: '14px', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--t-text-muted)', fontSize: '14px', marginBottom: '1rem' }}>
               Логин: {data.child.login}{data.child.grade ? ` · ${data.child.grade} класс` : ''}
             </p>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <ResetPasswordBox childId={id} />
+            </div>
 
             <div style={{ ...cardStyle, marginBottom: '1.25rem' }}>
               <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '12px' }}>Репетиторы и баланс</div>
