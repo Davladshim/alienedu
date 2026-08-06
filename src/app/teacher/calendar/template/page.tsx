@@ -97,8 +97,7 @@ function TemplateCard({ tpl, narrow, onClick, onDelete }: {
           <SubjectIcon subject={tpl.subject} size={13} />
         </span>
       )}
-      <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '10px' }}>{formatClock(start)}</div>
-      <div style={{ fontWeight: 600, fontSize: '14px', borderTop: '1px solid var(--t-border)', marginTop: '4px', paddingTop: '4px' }}>{formatClock(end)}</div>
+      <div style={{ fontWeight: 600, fontSize: '14px', marginTop: '10px' }}>{formatClock(start)} · {formatClock(end)}</div>
       <div style={{ color: 'var(--t-text-secondary)', fontSize: '13px', marginTop: '6px' }}>{tpl.student_name}</div>
       {dateRange && <div style={{ color: ACCENT, fontSize: '11px', marginTop: '4px' }}>{dateRange}</div>}
     </div>
