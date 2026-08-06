@@ -401,7 +401,7 @@ export default function StudentsPage() {
                   <div key={f.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', padding: '6px 0' }}>
                     <span>{f.name}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ color: balance < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
+                      <span style={{ whiteSpace: 'nowrap', color: balance < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
                         {formatMoney(f.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
                       </span>
                       <button
@@ -451,7 +451,7 @@ export default function StudentsPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px 10px', flexWrap: 'wrap', gap: '8px' }}>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--t-accent)' }}>👪 {family.name}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '13px', color: balance < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
+                    <span style={{ fontSize: '13px', whiteSpace: 'nowrap', color: balance < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
                       {formatMoney(family.balance)} ₽{available > 0 && ` · доступно ${available} ${available === 1 ? 'занятие' : 'занятий'}`}
                     </span>
                     <button
@@ -537,19 +537,22 @@ export default function StudentsPage() {
       <div key={student.id} style={{ background: 'var(--t-card)', border: '1px solid var(--t-border)', borderRadius: '12px' }}>
                 <div
                   onClick={() => openRow(student)}
-                  style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                  style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', cursor: 'pointer' }}
                 >
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {student.full_name}
+                  <div style={{ minWidth: 0, flex: '1 1 160px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '15px' }}>
+                      {student.full_name}{' '}
                       {student.is_placeholder && (
-                        <span style={{ background: 'rgba(251,191,36,0.15)', color: 'var(--t-warning)', fontSize: '11px', padding: '2px 8px', borderRadius: '999px' }}>
-                          не зарегистрирован
+                        <span
+                          title="Карточку завёл репетитор — ученик ещё не зарегистрировался и не привязан к своему аккаунту"
+                          style={{ color: 'var(--t-warning)', fontSize: '13px', cursor: 'help' }}
+                        >
+                          ⏳
                         </span>
                       )}
                       {savedId === student.id && (
                         <span style={{ color: 'var(--t-success)', fontSize: '12px', fontWeight: 500, transition: 'opacity 0.8s', opacity: savedFading ? 0 : 1 }}>
-                          ✓ Сохранено
+                          {' '}✓ Сохранено
                         </span>
                       )}
                     </div>
@@ -559,8 +562,8 @@ export default function StudentsPage() {
                       {Number(student.assigned_count) > 0 && ` · уроков пройдено: ${student.completed_count}/${student.assigned_count}`}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <span style={{ fontSize: '14px', color: Number(student.balance) < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
+                    <span style={{ fontSize: '14px', whiteSpace: 'nowrap', color: Number(student.balance) < 0 ? 'var(--t-danger-soft)' : 'var(--t-text-secondary)' }}>
                       {formatMoney(student.balance)} ₽
                     </span>
                     {student.is_placeholder && (
