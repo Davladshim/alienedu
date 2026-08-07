@@ -57,11 +57,13 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('')
 
   const [duration, setDuration] = useState('')
+  const [customDays, setCustomDays] = useState('14')
   const [plan, setPlan] = useState('')
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState('')
   const [lastGenerated, setLastGenerated] = useState<{ code: string; plan: string; valid_days: string } | null>(null)
   const [copied, setCopied] = useState(false)
+  const [revokingId, setRevokingId] = useState<number | null>(null)
 
   const [codes, setCodes] = useState<PlanCode[]>([])
 
@@ -155,15 +157,20 @@ export default function AdminPage() {
     setPassword('')
   }
 
+  const effectiveDays = duration === 'custom' ? Number(customDays) : Number(duration)
+  const durationValid = duration === 'custom'
+    ? Number.isInteger(effectiveDays) && effectiveDays >= 1
+    : !!duration
+
   async function handleGenerate() {
-    if (!duration || !plan) return
+    if (!durationValid || !plan) return
     setGenerating(true)
     setGenError('')
     setCopied(false)
     const res = await fetch('/api/admin/plan-codes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan, validDays: Number(duration) }),
+      body: JSON.stringify({ plan, validDays: effectiveDays }),
     })
     const data = await res.json()
     setGenerating(false)
@@ -172,6 +179,23 @@ export default function AdminPage() {
       loadCodes()
     } else {
       setGenError(data.error || 'Ошибка')
+    }
+  }
+
+  async function revokeCode(c: PlanCode) {
+    const who = c.used_by_login ? ` у ${c.used_by_name || c.used_by_login} (@${c.used_by_login})` : ''
+    const warning = c.used_by_login
+      ? `Отозвать код ${c.code}${who}? Аккаунт сразу перейдёт на бесплатный тариф.`
+      : `Отозвать код ${c.code}? Он ещё не был активирован, просто станет недействительным.`
+    if (!confirm(warning)) return
+    setRevokingId(c.id)
+    const res = await fetch(`/api/admin/plan-codes/${c.id}/revoke`, { method: 'POST' })
+    setRevokingId(null)
+    if (res.ok) {
+      loadCodes()
+    } else {
+      const data = await res.json().catch(() => ({}))
+      alert(data.error || 'Не удалось отозвать код')
     }
   }
 
@@ -326,8 +350,18 @@ export default function AdminPage() {
                 <option value="">Выберите срок</option>
                 <option value="30">1 месяц (30 дней)</option>
                 <option value="365">1 год (365 дней)</option>
+                <option value="custom">Произвольный срок</option>
               </select>
             </div>
+            {duration === 'custom' && (
+              <div style={{ width: '140px' }}>
+                <label style={{ color: 'var(--t-text-secondary)', fontSize: '13px', display: 'block', marginBottom: '4px' }}>Дней</label>
+                <input
+                  type="number" min={1} value={customDays} onChange={e => setCustomDays(e.target.value)}
+                  style={inputStyle} placeholder="Например, 14"
+                />
+              </div>
+            )}
             <div style={{ flex: 1, minWidth: '180px' }}>
               <label style={{ color: 'var(--t-text-secondary)', fontSize: '13px', display: 'block', marginBottom: '4px' }}>Тариф</label>
               <select value={plan} onChange={e => setPlan(e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
@@ -338,12 +372,12 @@ export default function AdminPage() {
             <div style={{ alignSelf: 'flex-end' }}>
               <button
                 onClick={handleGenerate}
-                disabled={!duration || !plan || generating}
+                disabled={!durationValid || !plan || generating}
                 style={{
-                  background: !duration || !plan || generating ? 'var(--t-border)' : 'linear-gradient(135deg, var(--t-accent), var(--t-accent2))',
-                  color: !duration || !plan || generating ? 'var(--t-text-muted)' : '#fff',
+                  background: !durationValid || !plan || generating ? 'var(--t-border)' : 'linear-gradient(135deg, var(--t-accent), var(--t-accent2))',
+                  color: !durationValid || !plan || generating ? 'var(--t-text-muted)' : '#fff',
                   border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 600,
-                  cursor: !duration || !plan || generating ? 'not-allowed' : 'pointer',
+                  cursor: !durationValid || !plan || generating ? 'not-allowed' : 'pointer',
                 }}
               >
                 {generating ? 'Генерируем...' : 'Сгенерировать'}
@@ -386,7 +420,7 @@ export default function AdminPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', whiteSpace: 'nowrap' }}>
                 <thead>
                   <tr>
-                    {['Код', 'Дата активации', 'Логин', 'Имя', 'Тариф', 'Осталось', 'Статус'].map(h => (
+                    {['Код', 'Дата активации', 'Логин', 'Имя', 'Тариф', 'Осталось', 'Статус', ''].map(h => (
                       <th key={h} style={{
                         position: 'sticky', top: 0, background: 'var(--t-card)', textAlign: 'left',
                         color: 'var(--t-text-muted)', fontWeight: 500, fontSize: '11px', textTransform: 'uppercase',
@@ -415,6 +449,21 @@ export default function AdminPage() {
                           {daysLeft === null ? '—' : daysLeft > 0 ? `${daysLeft} ${daysWord(daysLeft)}` : 'истёк'}
                         </td>
                         <td style={{ padding: '8px 10px', color: statusColor }}>{statusLabel}</td>
+                        <td style={{ padding: '8px 10px' }}>
+                          {c.status === 'active' && (
+                            <button
+                              onClick={() => revokeCode(c)}
+                              disabled={revokingId === c.id}
+                              style={{
+                                background: 'rgba(var(--t-danger-rgb),0.1)', border: '1px solid var(--t-danger)', color: 'var(--t-danger)',
+                                borderRadius: '6px', padding: '4px 10px', fontSize: '12px',
+                                cursor: revokingId === c.id ? 'not-allowed' : 'pointer',
+                              }}
+                            >
+                              {revokingId === c.id ? '...' : 'Отозвать'}
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     )
                   })}

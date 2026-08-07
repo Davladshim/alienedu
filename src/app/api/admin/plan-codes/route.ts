@@ -12,7 +12,11 @@ function generateCode(): string {
 }
 
 const ALLOWED_PLANS = ['pro']
-const ALLOWED_DURATIONS = [30, 365]
+// Раньше — фиксированный список [30, 365]. Теперь допускается любое
+// целое число дней в разумных пределах — на фронте это варианты
+// "1 месяц"/"1 год"/"произвольный срок" с полем ввода дней
+const MIN_VALID_DAYS = 1
+const MAX_VALID_DAYS = 3650
 
 export async function GET(req: NextRequest) {
   if (!checkAdmin(req)) {
@@ -42,8 +46,9 @@ export async function POST(req: NextRequest) {
     if (!ALLOWED_PLANS.includes(plan)) {
       return NextResponse.json({ error: 'Некорректный тариф' }, { status: 400 })
     }
-    if (!ALLOWED_DURATIONS.includes(Number(validDays))) {
-      return NextResponse.json({ error: 'Некорректный срок' }, { status: 400 })
+    const days = Number(validDays)
+    if (!Number.isInteger(days) || days < MIN_VALID_DAYS || days > MAX_VALID_DAYS) {
+      return NextResponse.json({ error: `Срок должен быть целым числом дней от ${MIN_VALID_DAYS} до ${MAX_VALID_DAYS}` }, { status: 400 })
     }
 
     let code = generateCode()
@@ -52,9 +57,9 @@ export async function POST(req: NextRequest) {
       try {
         await query(
           `INSERT INTO plan_codes (code, plan, valid_days) VALUES ($1, $2, $3)`,
-          [code, plan, Number(validDays)]
+          [code, plan, days]
         )
-        return NextResponse.json({ code, plan, valid_days: Number(validDays) })
+        return NextResponse.json({ code, plan, valid_days: days })
       } catch {
         code = generateCode()
         attempts++
