@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Укажите диапазон дат (from, to)' }, { status: 400 })
     }
 
-    await autoCompleteDueLessons()
+    await autoCompleteDueLessons({ teacherId: decoded.id })
 
     const result = await query(
       `SELECT sl.*, COALESCE(ts.display_name, u.full_name, sl.student_name, 'Пробный урок') as student_name, ts.call_link

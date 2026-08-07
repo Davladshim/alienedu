@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    await autoCompleteDueLessons()
+    await autoCompleteDueLessons({ teacherId: decoded.id })
 
     const monthPayments = await query(
       `SELECT COALESCE(SUM(amount), 0) as total FROM payments

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
 
-    await autoCompleteDueLessons()
+    await autoCompleteDueLessons({ studentId: decoded.id })
 
     const studentResult = await query(`SELECT timezone FROM users WHERE id = $1`, [decoded.id])
     const studentTz: string = studentResult.rows[0]?.timezone || DEFAULT_TIMEZONE
